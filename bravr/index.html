@@ -55,6 +55,20 @@ td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
 th{color:var(--muted);font-weight:400}
 .note{font-size:13px;color:var(--muted);margin:0}
 @media (max-width:420px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.move{grid-template-columns:1fr;gap:2px}}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;font:700 15px var(--display);letter-spacing:.1em;text-transform:uppercase;padding:11px 6px;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:6px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--steel)}
+.tut{display:grid;gap:14px}
+.card{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:center}
+.card svg{width:100%;max-width:150px;height:auto;display:block}
+.card h3{font:700 22px/1 var(--display);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px;color:var(--gold)}
+.card ol{margin:6px 0 0;padding-left:18px;display:grid;gap:3px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font:500 12px var(--display);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:4px;padding:3px 7px;color:var(--muted)}
+.tag.dmg{color:var(--ember);border-color:var(--ember)}
+.rules{margin:0;padding-left:18px;display:grid;gap:6px}
+@media (max-width:420px){.card{grid-template-columns:1fr}.card svg{max-width:140px}}
 </style>
 </head>
 <body>
@@ -64,6 +78,95 @@ th{color:var(--muted);font-weight:400}
     <p class="lede">Unosisz się nad planetą. Z kosmosu lecą na ciebie żołnierze w pancerzach. Wszystko dzieje się w zwolnionym tempie, bo liczy się kontrola ruchu, nie szarpanie stawów z obciążnikami.</p>
   </header>
 
+
+  <nav class="tabs" role="tablist" aria-label="Widok">
+    <button id="tab-train" role="tab" aria-selected="true" aria-controls="v-train" type="button">Trening</button>
+    <button id="tab-tut" role="tab" aria-selected="false" aria-controls="v-tut" type="button">Samouczek</button>
+  </nav>
+
+  <div id="v-tut" class="tut" role="tabpanel" aria-labelledby="tab-tut" hidden>
+    <section class="panel">
+      <h2>Zanim zaczniesz</h2>
+      <ol class="rules">
+        <li><b>Grip</b> (przycisk pod środkowym palcem) trzymany = pięść. Puszczony = otwarta dłoń. Widzisz to na swoich rękach w grze.</li>
+        <li>Każdy ruch rób <b>wolno i do końca</b>. Za szybki ruch nie zadaje obrażeń, a ręka świeci na czerwono.</li>
+        <li>Wróg, który doleci, przez 5 sekund ładuje cios: odciąga pięść, rośnie pomarańczowa kula, wizjer jaśnieje. Wtedy go bij.</li>
+        <li>Łokcie zostają lekko ugięte. Wrogowie stoją bliżej niż zasięg wyprostowanej ręki.</li>
+      </ol>
+    </section>
+
+    <section class="panel card" aria-labelledby="m1">
+      <svg viewBox="0 0 150 170" role="img">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--gold)"/></marker></defs>
+<g fill="var(--line)" stroke="var(--muted)" stroke-width="1.5">
+<circle cx="75" cy="34" r="16"/><rect x="62" y="30" width="26" height="5" fill="var(--ember)" stroke="none"/>
+<path d="M48 58h54l-8 52H56z"/><rect x="58" y="112" width="34" height="10"/>
+<rect x="60" y="124" width="12" height="38"/><rect x="78" y="124" width="12" height="38"/>
+<rect x="34" y="60" width="12" height="44" transform="rotate(12 40 60)"/><rect x="104" y="60" width="12" height="44" transform="rotate(-12 110 60)"/>
+</g><ellipse cx="75" cy="82" rx="26" ry="22" fill="none" stroke="var(--ember)" stroke-width="2" stroke-dasharray="3 3"/><path d="M75 150 L75 92" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="5 4" marker-end="url(#ah)"/><circle cx="75" cy="150" r="9" fill="var(--steel)"/></svg>
+      <div>
+        <h3 id="m1">Cios</h3>
+        <ol>
+          <li>Ściśnij grip.</li>
+          <li>Wypchnij pięść w tułów lub głowę, od siebie.</li>
+          <li>Wróć tą samą drogą, kontrolując ciężar.</li>
+        </ol>
+        <div class="tags"><span class="tag dmg">1 obrażenie</span><span class="tag">jedna ręka</span><span class="tag">wróg odlatuje</span></div>
+      </div>
+    </section>
+
+    <section class="panel card" aria-labelledby="m2">
+      <svg viewBox="0 0 150 170" role="img">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--gold)"/></marker></defs>
+<g fill="var(--line)" stroke="var(--muted)" stroke-width="1.5">
+<circle cx="75" cy="34" r="16"/><rect x="62" y="30" width="26" height="5" fill="var(--ember)" stroke="none"/>
+<path d="M48 58h54l-8 52H56z"/><rect x="58" y="112" width="34" height="10"/>
+<rect x="60" y="124" width="12" height="38"/><rect x="78" y="124" width="12" height="38"/>
+<rect x="34" y="60" width="12" height="44" transform="rotate(12 40 60)"/><rect x="104" y="60" width="12" height="44" transform="rotate(-12 110 60)"/>
+</g><ellipse cx="75" cy="52" rx="20" ry="7" fill="none" stroke="var(--ember)" stroke-width="2" stroke-dasharray="3 3"/><path d="M14 50 L132 54" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="5 4" marker-end="url(#ah)"/><rect x="4" y="46" width="20" height="8" rx="2" fill="var(--steel)" transform="rotate(0 14 50)"/></svg>
+      <div>
+        <h3 id="m2">Cięcie</h3>
+        <ol>
+          <li>Puść grip, dłoń płasko.</li>
+          <li>Przeciągnij dłoń w poprzek, przez szyję wroga.</li>
+          <li>Kierunek dowolny: z lewej, z prawej, z góry.</li>
+        </ol>
+        <div class="tags"><span class="tag dmg">2 obrażenia</span><span class="tag">jedna ręka</span><span class="tag">ścina głowę</span></div>
+      </div>
+    </section>
+
+    <section class="panel card" aria-labelledby="m3">
+      <svg viewBox="0 0 150 170" role="img">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--gold)"/></marker></defs>
+<g fill="var(--line)" stroke="var(--muted)" stroke-width="1.5">
+<circle cx="75" cy="34" r="16"/><rect x="62" y="30" width="26" height="5" fill="var(--ember)" stroke="none"/>
+<path d="M48 58h54l-8 52H56z"/><rect x="58" y="112" width="34" height="10"/>
+<rect x="60" y="124" width="12" height="38"/><rect x="78" y="124" width="12" height="38"/>
+<rect x="34" y="60" width="12" height="44" transform="rotate(12 40 60)"/><rect x="104" y="60" width="12" height="44" transform="rotate(-12 110 60)"/>
+</g><ellipse cx="75" cy="82" rx="30" ry="24" fill="none" stroke="var(--ember)" stroke-width="2" stroke-dasharray="3 3"/><path d="M62 82 L10 82" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="5 4" marker-end="url(#ah)"/><path d="M88 82 L140 82" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="5 4" marker-end="url(#ah)"/><circle cx="62" cy="82" r="9" fill="var(--steel)"/><circle cx="88" cy="82" r="9" fill="var(--steel)"/></svg>
+      <div>
+        <h3 id="m3">Rozerwanie</h3>
+        <ol>
+          <li>Obie ręce na tułów, oba gripy ściśnięte. Poczujesz wibrację chwytu.</li>
+          <li>Powoli rozciągaj ręce na boki, jak przy rozpiętkach.</li>
+          <li>Po ok. 30 cm rozstawu wróg pęka na pół.</li>
+        </ol>
+        <div class="tags"><span class="tag dmg">zabija od razu</span><span class="tag">obie ręce</span><span class="tag">puść grip = puszczasz wroga</span></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Wrogowie</h2>
+      <div class="foes">
+        <div class="foe"><strong>1</strong><span>Szeregowy: szary, bez peleryny</span></div>
+        <div class="foe"><strong>2</strong><span>Żołnierz: złote zdobienia, czerwona peleryna</span></div>
+        <div class="foe"><strong>3</strong><span>Brutal: większy, kolce na barkach</span></div>
+      </div>
+      <p class="note" style="margin-top:10px">Liczba to ile obrażeń wytrzyma. Cięcie liczy się za dwa, rozerwanie zabija każdego.</p>
+    </section>
+  </div>
+
+  <div id="v-train" role="tabpanel" aria-labelledby="tab-train" style="display:grid;gap:22px">
   <section class="panel" aria-labelledby="moves">
     <h2 id="moves">Ciosy</h2>
     <div class="moves">
@@ -107,6 +210,7 @@ th{color:var(--muted);font-weight:400}
     <h2 id="hist">Historia</h2>
     <div id="history"><p class="note">Jeszcze żadnych walk na tych goglach.</p></div>
   </section>
+  </div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -117,6 +221,17 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
+
+/* ---------- tabs ---------- */
+(() => {
+  const views = {train:[$('tab-train'), $('v-train')], tut:[$('tab-tut'), $('v-tut')]};
+  const show = k => { Object.entries(views).forEach(([n, [t, v]]) => { t.setAttribute('aria-selected', String(n === k)); v.hidden = n !== k; }); try{ localStorage.setItem('ob-tab', k); }catch(e){} };
+  views.train[0].addEventListener('click', () => show('train'));
+  views.tut[0].addEventListener('click', () => show('tut'));
+  let first = 'tut'; try { first = localStorage.getItem('ob-tab') || (store.get('ob-hist', []).length ? 'train' : 'tut'); } catch(e){}
+  if (location.hash === '#samouczek') first = 'tut';
+  show(first);
+})();
 
 /* ---------- settings ---------- */
 const cfg = Object.assign({rounds:6, work:60, rest:30, speed:'slow', limit:'normal'}, store.get('ob-cfg', {}));
