@@ -2,6 +2,12 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## Done after the first headset test (Oct 2026)
+
+- [x] Wrist cuff in line with the palm (`CUFF_TILT` 0).
+- [x] Break with no timer: pick a card, punch DALEJ.
+- [x] Grenades thrown from about 2.6 m; bigger, glowing, spark trail, beeping.
+
 ## Phase 1: done (Oct 2026, untested on a headset)
 
 Core systems the first upgrades need:
@@ -26,12 +32,12 @@ First upgrades:
 
 ## Phase 2: enemies and finishing moves
 
-- [ ] Replace the procedural enemies with the rigged robot (`robot.glb`, CC-BY joney_lol; credit in the menu). Needs the three.js r128 `GLTFLoader` and `SkeletonUtils` from jsdelivr. Pose bones in code (it has no animations). Gore by zero-scaling bones (head for decap, upper/lower half for the rip). Publish the .glb alongside the artifact.
-- [ ] Three tier looks: grunt in stock olive; soldier in black and gold with a blue shield bubble; brute in rust and bronze with a red bubble and glowing wings.
+- [x] Replace the procedural enemies with the rigged robot (`robot.glb`, CC-BY joney_lol; credit in the menu). Needs the three.js r128 `GLTFLoader` and `SkeletonUtils` from jsdelivr. Pose bones in code (it has no animations). Gore by zero-scaling bones (head for decap, upper/lower half for the rip). Publish the .glb alongside the artifact.
+- [x] Three tier looks (tints and field bubbles; brute wings glow; no extra parts yet): grunt in stock olive; soldier in black and gold with a blue shield bubble; brute in rust and bronze with a red bubble and glowing wings.
 - [ ] Ear clap (both blade hands on the head within 0.15 s): 3 shield and a daze / 8 HP / head-burst fatality. Costs 3 mana.
 - [ ] Nukite through the chest as a fatality.
 - [ ] Fatality reward: mana refund plus run currency.
-- [ ] Arm throw: grab a forearm or wrist, yank it (> 1.5 m/s) to throw the enemy with inertia; it breaks free after 1.2 s.
+- [x] Drag and arm throw: grab an arm, fist or torso, drag it with inertia, yank (> 1.5 m/s) to throw; it breaks free after 2 s.
 - [ ] Mine (Mina, soldier) and orb (Kula, brute) bombs. The orb needs two hands for a full throw; one hand only lobs it weakly.
 - [ ] Soldier 2-punch combo; brute overhead slam that can't be blocked.
 

@@ -16,7 +16,9 @@ _Avoid_: "open palm" on its own, because it doesn't say whether the hand is loos
 
 - **Grab** (*Chwyt*): a loose hand closing into a fist within about 12 cm of something grabbable: an enemy bomb, an enemy forearm or wrist, or the torso. A hand that is already a fist when it reaches the target punches instead. It never grabs.
 - **Bomb throw**: the bomb flies when you release the grip, with your hand's velocity. If you hold a bomb too long, it explodes in your hand.
-- **Arm throw** (*Rzut*): while holding an enemy's arm, a yank (hand moving faster than about 1.5 m/s) throws the enemy along that direction. The enemy has inertia: while held, it trails your hand with lag weighted by its mass, and heavy enemies fly shorter. If you hold an enemy for more than about 1.2 s without throwing, it breaks free and gets a free punch. A thrown enemy has to fly back round and attack from the front again.
+- **Drag** (*Ciągnięcie*): a grab on an enemy's arm, fist or torso (any non-stunned enemy). The enemy trails your hand with lag weighted by its mass. The other hand can still punch it.
+- **Arm throw** (*Rzut*): while dragging, a yank (hand moving faster than 1.5 m/s) throws the enemy along that direction; heavy enemies fly shorter. If you hold an enemy for more than 2 s without throwing, it breaks free and gets a free punch. A thrown enemy has to fly back round and attack from the front again.
+- When a grenade is within reach of the closing hand, the grab catches the grenade, not the enemy.
 - **Rip** (*Rozerwanie*): both hands grab the torso, then pull apart **vertically** (one hand up, one down). The torso tears at the waist into upper and lower halves.
 
 ## Enemy durability
@@ -46,7 +48,7 @@ _Avoid_: "resilience" or "armor" for the shield.
 
 ## Enemy model
 
-- One rigged robot mesh ("Rigged robot" by joney_lol, poly.pizza, **CC-BY**: credit required in the menu), recoloured and rescaled per **tier**. It has folding back wings, which suit the flying approach.
+- One rigged robot mesh ("Rigged robot" by joney_lol, poly.pizza, **CC-BY**: credited in the menu), recoloured and rescaled per **tier**. It has folding back wings, which suit the flying approach. Its bones follow an invisible procedural rig, which is what hit zones and poses are defined on.
 
 ## Tiers and bombs
 
@@ -56,7 +58,7 @@ _Avoid_: "resilience" or "armor" for the shield.
 | **Żołnierz** (soldier) | black and gold, scale 1.1, blue shield | 4 / 20 | **Mina** (mine): sticks to the platform, blinks faster for 3 s | 2 | 1.0 m |
 | **Brutal** (brute) | rust and bronze, scale 1.3, red shield, glowing wings | 8 / 30 | **Kula** (orb): heavy, slow, homes in on the head | 3 | 1.4 m |
 
-- **Bombers**: enemies on the outer ring throw bombs. The inner ring punches.
+- **Bombers**: enemies on the outer ring (about 2.6 m away) throw bombs in a high lob. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
 - A **blast** hurts everything in its radius, player and enemies alike. Against an enemy it counts as 2 punches (shield first, then HP). A bomb the player throws back explodes on contact with an enemy.
 - A bomb is caught with a grab. Punching a bomb detonates it on your fist.
 - **Kula**: grabbing it stops it homing in, but its fuse keeps running. **Two hands** throw it at full power. **One hand** can hold it, but the hand sags under the weight and a one-hand throw is only a weak lob (about 30% of the hand's velocity), so it usually blows up within reach of you.
@@ -65,3 +67,8 @@ _Avoid_: "resilience" or "armor" for the shield.
 
 - **Attack tempo**: windup about 2.2 s ±25% (was 3.6), swing 0.32 s (was 0.42), recover 0.45 s (was 0.7). Soldiers sometimes throw a 2-punch combo. Brutes add a slower overhead slam that has to be dodged, because it can't be blocked.
 - **Shove** (*Odrzut*): a punch on a shield sends the enemy 2–3 m back. A **throw** sends it further. Either way the enemy has to fly round in an arc back into a front slot on the ring before it can attack again. It never attacks from behind or the side.
+
+## Session
+
+- **Wave** (*Fala*): a timed fight.
+- **Break** (*Przerwa*): between waves, with **no timer**. The player punches one upgrade card, then punches **DALEJ** to start the next wave. A suggested length (the menu's break setting) counts down on the HUD and then shows "GOTOWY?".
