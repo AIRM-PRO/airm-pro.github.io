@@ -3,16 +3,16 @@
 VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player wears wrist weights. The original hand-speed limit (fast swings dealt no damage) was removed on request in Oct 2026: harder punches now shove enemies further. The only safety nudge left is a tutorial line about not snapping the elbow straight.
 
 - Live: https://jknowak.pl/bravr (GitHub Pages, repo `jknowak/jknowak.github.io`, branch `main`, folder `bravr/`)
-- Preview copy: Claude artifact https://claude.ai/artifact/8XVJLvVyVnMRva6Vhvvxsn. WebXR is probably blocked inside the artifact frame (not tested on a headset), so the artifact is only a menu preview. Play on jknowak.pl.
+- **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks.
+- The old Claude artifact preview is no longer maintained; don't update it.
 - UI language: Polish. Code comments: English.
 - Domain terms (stances, shield, stun, fatality, bombs, upgrades) are defined in `CONTEXT.md`. The plan is in `BACKLOG.md`.
 
 ## Files
 
 - `index.html` is the whole game: one file containing the menu page, CSS and the game script. No build step.
-- `robot.glb` is the enemy model ("Rigged robot" by joney_lol, poly.pizza, CC-BY; credited at the bottom of the menu). It's loaded relative to the page, so the artifact copy must publish it next to the page.
+- `robot.glb` is the enemy model ("Rigged robot" by joney_lol, poly.pizza, CC-BY; credited at the bottom of the menu). It is loaded relative to the page (`robot.glb`).
 - Dependencies: three.js **r128** global UMD build from cdnjs (`THREE` global, no modules), plus r128 `GLTFLoader` and `SkeletonUtils` from jsdelivr (`three@0.128.0/examples/js/...`), Google Fonts (Chakra Petch, IBM Plex Sans).
-- The artifact copy is the same file with the `<!doctype>/<html>/<head>/<body>` wrapper stripped and the charset/viewport metas removed. Artifacts add their own skeleton.
 
 ## Game design
 
@@ -100,4 +100,4 @@ settings + menu UI → three.js scene (stars, planet, platform, lights, head-fol
 
 ## Workflow
 
-Edit `bravr/index.html` → test locally with the emulator → commit and push to `main` → Pages deploys in about 1 min. To update the artifact, strip the wrapper as above and republish to the same artifact URL.
+Edit `bravr/index.html` → bump the version next to the title → test locally (Playwright over http, or the emulator) → commit and push to `main` → Pages deploys in about 1 min.
