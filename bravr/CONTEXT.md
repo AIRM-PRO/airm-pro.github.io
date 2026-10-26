@@ -58,7 +58,7 @@ _Avoid_: "resilience" or "armor" for the shield.
 | **Żołnierz** (soldier) | black and gold, scale 1.1, blue shield | 4 / 20 | **Mina** (mine): sticks to the platform, blinks faster for 3 s | 2 | 1.0 m |
 | **Brutal** (brute) | rust and bronze, scale 1.3, red shield, glowing wings | 8 / 30 | **Kula** (orb): heavy, slow, homes in on the head | 3 | 1.4 m |
 
-- **Bombers**: enemies on the outer ring (about 2.6 m away) throw bombs in a high lob. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
+- **Bombers** (*Bombardier*): enemies that stay on the outer ring (about 2.6 m away) and only throw bombs in a high lob: one from wave 1, two from wave 4, on top of the melee enemies. Other enemies waiting on the outer ring just wait their turn. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
 - A **blast** hurts everything in its radius, player and enemies alike. Against an enemy it counts as 2 punches (shield first, then HP). A bomb the player throws back explodes on contact with an enemy.
 - A bomb is caught with a grab. Punching a bomb detonates it on your fist.
 - **Kula**: grabbing it stops it homing in, but its fuse keeps running. **Two hands** throw it at full power. **One hand** can hold it, but the hand sags under the weight and a one-hand throw is only a weak lob (about 30% of the hand's velocity), so it usually blows up within reach of you.

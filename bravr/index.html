@@ -75,7 +75,7 @@ th{color:var(--muted);font-weight:400}
 <body>
 <main>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.5</span></h1>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.5.1</span></h1>
     <p class="lede">Unosisz się nad planetą. Z kosmosu lecą na ciebie żołnierze w pancerzach i z polami siłowymi. Zbij tarczę, ogłusz, dobij. Łap ich granaty i odrzucaj. W przerwach wybierasz ulepszenia.</p>
   </header>
 
@@ -813,7 +813,7 @@ function animate(e, gdt){
       hip:lerp(GUARD.hip, 0.5), knee:lerp(GUARD.knee, 0.45), kick:Math.sin(t * 7) * 0.15 * f, cape:lerp(P.cape, 1.15 + Math.sin(t * 14) * 0.25)});
   } else if (e.state === 'hover'){
     // waiting its turn: shakes a fist at you and looks around
-    const pump = Math.max(0, Math.sin(t * 2.4 + e.ph)), lift = Math.max(0, Math.min(1, 1 - e.throwT / 0.5));
+    const pump = Math.max(0, Math.sin(t * 2.4 + e.ph)), lift = e.bomber ? Math.max(0, Math.min(1, 1 - e.throwT / 0.5)) : 0;
     Object.assign(P, {lean:0.15 + Math.sin(t * 1.3) * 0.06, s1x:-0.6 - 1.9 * pump, e1:-1.6 - 0.3 * pump + Math.sin(t * 20) * 0.15 * pump,
       hy:Math.sin(t * 1.1 + e.ph) * 0.35, hx:0.05, kick:Math.sin(t * 2) * 0.1});
     // winding up a throw: right arm cocked back over the shoulder
@@ -915,10 +915,18 @@ function freeAngle(ring, r, prefer){
 }
 function home(e, out){ return out.copy(anchor.pos).addScaledVector(dirAt(e.ang), RING[e.ring].d).setY(anchor.pos.y + e.dy); }
 const innerDy = () => -0.42 + Math.random() * 0.22;
-function spawn(round){
+// Bombers hold the outer ring from wave 1 and only lob grenades; they don't count against the melee cap
+const meleeCap = round => Math.min(2 + Math.floor(round / 2), 5), bomberCap = round => round >= 4 ? 2 : 1;
+function wantSpawn(round){
+  const live = enemies.filter(e => e.state !== 'dead'), bombers = live.filter(e => e.bomber).length;
+  if (bombers < bomberCap(round)) return 'bomber';
+  return live.length - bombers < meleeCap(round) ? 'melee' : null;
+}
+function spawn(round, role = 'melee'){
   const e = makeEnemy(pickType(round)), r = bodyR(e), pref = rnd(-60, 60);
-  let ang = freeAngle('inner', r, pref); e.ring = 'inner';
+  let ang = role === 'bomber' ? null : freeAngle('inner', r, pref); e.ring = 'inner';
   if (ang === null){ ang = freeAngle('outer', r, pref); e.ring = 'outer'; }
+  e.bomber = role === 'bomber' && ang !== null;
   if (ang === null) return;
   e.ang = ang; e.dy = e.ring === 'inner' ? innerDy() : rnd(-0.3, 0.05);
   const start = anchor.pos.clone().addScaledVector(dirAt(ang + rnd(-20, 20)), 8 + Math.random()*3);
@@ -928,7 +936,7 @@ function spawn(round){
   scene.add(e.g); enemies.push(e);
 }
 function promote(){
-  const e = enemies.find(o => o.ring === 'outer' && o.state === 'hover');
+  const e = enemies.find(o => o.ring === 'outer' && o.state === 'hover' && !o.bomber);
   if (!e) return;
   const a = freeAngle('inner', bodyR(e), e.ang);
   if (a === null) return;
@@ -1515,8 +1523,8 @@ function hold(e, gdt){
     if (e.rec <= 0){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.charge = 0; e.wind = CHARGE * rnd(0.75, 1.25); }
   } else if (e.state === 'hover'){
     // the queue lobs grenades while it waits
-    e.throwT -= gdt;
-    if (e.throwT <= 0 && bombs.length < 2){ throwBomb(e); e.throwT = rnd(5, 8) - Math.min(G.plan[G.i].round || 1, 6) * 0.3; }
+    if (e.bomber) e.throwT -= gdt;
+    if (e.throwT <= 0 && bombs.length < 2){ throwBomb(e); e.throwT = rnd(6, 9) - Math.min(G.plan[G.i].round || 1, 6) * 0.25; }
   } else if (e.state === 'stunned'){
     k = 1.5;
     e.stunT -= gdt;
@@ -1683,9 +1691,8 @@ function loop(){
     if (G.t >= step.dur){ G.t -= step.dur; G.i++; step = G.plan[G.i]; enterStep(step); }
     if (step.kind === 'work'){
       G.spawnT -= gdt;
-      const cap = Math.min(2 + Math.floor(step.round / 2), 5);
-      const alive = enemies.filter(e => e.state !== 'dead').length;
-      if (G.spawnT <= 0 && alive < cap){ spawn(step.round); G.spawnT = 2.2 + Math.random() * 1.6 - Math.min(step.round, 6) * 0.15; }
+      const role = G.spawnT <= 0 && wantSpawn(step.round);
+      if (role){ spawn(step.round, role); G.spawnT = 2.2 + Math.random() * 1.6 - Math.min(step.round, 6) * 0.15; }
     }
     if (step.kind === 'work') G.mana = Math.min(MANA, G.mana + MANA_REGEN * dt);
     updateEnemies(dt, gdt); updateBombs(gdt); thunderclap(dt);
@@ -1889,8 +1896,8 @@ window.__obSim = function(sec, round = 4, puncher = false){
   for (let t = 0; t < sec; t += 1/60){
     const step = G.plan[G.i];
     G.spawnT -= 1/60;
-    const cap = Math.min(2 + Math.floor(step.round / 2), 5);
-    if (G.spawnT <= 0 && enemies.filter(e => e.state !== 'dead').length < cap){ spawn(step.round); G.spawnT = 2.2 - Math.min(step.round, 6) * 0.15; }
+    const role = G.spawnT <= 0 && wantSpawn(step.round);
+    if (role){ spawn(step.round, role); G.spawnT = 2.2 - Math.min(step.round, 6) * 0.15; }
     const u = hands[1].userData, target = enemies.find(e => e.state === 'windup');
     // optional: the right fist jabs whoever is winding up, twice a second
     if (puncher && target && t % 0.5 < 1/60){ Object.assign(u, {ready:true, isFist:true, stance:'fist', speed:2.5}); u.pos.copy(target.g.position); u.vel.copy(awayFromMe(target.g.position)).multiplyScalar(2.5); }
