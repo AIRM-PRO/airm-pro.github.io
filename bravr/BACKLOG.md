@@ -2,6 +2,13 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## v0.7 (Oct 2026)
+
+- [x] Ship hull with a 2×2 m doorway behind the player (justifies the front-only arc).
+- [x] Hit-and-run: enemies charge in, punch once and fly back out.
+- [x] Throw on grip release (like grenades), forgiving grab window; thrown enemies break on impact.
+- [x] Bilard always on (removed from the upgrade cards).
+
 ## v0.6: playtester feedback (Oct 2026)
 
 - [x] One-hit kills once the shield is down (grunt 0 / soldier 2 / brute 4 shield); brutes keep the stun + fatality.

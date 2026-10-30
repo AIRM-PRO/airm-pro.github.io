@@ -14,10 +14,11 @@ _Avoid_: "open palm" on its own, because it doesn't say whether the hand is loos
 
 ## Grabbing and throwing
 
-- **Grab** (*Chwyt*): a loose hand closing into a fist within about 12 cm of something grabbable: an enemy bomb, an enemy forearm or wrist, or the torso. A hand that is already a fist when it reaches the target punches instead. It never grabs.
+- **Grab** (*Chwyt*): a hand closing into a fist (from loose or blade) near something grabbable: a bomb (17 cm), an enemy fist or elbow (18 cm), head or torso. The hand can grab for 0.25 s after closing, and only while moving slower than 1.4 m/s; a fast fist punches instead.
 - **Bomb throw**: the bomb flies when you release the grip, with your hand's velocity. If you hold a bomb too long, it explodes in your hand.
-- **Drag** (*Ciągnięcie*): a grab on an enemy's arm, fist or torso (any non-stunned enemy). The enemy trails your hand with lag weighted by its mass. The other hand can still punch it.
-- **Arm throw** (*Rzut*): while dragging, a yank (hand moving faster than 1.5 m/s) throws the enemy along that direction; heavy enemies fly shorter. If you hold an enemy for more than 2 s without throwing, it breaks free and gets a free punch. A thrown enemy has to fly back round and attack from the front again.
+- **Drag** (*Ciągnięcie*): a grab on any non-stunned enemy. It trails your hand with lag weighted by its mass. The other hand can still punch it.
+- **Throw** (*Rzut*): let go of the grip while the hand moves faster than 1 m/s, like a grenade; a slower release just drops the enemy. A thrown enemy **breaks**: on another enemy (both take a hit, see *Bilard*), on the hull, or when it lands. Breaking drains 2 shield or kills an unshielded grunt/soldier. Held longer than 2.5 s, it breaks free and punches.
+- **Bilard**: always on (it was an upgrade until v0.7). A shoved or thrown enemy hitting another drains its shield or kills it, and knocks it on.
 - When a grenade is within reach of the closing hand, the grab catches the grenade, not the enemy.
 - **Rip** (*Rozerwanie*): both hands grab the torso, then pull apart **vertically** (one hand up, one down). The torso tears at the waist into upper and lower halves.
 
@@ -65,9 +66,15 @@ _Avoid_: "resilience" or "armor" for the shield.
 
 ## Enemy tempo
 
-- **Attack tempo**: windup about 1.6 s ±25%, swing 0.28 s, recover 0.35 s (v0.6; was 2.2 / 0.32 / 0.45, and 3.6 / 0.42 / 0.7 before that). Enemies fly in about 25% faster and spawn more often.
+- **Attack tempo**: since v0.7 one charge = windup about 0.7 s ±25%, swing 0.28 s, recover 0.35 s, then back out (v0.6 stood and punched repeatedly with a 1.6 s windup). Enemies fly in about 25% faster and spawn more often.
 - **Front arc**: attackers stand within ±45° of where you face (bombers ±40°), inside the headset's view. Soldiers sometimes throw a 2-punch combo. Brutes add a slower overhead slam that has to be dodged, because it can't be blocked.
 - **Shove** (*Odrzut*): a punch on a shield sends the enemy 2–3 m back. A **throw** sends it further. Either way the enemy has to fly round in an arc back into a front slot on the ring before it can attack again. It never attacks from behind or the side.
+
+## Arena and enemy rhythm
+
+- **Hull** (*Kadłub*): a steel ship wall behind the player with a 2×2 m **doorway** (*Właz*) the player stands in and guards. It is why enemies only come from the front, and nothing flies behind it.
+- **Staging line**: melee enemies wait about 2.4 m out (±45°).
+- **Charge** (*Szarża*): one to three at a time, an enemy dashes in to a strike spot (0.65 m), winds up about 0.7 s, throws one punch and flies straight back out (**hit and run**). It is in reach for about 1.5 s per visit.
 
 ## Session
 

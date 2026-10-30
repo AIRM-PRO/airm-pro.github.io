@@ -75,8 +75,8 @@ th{color:var(--muted);font-weight:400}
 <body>
 <main>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.6</span></h1>
-    <p class="lede">Unosisz się nad planetą. Z kosmosu lecą na ciebie roboty, część z polami siłowymi. Zbij tarczę i rozbij je na kawałki. Łap ich granaty i odrzucaj. W przerwach wybierasz ulepszenia.</p>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.7</span></h1>
+    <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj. W przerwach wybierasz ulepszenia.</p>
   </header>
 
 
@@ -94,8 +94,8 @@ th{color:var(--muted);font-weight:400}
         <li>Szeregowy pada od jednego ciosu. Żołnierz i Brutal mają pole siłowe: póki trzyma, ciosy zbijają tarczę, a pięść odrzuca wroga na kilka metrów. Musi wtedy wrócić i zaatakować od przodu. Bez tarczy Żołnierz też pada od jednego ciosu.</li>
         <li>Brutal bez tarczy nie pada, tylko jest ogłuszony przez 4 s: chwieje się i sypie iskrami. Dobij go. Cięcie w szyję albo rozerwanie to <b>fatality</b> i oddaje 3 many.</li>
         <li>Wróg z bliska ładuje cios (pomarańczowa kula) i rzuca się z pięścią na głowę. Zablokuj ręką albo zrób unik: odchyl się lub przykucnij. Przy zerze HP nokaut: tracisz ostatnie ulepszenie.</li>
-        <li>Kolejka: najwyżej trzech atakuje z bliska. Reszta czeka kilka metrów dalej i rzuca świecące, piszczące granaty. Złap granat, zaciskając luźną dłoń w pięść, i puść grip, żeby rzucić. Uderzony pięścią wybucha ci w ręce.</li>
-        <li>Wroga też złapiesz: luźna dłoń zaciśnięta na jego ręce lub tułowiu. Ciągniesz go za sobą, szarpnięcie go rzuca. Trzymany ponad 2 s wyrwie się i uderzy.</li>
+        <li>Za tobą jest kadłub statku z włazem 2×2 m, więc wrogowie nadlatują tylko z przodu. Czekają ok. 2,5 m przed tobą, szarżują, wyprowadzają jeden cios i odlatują. Na trafienie masz ok. 1,5 s. Bombardier z tyłu rzuca świecące, piszczące granaty. Złap granat, zaciskając luźną dłoń w pięść, i puść grip, żeby rzucić. Uderzony pięścią wybucha ci w ręce.</li>
+        <li>Wroga też złapiesz: zaciśnij dłoń (powoli) na jego ręce, głowie lub tułowiu. Ciągniesz go za sobą, a puszczasz grip w ruchu, żeby nim rzucić, tak jak granatem. Rzucony rozbija się o innych (bilard), o kadłub albo przy lądowaniu. Trzymany ponad 2,5 s wyrwie się i uderzy.</li>
         <li>Przerwa nie ma limitu. Uderz pięścią jedną z trzech kart ulepszeń, a potem przycisk DALEJ, kiedy chcesz walczyć dalej.</li>
         <li>Z obciążnikami na nadgarstkach nie prostuj łokcia na siłę do końca.</li>
         <li>Łokcie zostają lekko ugięte. Wrogowie stoją bliżej niż zasięg wyprostowanej ręki.</li>
@@ -175,7 +175,6 @@ th{color:var(--muted);font-weight:400}
     <section class="panel">
       <h2>Ulepszenia</h2>
       <div class="moves">
-        <div class="move"><b>Bilard</b><p>Odrzucony wróg, który wpadnie na innego, zbija mu tarczę i odrzuca go dalej.</p></div>
         <div class="move"><b>Haishu</b><p>Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.</p></div>
         <div class="move"><b>Przysiad</b><p>Przysiad pod ciosem (głowa niżej o 25 cm) daje +2 many.</p></div>
         <div class="move"><b>Ładunek</b><p>Pięść trzymana nieruchomo przez sekundę świeci. Następny cios odrzuca dwa razy dalej i zbija 3 tarczy.</p></div>
@@ -193,7 +192,7 @@ th{color:var(--muted);font-weight:400}
       <div class="move"><b>Dłoń bojowa</b><p>Spust: kantem, palcami lub grzbietem dłoni. Przez szyję ścina głowę, na tarczy zbija 2. Kosztuje 1 manę.</p></div>
       <div class="move"><b>Fatality</b><p>Ogłuszonego Brutala (żółty pasek) dobij cięciem w szyję albo rozerwij: obie pięści na tułów, jedna w górę, druga w dół.</p></div>
       <div class="move"><b>Granat</b><p>Zaciśnij luźną dłoń na granacie, puść grip, żeby rzucić. Wybuch rani wszystkich w pobliżu, ciebie też.</p></div>
-      <div class="move"><b>Rzut</b><p>Zaciśnij luźną dłoń na ręce wroga i szarpnij. Wróg odlatuje i musi wracać od przodu.</p></div>
+      <div class="move"><b>Rzut</b><p>Złap wroga (zaciśnij dłoń powoli), zamachnij się i puść grip. Rozbija się o innych wrogów, o kadłub albo przy lądowaniu.</p></div>
     </div>
     <div class="foes" style="margin-top:14px">
       <div class="foe"><strong>1</strong><span>Szeregowy</span></div>
@@ -259,14 +258,14 @@ const store = {
 const cfg = Object.assign({rounds:6, work:60, rest:30, speed:'slow'}, store.get('ob-cfg', {}));
 const SPEED = {slow:1.05, mid:1.5, fast:2.0};          // enemy flight speed, m/s
 const MIN_SPEED = 0.35;                                // a hand must actually be moving
-const CHARGE = 1.6;                                    // average seconds an enemy winds up before it swings
+const CHARGE = 0.7;                                    // average seconds an enemy winds up after charging in, before it swings
 const SWING = 0.28, IMPACT = 0.55, RECOVER = 0.35;     // enemy punch length (s), the fraction at which it lands, pause after
 const PLAYER_HP = 10;
 const MANA = 10, MANA_REGEN = 0.5;                     // mana pool and refill per second
 const STUN = 4;                                        // seconds a beaten enemy stays stunned, open to a fatality
 const SHOVE = 5.2;                                     // m/s a punch on a shield gives (≈2.5 m flight before it turns back)
 const BOMB = {fuse:3.2, radius:0.7};                   // grenade fuse from the throw (s) and blast radius (m)
-const RING = {inner:{d:0.65, max:45}, outer:{d:2.6, max:40}}; // where enemies stand: distance (m), half-arc (deg), all inside the headset's view
+const RING = {inner:{d:0.65, max:45}, outer:{d:2.4, max:45}}; // strike spots and the staging line: distance (m), half-arc (deg), inside the headset's view
 
 ['rounds','work','rest'].forEach(k => {
   $(k).value = cfg[k];
@@ -319,13 +318,64 @@ atmo.position.copy(planet.position); scene.add(atmo);
 const sunBall = new THREE.Mesh(new THREE.SphereGeometry(3, 24, 16), new THREE.MeshBasicMaterial({color:0xfff4d6}));
 sunBall.position.set(-60, 36, -30); scene.add(sunBall);
 const platform = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.02, 48), new THREE.MeshBasicMaterial({color:0x2b6dff, transparent:true, opacity:0.18}));
-platform.position.y = 0.0; scene.add(platform);
+platform.position.y = 0.0; scene.add(platform); platform.visible = false; // replaced by the deck in front of the ship's door
 const platRing = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.66, 64), new THREE.MeshBasicMaterial({color:0x7fb0ff, side:THREE.DoubleSide}));
-platRing.rotation.x = -Math.PI/2; platRing.position.y = 0.012; scene.add(platRing);
+platRing.rotation.x = -Math.PI/2; platRing.position.y = 0.012; scene.add(platRing); platRing.visible = false;
 
 const v3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const jitter = s => v3(rnd(-s, s), rnd(-s, s), rnd(-s, s));
+
+/* ---------- the ship you guard: a steel hull behind you with a 2×2 m doorway you stand in ---------- */
+// Built in anchor space: +Z towards the enemies, the hull face at z = WALL_Z, the floor of the doorway at y = 0.
+const WALL_Z = -0.8;
+const base = (() => {
+  const g = new THREE.Group();
+  const steel = new THREE.MeshStandardMaterial({color:0x5d6672, metalness:0.75, roughness:0.42, flatShading:true});
+  const dark = new THREE.MeshStandardMaterial({color:0x252a32, metalness:0.6, roughness:0.6, flatShading:true});
+  const inner = new THREE.MeshStandardMaterial({color:0x1a1e25, metalness:0.4, roughness:0.8, side:THREE.BackSide});
+  const glow = new THREE.MeshBasicMaterial({color:0x6fb0ff});
+  const stripes = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+    x.fillStyle = '#16181c'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#f2b51c';
+    for (let i = -64; i < 128; i += 32){ x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 16, 0); x.lineTo(i + 16 - 64, 64); x.lineTo(i - 64, 64); x.fill(); }
+    const tx = new THREE.CanvasTexture(c); tx.wrapS = tx.wrapT = THREE.RepeatWrapping; return tx;
+  })();
+  const hazard = (rx, ry) => { const m = new THREE.MeshStandardMaterial({map:stripes.clone(), metalness:0.3, roughness:0.6}); m.map.needsUpdate = true; m.map.repeat.set(rx, ry); return m; };
+  const box = (w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); g.add(m); return m; };
+  const T = 0.5, zc = WALL_Z - T / 2;
+  // hull plates around the 2×2 m opening; the hull runs on below the deck
+  box(11, 12, T, steel, -6.5, 3, zc); box(11, 12, T, steel, 6.5, 3, zc);
+  box(2, 7, T, steel, 0, 5.5, zc); box(2, 3, T, steel, 0, -1.5, zc);
+  // ribs and frames standing proud of the hull
+  [-2.2, -1.1, 2.7, 3.9, 5.1, 6.3, 7.5].forEach(y => box(24, 0.12, 0.14, dark, 0, y, WALL_Z + 0.07));
+  [1.25, 2.6, 4.4, 6.6, 9].forEach(x => [-1, 1].forEach(s => box(0.16, 12, 0.16, dark, s * x, 3, WALL_Z + 0.08)));
+  // greebles: random panels and boxes on the hull, clear of the doorway
+  const greeble = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), dark, 110), M = new THREE.Matrix4();
+  for (let i = 0, n = 0; n < 110 && i < 1000; i++){
+    const x = rnd(-11, 11), y = rnd(-2.8, 8.5);
+    if (Math.abs(x) < 1.6 && y < 2.8) continue;
+    const w = rnd(0.2, 1.1), h = rnd(0.15, 0.8), d = rnd(0.04, 0.22);
+    M.compose(v3(x, y, WALL_Z + d / 2), new THREE.Quaternion(), v3(w, h, d)); greeble.setMatrixAt(n++, M);
+  }
+  g.add(greeble);
+  // the doorway: hazard-striped frame, light strips, a corridor running into the ship and a red-lit blast door at its end
+  box(0.2, 2.3, 0.18, hazard(1, 6), -1.1, 1.15, WALL_Z + 0.06); box(0.2, 2.3, 0.18, hazard(1, 6), 1.1, 1.15, WALL_Z + 0.06);
+  box(2.4, 0.2, 0.18, hazard(6, 1), 0, 2.2, WALL_Z + 0.06);
+  box(0.03, 2, 0.03, glow, -0.98, 1, WALL_Z - 0.12); box(0.03, 2, 0.03, glow, 0.98, 1, WALL_Z - 0.12);
+  box(2, 2, 6, inner, 0, 1, WALL_Z - T - 3);
+  for (let k = 0; k < 6; k++) box(1.2, 0.03, 0.08, glow, 0, 1.97, WALL_Z - T - 0.5 - k);
+  box(1.96, 1.96, 0.05, new THREE.MeshBasicMaterial({color:0x3a0806}), 0, 1, WALL_Z - T - 5.95);
+  const lamps = [-1.35, 1.35].map(x => box(0.09, 0.09, 0.09, new THREE.MeshBasicMaterial({color:0xff2a1a}), x, 2.45, WALL_Z + 0.12));
+  // deck plate in front of the door: what you stand on
+  box(2.4, 0.08, 1.9, dark, 0, -0.04, WALL_Z + 0.95);
+  box(2.4, 0.02, 0.12, hazard(8, 1), 0, 0.01, WALL_Z + 1.84);
+  box(2.4, 0.015, 0.03, glow, 0, 0.01, WALL_Z + 1.92);
+  g.userData.lamps = lamps;
+  scene.add(g);
+  return g;
+})();
+function placeBase(){ base.position.set(anchor.pos.x, 0, anchor.pos.z); base.rotation.y = Math.atan2(anchor.fwd.x, anchor.fwd.z); }
 
 /* ---------- HUD ---------- */
 function textPlane(w, h, cw, ch){
@@ -779,7 +829,7 @@ function makeEnemy(type){
   const e = {g, body, upper, lower, head, armor, type, hp:T.hp, hpMax:T.hp, shield:T.shield, shieldMax:T.shield, shieldT:0, field:T.field,
     scale:T.scale, mass:T.scale * T.scale, bulk:T.bulk, cape, arms, legs, boots,
     state:'approach', ring:'inner', ang:0, dy:0, charge:0, wind:CHARGE, sw:0, rec:0, aim:v3(), aimHead:v3(), hitDone:false,
-    kv:v3(), fly:1, flinch:0, flinchSide:1, wounds:0, speedMul:0.85 + Math.random()*0.3, stunT:0, bumped:null, throwT:rnd(2, 4),
+    kv:v3(), fly:1, flinch:0, flinchSide:1, wounds:0, speedMul:0.85 + Math.random()*0.3, stunT:0, bumped:null, throwT:rnd(2, 4), rest:rnd(0.5, 1.5), retreat:false, thrown:false,
     cool:[0, 0], grab:null, bob:Math.random()*6, ph:Math.random()*6, hitFlash:0, fieldFlash:0, pose:Object.assign({}, GUARD)};
   e.setCharge = (f, showOrb = true) => {
     visorMat.color.copy(VISOR_IDLE).lerp(VISOR_HOT, Math.max(0, Math.min(1, f)));
@@ -812,6 +862,8 @@ function animate(e, gdt){
     Object.assign(P, {lean:lerp(GUARD.lean, 1.3), s1x:lerp(GUARD.s1x, -2.8), s1z:lerp(GUARD.s1z, 0.1), e1:lerp(GUARD.e1, -0.1),
       s0x:lerp(GUARD.s0x, -0.3), s0z:lerp(GUARD.s0z, 0.55), e0:lerp(GUARD.e0, -1.9), hx:lerp(GUARD.hx, -0.7),
       hip:lerp(GUARD.hip, 0.5), knee:lerp(GUARD.knee, 0.45), kick:Math.sin(t * 7) * 0.15 * f, cape:lerp(P.cape, 1.15 + Math.sin(t * 14) * 0.25)});
+    // flying back out: upright, leaning away, guard up
+    if (e.retreat) Object.assign(P, {lean:-0.35, s1x:-0.9, s1z:0.3, e1:-1.8, s0x:-0.9, s0z:0.3, e0:-1.8, hx:0.15, hip:0.45, knee:0.8, kick:Math.sin(t * 6) * 0.2});
   } else if (e.state === 'hover'){
     // waiting its turn: shakes a fist at you and looks around
     const pump = Math.max(0, Math.sin(t * 2.4 + e.ph)), lift = e.bomber ? Math.max(0, Math.min(1, 1 - e.throwT / 0.5)) : 0;
@@ -868,7 +920,7 @@ function buildPlan(){
   return p;
 }
 function newGame(){
-  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0}, leaks:0, fatal:0,
+  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0}, leaks:0, fatal:0,
     blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, perRound:Array(cfg.rounds).fill(0)};
 }
 
@@ -884,6 +936,7 @@ function setAnchor(){
   if (head.pos.y < 0.5) return;
   anchor.pos.copy(head.pos); anchor.fwd.copy(head.fwd);
   anchor.right.set(-anchor.fwd.z, 0, anchor.fwd.x);
+  placeBase();
 }
 function place(obj, dist, dy){
   obj.position.copy(anchor.pos).addScaledVector(anchor.fwd, dist); obj.position.y = anchor.pos.y + dy;
@@ -925,23 +978,37 @@ function wantSpawn(round){
 }
 function spawn(round, role = 'melee'){
   const e = makeEnemy(pickType(round)), r = bodyR(e), pref = rnd(-60, 60);
-  let ang = role === 'bomber' ? null : freeAngle('inner', r, pref); e.ring = 'inner';
-  if (ang === null){ ang = freeAngle('outer', r, pref); e.ring = 'outer'; }
+  // everyone first takes a spot on the staging line; melee enemies charge in from there (charges())
+  const ang = freeAngle('outer', r, pref); e.ring = 'outer';
   e.bomber = role === 'bomber' && ang !== null;
   if (ang === null) return;
-  e.ang = ang; e.dy = e.ring === 'inner' ? innerDy() : rnd(-0.3, 0.05);
+  e.ang = ang; e.dy = rnd(-0.3, 0.05);
   const start = anchor.pos.clone().addScaledVector(dirAt(ang + rnd(-20, 20)), 8 + Math.random()*3);
   start.y = anchor.pos.y - 1.5 + Math.random()*5;
   e.g.position.copy(start);
   e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
   scene.add(e.g); enemies.push(e);
 }
-function promote(){
-  const e = enemies.find(o => o.ring === 'outer' && o.state === 'hover' && !o.bomber);
+// Hit and run: melee enemies wait on the staging line, then charge in one or two at a time, throw one punch
+// and fly back out, so each one is in reach only briefly.
+function charges(gdt){
+  G.chargeT -= gdt;
+  const round = G.plan[G.i].round || 1;
+  const busy = enemies.filter(o => o.state !== 'dead' && o.ring === 'inner').length;
+  if (G.chargeT > 0 || busy >= Math.min(1 + Math.floor(round / 2), 3)) return;
+  const e = enemies.find(o => o.ring === 'outer' && o.state === 'hover' && !o.bomber && o.rest <= 0);
   if (!e) return;
-  const a = freeAngle('inner', bodyR(e), e.ang);
+  const a = freeAngle('inner', bodyR(e), Math.max(-RING.inner.max, Math.min(RING.inner.max, e.ang)));
   if (a === null) return;
-  e.ring = 'inner'; e.ang = a; e.dy = innerDy(); e.state = 'approach';
+  e.ring = 'inner'; e.ang = a; e.dy = innerDy(); e.state = 'approach'; e.retreat = false;
+  G.chargeT = rnd(0.5, 1.3) - Math.min(round, 6) * 0.05;
+  SFX.swing();
+}
+// back out to the staging line after a punch, a shove, a throw or a stun
+function toStage(e, rest = rnd(1.2, 2.6)){
+  const a = freeAngle('outer', bodyR(e), e.ang);
+  e.ring = 'outer'; if (a !== null) e.ang = a; e.dy = rnd(-0.3, 0.05);
+  e.state = 'approach'; e.retreat = true; e.rest = rest; e.setCharge(0);
 }
 
 /* ---------- debris, gore & bullet-time ---------- */
@@ -1285,7 +1352,7 @@ function updateBombs(gdt){
     if (b.state === 'fly' || b.state === 'drift'){
       for (const h of hands){
         const u = h.userData; if (!u.ready) continue;
-        if (u.grabEv && u.palm.distanceTo(b.m.position) < 0.15){ b.state = 'held'; b.holder = h; SFX.grab(); pulse(h, 0.5, 60); break; }
+        if (u.grabEv && u.palm.distanceTo(b.m.position) < 0.17){ b.state = 'held'; b.holder = h; u.grabEv = false; u.grabUsed = true; SFX.grab(); pulse(h, 0.5, 60); break; }
         if (u.stance === 'fist' && u.speed > MIN_SPEED && u.pos.distanceTo(b.m.position) < 0.09){ explode(b); break; }
         // Haishu: a blade-hand backhand (moving out of the back of the hand) bats it back without catching
         if (has('haishu') && u.stance === 'blade' && G.mana >= 1 && u.speed > 1.0 && u.palm.distanceTo(b.m.position) < 0.14){
@@ -1303,7 +1370,6 @@ function clearBombs(){ bombs.forEach(b => scene.remove(b.m)); bombs.length = 0; 
 
 /* ---------- upgrades (picked in the rest period) ---------- */
 const UPGRADES = {
-  bilard:{name:'BILARD', desc:'Odrzucony wróg, który wpadnie na innego, zbija mu tarczę.'},
   haishu:{name:'HAISHU', desc:'Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.'},
   squat:{name:'PRZYSIAD', desc:'Przysiad pod ciosem (głowa niżej o 25 cm) daje +2 many.'},
   charge:{name:'ŁADUNEK', desc:'Pięść trzymana nieruchomo 1 s się ładuje. Następny cios odrzuca 2× dalej i zbija 3 tarczy.'},
@@ -1388,7 +1454,9 @@ function updateHands(dt){
     if (b){
       const prev = u.stance;
       u.stance = b[1]?.pressed ? 'fist' : b[0]?.pressed ? 'blade' : 'loose';
-      u.grabEv = prev === 'loose' && u.stance === 'fist';
+      // a hand that just closed into a fist can grab for a short while (VR timing is rarely frame-exact)
+      if (prev !== 'fist' && u.stance === 'fist'){ u.grabT = 0; u.grabUsed = false; } else u.grabT = (u.grabT ?? 9) + dt;
+      u.grabEv = u.stance === 'fist' && !u.grabUsed && u.grabT < 0.25;
     }
     u.isFist = u.stance === 'fist';
     // Ładunek: a fist held still for a second charges up
@@ -1472,11 +1540,13 @@ function combat(e){
   if (e.state !== 'stunned' && e.state !== 'shoved' && e.state !== 'held'){
     for (let i = 0; i < 2; i++){
       const h = hands[i], u = h.userData;
-      if (!u.ready || !u.grabEv) continue;
-      if (bombs.some(b => (b.state === 'fly' || b.state === 'drift') && b.m.position.distanceTo(u.palm) < 0.15)) continue; // the grenade wins
-      const onArm = [0, 1].some(k => fistPos(e, k, tmpB).distanceTo(u.palm) < 0.15 || e.arms[k].elbow.getWorldPosition(tmpB).distanceTo(u.palm) < 0.15);
-      if (!onArm && u.palm.distanceTo(torso) > reachT) continue;
-      u.grabEv = false;
+      // a grab is a slow closing hand; a fast one is a punch
+      if (!u.ready || !u.grabEv || u.speed > 1.4) continue;
+      if (bombs.some(b => (b.state === 'fly' || b.state === 'drift') && b.m.position.distanceTo(u.palm) < 0.17)) continue; // the grenade wins
+      const onArm = [0, 1].some(k => fistPos(e, k, tmpB).distanceTo(u.palm) < 0.18 || e.arms[k].elbow.getWorldPosition(tmpB).distanceTo(u.palm) < 0.18);
+      const onBody = u.palm.distanceTo(torso) < reachT + 0.06 || u.palm.distanceTo(headP) < 0.17 * e.scale;
+      if (!onArm && !onBody) continue;
+      u.grabEv = false; u.grabUsed = true;
       e.state = 'held'; e.held = {h, off:torso.clone().sub(u.pos), t:0}; e.setCharge(0); e.kv.set(0, 0, 0);
       SFX.grab(); pulse(h, 0.6, 80);
       return;
@@ -1516,9 +1586,10 @@ function approach(e, gdt){
   if (side.lengthSq() > 1e-6) goal.addScaledVector(side.normalize(), Math.sin(e.bob * 2.1 + e.ph) * Math.min(0.5, d * 0.08));
   const step = goal.sub(e.g.position), sd = step.length();
   // cruise fast from deep space, brake into position
-  const sp = SPEED[cfg.speed] * e.speedMul * Math.max(0.3, Math.min(1, d / 1.5)) * (1 + 2 * Math.max(0, Math.min(1, (d - 2) / 4)));
+  const dash = e.ring === 'inner' || e.retreat ? 3 : 1; // charging in or flying back out
+  const sp = SPEED[cfg.speed] * e.speedMul * dash * Math.max(0.3, Math.min(1, d / 1.5)) * (1 + 2 * Math.max(0, Math.min(1, (d - 2) / 4)));
   e.g.position.addScaledVector(e.kv, gdt); e.kv.multiplyScalar(Math.exp(-3.5 * gdt));
-  if (d < 0.06){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.charge = 0; e.wind = CHARGE * rnd(0.75, 1.25); return; }
+  if (d < 0.06){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.retreat = false; e.charge = 0; e.wind = CHARGE * rnd(0.75, 1.25); return; }
   if (sd > 1e-4) e.g.position.addScaledVector(step.divideScalar(sd), Math.min(sd, sp * gdt));
   // angry glowing visor and thruster sparks from the boots
   e.setCharge(0.45 + Math.sin(e.bob * 22) * 0.3, false);
@@ -1553,8 +1624,9 @@ function hold(e, gdt){
     if (s >= 1){ e.state = 'recover'; e.rec = RECOVER; }
   } else if (e.state === 'recover'){
     e.rec -= gdt; e.setCharge(0);
-    if (e.rec <= 0){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.charge = 0; e.wind = CHARGE * rnd(0.75, 1.25); }
+    if (e.rec <= 0){ if (e.ring === 'inner') toStage(e); else e.state = 'hover'; }
   } else if (e.state === 'hover'){
+    e.rest = Math.max(0, e.rest - gdt);
     // the queue lobs grenades while it waits
     if (e.bomber) e.throwT -= gdt;
     if (e.throwT <= 0 && bombs.length < 2){ throwBomb(e); e.throwT = rnd(9, 13) - Math.min(G.plan[G.i].round || 1, 6) * 0.3; }
@@ -1572,18 +1644,21 @@ function hold(e, gdt){
 // dragged by one hand: trails it with lag (heavier ones more), a yank throws it, held too long it breaks free and punches
 function held(e, gdt){
   const H = e.held, h = H.h, u = h.userData; H.t += gdt;
-  if (!u.ready || u.stance !== 'fist'){ e.held = null; e.state = 'recover'; e.rec = 0.5; return; }
-  if (u.speed > 1.5 && H.t > 0.15){
-    e.held = null; e.state = 'recover';
-    shove(e, u.vel, Math.min(11, Math.max(5, u.speed * 2.6)) / e.mass);
-    SFX.swing(); pulse(h, 0.9, 120); showToast('RZUT', '#ffc861');
+  // let go of the grip to throw, like a grenade: it flies with your hand's speed and breaks on whatever it hits
+  if (!u.ready || u.stance !== 'fist'){
+    e.held = null;
+    if (u.speed > 1.0){
+      e.state = 'recover';
+      shove(e, u.vel, Math.min(12, Math.max(5, u.speed * 3)) / e.mass);
+      e.thrown = true; SFX.swing(); pulse(h, 0.9, 120); showToast('RZUT', '#ffc861');
+    } else { e.state = 'recover'; e.rec = 0.3; }
     return;
   }
-  if (H.t > 2){
+  if (H.t > 2.5){
     e.held = null; e.charge = e.wind; startSwing(e); showToast('WYRWAŁ SIĘ', '#ff4a2b');
     return;
   }
-  e.g.position.lerp(u.pos.clone().add(H.off), 1 - Math.exp(-gdt * 12 / e.mass));
+  e.g.position.lerp(u.pos.clone().add(H.off), 1 - Math.exp(-gdt * 18 / e.mass));
   if (Math.random() < gdt * 10) pulse(h, 0.25, 30);
 }
 // knocked a few metres away: tumbles until it loses speed, then flies back round to its slot in front
@@ -1591,8 +1666,8 @@ function shoved(e, gdt){
   e.g.position.addScaledVector(e.kv, gdt); e.kv.multiplyScalar(Math.exp(-1.8 * gdt));
   e.fly = 1;
   const v = e.kv.length();
-  // Bilard: whoever it crashes into loses shield too, and gets knocked on
-  if (has('bilard') && v > 2){
+  // Bilard (always on): whoever it crashes into loses shield too, and gets knocked on; a thrown enemy breaks as well
+  if (v > 2){
     for (const o of enemies){
       if (o.state === 'dead' || e.bumped.has(o)) continue;
       if (o.g.position.distanceTo(e.g.position) > bodyR(o) + bodyR(e) + 0.05) continue;
@@ -1602,9 +1677,22 @@ function shoved(e, gdt){
       if (o.state === 'shoved') o.bumped.add(e);
       e.kv.multiplyScalar(0.55);
       spray(o.g.position, dir, 14, 0xffffff, 2); SFX.block(); showToast('BILARD', '#ffc861');
+      if (e.thrown){ e.thrown = false; hit(e, 'bump', null, e.g.position.clone(), dir.negate()); if (e.state !== 'shoved') return; }
     }
   }
-  if (v < 0.7){ e.state = 'approach'; e.bumped = null; }
+  // the ship's hull: nothing flies behind it; a thrown enemy smashes into it
+  const fz = tmpA.copy(e.g.position).sub(anchor.pos).dot(anchor.fwd);
+  if (fz < WALL_Z + 0.25){
+    e.g.position.addScaledVector(anchor.fwd, WALL_Z + 0.25 - fz);
+    const vn = e.kv.dot(anchor.fwd); if (vn < 0) e.kv.addScaledVector(anchor.fwd, -1.6 * vn);
+    if (e.thrown){ e.thrown = false; spray(e.g.position, anchor.fwd, 16, 0xffffff, 2); hit(e, 'bump', null, e.g.position.clone(), anchor.fwd.clone()); if (e.state !== 'shoved') return; }
+  }
+  if (v < 0.7){
+    e.bumped = null;
+    // a throw that hit nothing still ends in a crash landing
+    if (e.thrown){ e.thrown = false; hit(e, 'bump', null, e.g.position.clone(), e.kv.lengthSq() > 1e-6 ? e.kv.clone().normalize() : UP.clone()); if (e.state !== 'shoved') return; }
+    toStage(e);
+  }
 }
 // keep torsos from passing through each other or through the player
 function separate(){
@@ -1628,7 +1716,7 @@ function separate(){
 }
 
 function updateEnemies(dt, gdt){
-  promote();
+  if (G) charges(gdt);
   for (let i = enemies.length - 1; i >= 0; i--){
     const e = enemies[i];
     if (e.state === 'dead'){ enemies.splice(i, 1); continue; }
@@ -1892,9 +1980,18 @@ window.__obPreview = function(mode, w, h){
     hands[0].userData.stance = 'loose'; hands[0].userData.curl = 0.4; hands[0].userData.bladeK = 0; poseHand(hands[0].userData.model, 0.4, 0);
     enemies.forEach(o => o.showStatus());
   } else if (mode === 'cards'){
-    G.i = work + 1; G.t = 9; G.ups = ['bilard'];
+    G.i = work + 1; G.t = 9; G.ups = ['squat'];
     offerCards(); showNext();
     setHand(0, -0.25, 1.15, -0.25, false, -1); setHand(1, 0.18, 1.3, -0.35, true, 1, 0.2);
+  } else if (mode === 'ship'){
+    // looking back from the enemies' side: the hull, the doorway and you guarding it
+    hud.visible = big.visible = false;
+    put('soldier', 20, 0.65, -0.35, 'windup', 0.4);
+    const r = put('grunt', -30, 1.4, -0.1, 'approach'); r.retreat = true; animate(r, 10);
+    put('brute', 35, 2.4, -0.1, 'hover');
+    setHand(0, -0.22, 1.3, -0.35, true, -1, 0.3); setHand(1, 0.22, 1.3, -0.35, true, 1, 0.3);
+    camera.fov = 70; camera.updateProjectionMatrix();
+    camera.position.set(-1.6, 2.1, -3.4); camera.lookAt(0, 1.2, 0);
   } else if (mode === 'rest'){
     G.i = work + 1; G.t = 13; G.cards = []; showNext();
     setHand(0, -0.25, 1.05, -0.2, false, -1); setHand(1, 0.25, 1.05, -0.2, false, 1);
