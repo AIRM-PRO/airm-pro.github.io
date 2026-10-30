@@ -2,6 +2,13 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## v0.6: playtester feedback (Oct 2026)
+
+- [x] One-hit kills once the shield is down (grunt 0 / soldier 2 / brute 4 shield); brutes keep the stun + fatality.
+- [x] More fatality-style finishes on every kill: `shatter` (robot falls apart), head knocked off by a punch to the head.
+- [x] Faster tempo (windup 1.6 s, swing 0.28 s, faster flight and spawns).
+- [x] Attackers only from the front (±45°, bombers ±40°); bombers calmer (every 9–13 s, second one from wave 5).
+
 ## Done after the first headset test (Oct 2026)
 
 - [x] Wrist cuff in line with the palm (`CUFF_TILT` 0).

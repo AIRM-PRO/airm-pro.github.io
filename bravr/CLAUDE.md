@@ -3,7 +3,7 @@
 VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player wears wrist weights. The original hand-speed limit (fast swings dealt no damage) was removed on request in Oct 2026: harder punches now shove enemies further. The only safety nudge left is a tutorial line about not snapping the elbow straight.
 
 - Live: https://jknowak.pl/bravr (GitHub Pages, repo `jknowak/jknowak.github.io`, branch `main`, folder `bravr/`)
-- **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks, v0.5.1 dedicated bombers from wave 1.
+- **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks, v0.5.1 dedicated bombers from wave 1, v0.6 one-hit kills with gory finishes, faster tempo, front-only attack arc (feedback from a playtester).
 - The old Claude artifact preview is no longer maintained; don't update it.
 - UI language: Polish. Code comments: English.
 - Domain terms (stances, shield, stun, fatality, bombs, upgrades) are defined in `CONTEXT.md`. The plan is in `BACKLOG.md`.
@@ -17,11 +17,11 @@ VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player w
 ## Game design
 
 - The player floats on a small platform above a planet. Armored soldiers fly in from 8–11 m (superman pose, weaving, boot thruster sparks, cruising up to 3× `SPEED` when far and braking on arrival).
-- **Rings:** enemies stand on an *inner* ring (0.6 m, ±64°) that attacks, or an *outer* ring (2.6 m, ±70°) that holds the bombers and the queue; queued (non-bomber) enemies move in when a gap opens (`promote`). A spot is free when the arc distance to every other enemy on that ring clears both torsos (`freeAngle`, torso radius `bodyR = 0.2 · scale · bulk`). `separate()` also pushes overlapping torsos apart every frame and keeps them ≥ 0.36 m from the player. Nobody stands still: they strafe, bob and rock (`hold`).
-- **Enemy attack loop:** `windup` (`CHARGE` ≈ 2.2 s ±25%: fist pulls back, orange orb, visor heats) → `swing` (`SWING` 0.32 s lunge at your head, lands at `IMPACT` = 55%) → `recover` (`RECOVER` 0.45 s) → windup again. The swing is **blocked** if either of your hands is within 0.13 m of its fist before impact, and **dodged** if your head has moved more than 0.22 m since the swing started. Otherwise you take 1 HP (brute: 2). A landed hit is still stored as `leaks` (history compat) and shown as "Oberwałeś".
+- **Rings:** enemies stand on an *inner* ring (0.65 m, ±45°) that attacks, or an *outer* ring (2.6 m, ±40°) that holds the bombers and the queue; queued (non-bomber) enemies move in when a gap opens (`promote`). A spot is free when the arc distance to every other enemy on that ring clears both torsos (`freeAngle`, torso radius `bodyR = 0.2 · scale · bulk`). `separate()` also pushes overlapping torsos apart every frame and keeps them ≥ 0.36 m from the player. Nobody stands still: they strafe, bob and rock (`hold`).
+- **Enemy attack loop:** `windup` (`CHARGE` ≈ 1.6 s ±25%: fist pulls back, orange orb, visor heats) → `swing` (`SWING` 0.28 s lunge at your head, lands at `IMPACT` = 55%) → `recover` (`RECOVER` 0.35 s) → windup again. The swing is **blocked** if either of your hands is within 0.13 m of its fist before impact, and **dodged** if your head has moved more than 0.22 m since the swing started. Otherwise you take 1 HP (brute: 2). A landed hit is still stored as `leaks` (history compat) and shown as "Oberwałeś".
 - **Player HP:** `PLAYER_HP` = 10 on the left wrist watch; **mana** (`MANA` 10, `MANA_REGEN` 0.5/s during waves) on the right one (`watches`, `drawWatches`). At 0 HP: knockout (`G.kos`), enemies blown back, HP refills, and the most recent upgrade is lost. HP and mana refill at every rest.
-- **Shield and stun:** `TYPES` give shield/HP (grunt 0/10, soldier 4/20, brute 8/30). `hit(e, kind, h, at, dir)` drains the shield first (`DRAIN`), then HP (`DMG`). A punch on a shield `shove`s the enemy (`SHOVE` 5.2 m/s, about 2.2 m) into state `shoved`; it tumbles, then goes back to `approach` and flies to its front slot. The shield regenerates after 5 s without a hit. Nobody dies from a normal hit: at ≤ 10% HP `stun()` → state `stunned` for `STUN` 4 s, then any hit kills (`finish`). Chop to the neck and the rip are **fatalities** (`G.fatal`, +3 mana). An unfinished stun recovers at 25% HP with no shield. Status bars over the head and a field bubble come from `e.showStatus()`.
-- **Grenades:** **bombers** throw them: from wave 1 one enemy (two from wave 4, `bomberCap`) spawns on the outer ring with `e.bomber`, is never promoted, and doesn't count against the melee cap (`meleeCap`, `wantSpawn`). In `hover` it cocks an arm and `throwBomb`s every `rnd(6, 9) − 0.25·round` s (max 2 live): a high lob (0.9–1.8 s by distance) that stops about 0.42 m in front of your chest and drifts closer until `BOMB.fuse` 3.2 s. They glow, trail sparks, and blink and beep faster near the end. Catch: a loose hand closing into a fist (`u.grabEv`) within 0.15 m (a grenade in reach wins over grabbing an enemy); throw: release the grip (hand velocity × 1.3). A thrown grenade sticks to the enemy it hits, shoves it and blows 0.35 s later. A fist moving into one sets it off. `explode` hurts the player (1 HP within `BOMB.radius` 0.7 m of the chest) and `hit`s enemies with `blast`.
+- **Shield, one-hit kills and stun:** `TYPES` give shields grunt 0, soldier 2, brute 4, and 1 HP each. `hit(e, kind, h, at, dir)` drains the shield first (`DRAIN`); once it is down any hit kills grunts and soldiers through `crush()` (style `decap` for a neck chop or a punch to the head, otherwise `shatter` (the robot falls apart into head, arms, chest and hips) or `punch` (limbs torn); blasts and bumps always shatter). Brutes have `stuns:true`: their first hit after the shield is stunned instead. A punch on a shield `shove`s the enemy (`SHOVE` 5.2 m/s, about 2.2 m) into state `shoved`; it tumbles, then goes back to `approach` and flies to its front slot. The shield regenerates after 5 s without a hit. `stun()` → state `stunned` for `STUN` 4 s, then any hit kills (`finish`). Chop to the neck and the rip are **fatalities** (`G.fatal`, +3 mana). An unfinished stun recovers with no shield (the next hit stuns again). Status bars over the head and a field bubble come from `e.showStatus()`.
+- **Grenades:** **bombers** throw them: from wave 1 one enemy (two from wave 5, `bomberCap`) spawns on the outer ring with `e.bomber`, is never promoted, and doesn't count against the melee cap (`meleeCap`, `wantSpawn`). In `hover` it cocks an arm and `throwBomb`s every `rnd(9, 13) − 0.3·round` s (max 2 live): a high lob (0.9–1.8 s by distance) that stops about 0.42 m in front of your chest and drifts closer until `BOMB.fuse` 3.2 s. They glow, trail sparks, and blink and beep faster near the end. Catch: a loose hand closing into a fist (`u.grabEv`) within 0.15 m (a grenade in reach wins over grabbing an enemy); throw: release the grip (hand velocity × 1.3). A thrown grenade sticks to the enemy it hits, shoves it and blows 0.35 s later. A fist moving into one sets it off. `explode` hurts the player (1 HP within `BOMB.radius` 0.7 m of the chest) and `hit`s enemies with `blast`.
 - **Upgrades** (`UPGRADES`, `G.ups`): each rest offers 3 cards (`offerCards`) and you punch one. `bilard` (a shoved enemy's collisions `hit` others with `bump`), `haishu` (a blade-hand backhand bats a grenade back, 1 mana), `squat` (dodging with the head ≥ 25 cm lower than at swing start gives +2 mana), `charge` (a fist still for 1 s glows; the next punch is `charged`: drain 3, double shove), `thunder` (fists slammed together in front of the chest at > 1.2 m/s closing speed, 4 mana: shields to 0 within 1 m, shove).
 - Session = 6 s countdown, then N waves with breaks between them, then an end screen. A **break has no timer** (`dur: Infinity`): the player punches an upgrade card and then the **DALEJ** button (`nextBtn`, `advance()`). `cfg.rest` is only the suggested length shown on the HUD. Pull a trigger to exit at the end.
 - Kills trigger brief bullet-time (`ts = 0.18` for 0.35 s, then easing back).
@@ -44,29 +44,29 @@ VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player w
 
 ### Enemies (`TYPES`)
 
-- grunt / Szeregowy: 0 shield / 10 HP, grey, no cape
-- soldier / Żołnierz: 4 / 20, black with gold trim, crest, red cape, blue field
-- brute / Brutal: 8 / 30, scale 1.28, bronze trim, shoulder spikes, dark cape, red field
+- grunt / Szeregowy: no shield, one hit; olive robot
+- soldier / Żołnierz: shield 2, then one hit; black and gold robot, blue field
+- brute / Brutal: shield 4, then stun and fatality; scale 1.28, rust robot, red field
 - The mix gets harder with wave number (`pickType`). The number alive at once is capped at `min(2 + floor(round/2), 5)`.
 - Models: `makeEnemy` builds a procedural low-poly rig: `g` (faces the player, +Z towards them) → `body` (lean) → `upper`/`lower` (split on rip), a `head` group (flies off on decap), `arms[]`/`legs[]`/`boots[]`, and `setCharge(f, showOrb)` / `dim()` helpers. When `robot.glb` has loaded (`window.__obReady`), `fitRobot` hides the procedural meshes, moves the joints to the robot's proportions and adds a `SkeletonUtils.clone` of the robot with per-tier tints (`ROBOT_TINT`; 'Does not work' is the eyes+wings material, used as the visor/charge glow). `driveRobot` sets bone rotations every frame from the procedural joints' world rotations (`RIG`, rest offsets in `ROBOT.rest`). Fingers are curled into fists once (`ROBOT.curl`). `fistPos(e, i)` gives the robot's knuckles. Gore: `tear(e, part, group)` makes a static copy of a body piece (`ROBOT.parts`, triangles by dominant bone), posed with `boneWorld · boneInverse · bindMatrix`, hangs it on the procedural group that flies off, and collapses the bone on the live mesh. Pieces need `skinning:false` material copies (r128). Without the model (load failure, `file://`), the procedural enemies are used.
-- Animation: `animate(e, gdt)` picks pose targets per state (approach/hover/windup/swing/grabbed/shoved/stunned), smooths them into `e.pose` (relative to `GUARD`) and layers `e.flinch` on top.
+- Animation: `animate(e, gdt)` picks pose targets per state (approach/hover/windup/swing/grabbed/held/shoved/stunned), smooths them into `e.pose` (relative to `GUARD`) and layers `e.flinch` on top.
 
 ## Tuning constants (top of the script)
 
 ```
-SPEED  = {slow:0.85, mid:1.2, fast:1.6}        // enemy flight m/s (near; up to 3x when far)
+SPEED  = {slow:1.05, mid:1.5, fast:2.0}        // enemy flight m/s (near; up to 3x when far)
 MIN_SPEED = 0.35
-CHARGE = 2.2                                   // average windup before an enemy swings
-SWING = 0.32, IMPACT = 0.55, RECOVER = 0.45    // enemy punch length, when it lands, pause after
+CHARGE = 1.6                                   // average windup before an enemy swings
+SWING = 0.28, IMPACT = 0.55, RECOVER = 0.35    // enemy punch length, when it lands, pause after
 PLAYER_HP = 10
 MANA = 10, MANA_REGEN = 0.5
 STUN = 4, SHOVE = 5.2
-BOMB = {fuse:2.6, flight:1.0, radius:0.7}
+BOMB = {fuse:3.2, radius:0.7}
 DMG / DRAIN                                    // HP damage and shield drain per hit kind
-RING = {inner:{d:0.6, max:64}, outer:{d:1.05, max:76}}
+RING = {inner:{d:0.65, max:45}, outer:{d:2.6, max:40}}
 ```
 
-Inner-ring height is `anchor.y - 0.42 .. -0.20` (`innerDy`). Spawn cadence is `2.2 + rand*1.6 - min(round,6)*0.15` s.
+Inner-ring height is `anchor.y - 0.42 .. -0.20` (`innerDy`). Spawn cadence is `1.6 + rand*1.2 - min(round,6)*0.12` s.
 
 ## Structure of the script
 
@@ -91,7 +91,7 @@ settings + menu UI → three.js scene (stars, planet, platform, lights, head-fol
 ## Known gaps / next ideas
 
 - Not yet tested on a real Quest 2. Hit radii, ring distances, block/dodge thresholds, the watch placement, `CUFF_TILT`, the grenade catch radius and the thunderclap detection probably need tuning after the first play.
-- Balance is a guess: with no defence a still player takes about 19 hits a minute (the simulation counts grenades too). Enemies now take 4–19 hits to kill instead of 1–3.
+- Balance is a guess: with no defence a still player takes about 20 hits a minute (grenades included); the auto-jabbing sim kills about 8 a minute.
 - Robot gore pieces are posed in the model's bind pose (A-pose), not the current pose. Enemy hit zones are still the procedural ones, which roughly match the robot.
 - Enemy punch aim is faked (lunge + arm pose toward your head, no IK), so the fist may visibly miss even when the hit counts.
 - No hand-tracking support (controllers only).

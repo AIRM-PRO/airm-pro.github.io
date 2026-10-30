@@ -23,10 +23,10 @@ _Avoid_: "open palm" on its own, because it doesn't say whether the hand is loos
 
 ## Enemy durability
 
-- **Shield** (*Pole siłowe*): a separate pool on top of HP (grunt 0, soldier 4, brute 8). While it is up, hits drain the shield instead of HP. A punch drains 1 and **shoves** the enemy back about 2–3 m. A blade-hand strike drains 2 with only a small shove. The shield regenerates slowly after 5 s without being hit.
-- **HP**: grunt 10, soldier 20, brute 30. Once the shield is down: punch 3, blade hand 4 (6 to the neck), ear clap 8.
-- **Stun** (*Ogłuszenie*): at 10% HP or less, the enemy stops attacking and sways with sparks for about 4 s. If the stun runs out, it recovers at 25% HP with no shield.
-- **Fatality**: killing a **stunned** enemy with a special move: ear clap, rip, blade-hand decapitation, or nukite through the chest. It pays a reward. Any other hit on a stunned enemy is a plain kill with no reward.
+- **Shield** (*Pole siłowe*): grunt 0, soldier 2, brute 4 (since v0.6; it was 0/4/8). While it is up, hits drain the shield. A punch drains 1 and **shoves** the enemy back about 2–3 m. A blade-hand strike drains 2 with only a small shove. The shield regenerates slowly after 5 s without being hit.
+- **One-hit kill** (*Miazga*): once the shield is down, any hit kills a grunt or soldier with a gory finish: the head comes off (neck chop, or a punch to the head), or the robot shatters into head, arms, chest and hips, or limbs tear off. (Before v0.6 enemies had 10/20/30 HP.)
+- **Stun** (*Ogłuszenie*): only brutes. The first hit after their shield is down stuns them for about 4 s instead of killing. If the stun runs out, they recover with no shield.
+- **Fatality**: killing a **stunned** brute with a special move: rip or blade-hand decapitation (later: ear clap, nukite through the chest). It refunds 3 mana. Any other hit on a stunned brute is a plain kill.
 - The **rip** can only be done on a stunned enemy.
 
 _Avoid_: "resilience" or "armor" for the shield.
@@ -58,14 +58,15 @@ _Avoid_: "resilience" or "armor" for the shield.
 | **Żołnierz** (soldier) | black and gold, scale 1.1, blue shield | 4 / 20 | **Mina** (mine): sticks to the platform, blinks faster for 3 s | 2 | 1.0 m |
 | **Brutal** (brute) | rust and bronze, scale 1.3, red shield, glowing wings | 8 / 30 | **Kula** (orb): heavy, slow, homes in on the head | 3 | 1.4 m |
 
-- **Bombers** (*Bombardier*): enemies that stay on the outer ring (about 2.6 m away) and only throw bombs in a high lob: one from wave 1, two from wave 4, on top of the melee enemies. Other enemies waiting on the outer ring just wait their turn. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
+- **Bombers** (*Bombardier*): enemies that stay on the outer ring (about 2.6 m away) and only throw bombs in a high lob, every 9–13 s: one from wave 1, two from wave 5, on top of the melee enemies. Other enemies waiting on the outer ring just wait their turn. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
 - A **blast** hurts everything in its radius, player and enemies alike. Against an enemy it counts as 2 punches (shield first, then HP). A bomb the player throws back explodes on contact with an enemy.
 - A bomb is caught with a grab. Punching a bomb detonates it on your fist.
 - **Kula**: grabbing it stops it homing in, but its fuse keeps running. **Two hands** throw it at full power. **One hand** can hold it, but the hand sags under the weight and a one-hand throw is only a weak lob (about 30% of the hand's velocity), so it usually blows up within reach of you.
 
 ## Enemy tempo
 
-- **Attack tempo**: windup about 2.2 s ±25% (was 3.6), swing 0.32 s (was 0.42), recover 0.45 s (was 0.7). Soldiers sometimes throw a 2-punch combo. Brutes add a slower overhead slam that has to be dodged, because it can't be blocked.
+- **Attack tempo**: windup about 1.6 s ±25%, swing 0.28 s, recover 0.35 s (v0.6; was 2.2 / 0.32 / 0.45, and 3.6 / 0.42 / 0.7 before that). Enemies fly in about 25% faster and spawn more often.
+- **Front arc**: attackers stand within ±45° of where you face (bombers ±40°), inside the headset's view. Soldiers sometimes throw a 2-punch combo. Brutes add a slower overhead slam that has to be dodged, because it can't be blocked.
 - **Shove** (*Odrzut*): a punch on a shield sends the enemy 2–3 m back. A **throw** sends it further. Either way the enemy has to fly round in an arc back into a front slot on the ring before it can attack again. It never attacks from behind or the side.
 
 ## Session
