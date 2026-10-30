@@ -2,6 +2,10 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## v0.8 (Oct 2026)
+
+- [x] Super moves: uppercut to the chin (3 shield, head launched up) and two-fist hammer from above (4 shield, crushes the robot). Both are fatalities on a stunned brute.
+
 ## v0.7 (Oct 2026)
 
 - [x] Ship hull with a 2×2 m doorway behind the player (justifies the front-only arc).

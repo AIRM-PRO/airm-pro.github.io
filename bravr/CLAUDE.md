@@ -3,7 +3,7 @@
 VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player wears wrist weights. The original hand-speed limit (fast swings dealt no damage) was removed on request in Oct 2026: harder punches now shove enemies further. The only safety nudge left is a tutorial line about not snapping the elbow straight.
 
 - Live: https://jknowak.pl/bravr (GitHub Pages, repo `jknowak/jknowak.github.io`, branch `main`, folder `bravr/`)
-- **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks, v0.5.1 dedicated bombers from wave 1, v0.6 one-hit kills with gory finishes, faster tempo, front-only attack arc (feedback from a playtester), v0.7 ship hull with a doorway behind you, hit-and-run charges, throw on release, Bilard always on.
+- **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks, v0.5.1 dedicated bombers from wave 1, v0.6 one-hit kills with gory finishes, faster tempo, front-only attack arc (feedback from a playtester), v0.7 ship hull with a doorway behind you, hit-and-run charges, throw on release, Bilard always on, v0.8 super moves (uppercut, two-fist hammer).
 - The old Claude artifact preview is no longer maintained; don't update it.
 - UI language: Polish. Code comments: English.
 - Domain terms (stances, shield, stun, fatality, bombs, upgrades) are defined in `CONTEXT.md`. The plan is in `BACKLOG.md`.
@@ -33,6 +33,8 @@ VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player w
 |---|---|---|---|
 | Cios (punch) | grip = fist | fist enters torso/head zone moving *away from the player* (velocity·away > 0.25) | 3 HP / 1 shield + shove |
 | Dłoń bojowa (blade) | trigger only = blade hand | palm point through torso, head (`blade`) or neck (`neck`); 1 mana each | 4 HP, neck 6 / 2 shield; neck on a stunned enemy = decap fatality |
+| Podbródkowy (uppercut) | grip = fist | fist rising into the chin (within 0.15 m of head − 7 cm) at `vel.y` > 1.4 m/s and > 60% of its speed; checked before the punch | 8 HP / 3 shield + shove with lift; kill `upper` (head launched up); fatality on a stunned brute |
+| Młot (hammer) | both fists | fists < 0.25 m apart, both `vel.y` < −1.5 m/s, midpoint on the head or torso; both hands' cooldown 0.6 s | 10 HP / 4 shield + 1.5× shove; kill `smash` (shatter driven down); fatality on a stunned brute |
 | Rozerwanie (rip) | both fists on a **stunned** torso | grab while both hands < 1.2 m/s, then pull them 0.3 m further apart **vertically** than at grab | fatality, torso splits at the waist |
 
 - No upper speed limit. A hand slower than `MIN_SPEED` (0.35 m/s) doesn't register.
@@ -63,7 +65,7 @@ PLAYER_HP = 10
 MANA = 10, MANA_REGEN = 0.5
 STUN = 4, SHOVE = 5.2
 BOMB = {fuse:3.2, radius:0.7}
-DMG / DRAIN                                    // HP damage and shield drain per hit kind
+DMG / DRAIN                                    // HP damage and shield drain per hit kind (SUPER: uppercut, hammer)
 RING = {inner:{d:0.65, max:45}, outer:{d:2.4, max:45}}
 ```
 
@@ -82,7 +84,7 @@ settings + menu UI → three.js scene (stars, planet, platform, lights, head-fol
 
 ## Testing without the headset
 
-- `window.__obPreview(mode, w, h)` renders a static scene to a flat canvas with no XR needed. Modes: `gameplay`, `ship` (looking back at the hull and doorway from the enemies' side), `swing`, `punch`, `decap`, `rip`, `stun`, `bombs`, `cards` (rest with upgrade cards and DALEJ), `hands` (close-up: left fist with the HP watch, right blade hand), `rest`, `done`, `roster`. Use it for screenshots (Playwright) or to eyeball models. Call it from the devtools console.
+- `window.__obPreview(mode, w, h)` renders a static scene to a flat canvas with no XR needed. Modes: `gameplay`, `ship` (looking back at the hull and doorway from the enemies' side), `swing`, `punch`, `decap`, `uppercut`, `hammer`, `rip`, `stun`, `bombs`, `cards` (rest with upgrade cards and DALEJ), `hands` (close-up: left fist with the HP watch, right blade hand), `rest`, `done`, `roster`. Use it for screenshots (Playwright) or to eyeball models. Call it from the devtools console.
 - `window.__obSim(sec, round, puncher)` runs the wave logic headlessly (still head, optional auto-jabbing right fist) and returns hits, KOs, kills, grenades thrown and `minGap` (the smallest torso clearance seen; it should stay ≥ 0).
 - `window.__obDebug()` returns the internals (`G`/`setG`, `enemies`, `bombs`, `hands`, `hit`, `throwBomb`, `updateEnemies`, `updateBombs`, `thunderclap`, …) for scripted single-mechanic tests: place an enemy, fake a hand (`stance`, `pos`, `palm`, `vel`, `speed`, `grabEv`), step the updates and check the state.
 - Playwright with swiftshader works for both: launch chromium with `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`. Serve the repo over http (`python3 -m http.server` from the repo root, open `/bravr/index.html`) and `await window.__obReady` first. Over `file://` the robot can't load and you get the procedural enemies.

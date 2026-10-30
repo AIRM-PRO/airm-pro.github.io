@@ -75,7 +75,7 @@ th{color:var(--muted);font-weight:400}
 <body>
 <main>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.7</span></h1>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.8</span></h1>
     <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj. W przerwach wybierasz ulepszenia.</p>
   </header>
 
@@ -190,7 +190,9 @@ th{color:var(--muted);font-weight:400}
     <div class="moves">
       <div class="move"><b>Cios</b><p>Grip (pięść) przepchnięty przez tułów, od siebie. Bez tarczy zabija, często rozrywając robota na kawałki. Na tarczy zbija 1 i odrzuca wroga o kilka metrów.</p></div>
       <div class="move"><b>Dłoń bojowa</b><p>Spust: kantem, palcami lub grzbietem dłoni. Przez szyję ścina głowę, na tarczy zbija 2. Kosztuje 1 manę.</p></div>
-      <div class="move"><b>Fatality</b><p>Ogłuszonego Brutala (żółty pasek) dobij cięciem w szyję albo rozerwij: obie pięści na tułów, jedna w górę, druga w dół.</p></div>
+      <div class="move"><b>Podbródkowy</b><p>Pięść szybko z dołu w górę, w podbródek. Na tarczy zbija 3 i podrzuca wroga, bez tarczy głowa leci w kosmos.</p></div>
+      <div class="move"><b>Młot</b><p>Obie pięści razem, z góry na głowę lub tułów. Zbija 4 tarczy naraz (cała tarcza Brutala), bez tarczy zgniata robota.</p></div>
+      <div class="move"><b>Fatality</b><p>Ogłuszonego Brutala (żółty pasek) dobij cięciem w szyję, podbródkowym, młotem albo rozerwij: obie pięści na tułów, jedna w górę, druga w dół.</p></div>
       <div class="move"><b>Granat</b><p>Zaciśnij luźną dłoń na granacie, puść grip, żeby rzucić. Wybuch rani wszystkich w pobliżu, ciebie też.</p></div>
       <div class="move"><b>Rzut</b><p>Złap wroga (zaciśnij dłoń powoli), zamachnij się i puść grip. Rozbija się o innych wrogów, o kadłub albo przy lądowaniu.</p></div>
     </div>
@@ -563,8 +565,8 @@ const TYPES = {
   brute:  {hp:1, shield:4, stuns:true, field:0xff4a2b, scale:1.28, armor:0x40454e, trim:0x9a5530, emblem:0xff3b24, cape:0x1c1d24, crest:false, spikes:true,  bulk:1.25}
 };
 // HP damage once the shield is down; on a shield every hit drains it instead
-const DMG = {punch:3, charged:5, blade:4, neck:6, blast:6, bump:3};
-const DRAIN = {punch:1, charged:3, blade:2, neck:2, blast:2, bump:2};
+const DMG = {punch:3, charged:5, blade:4, neck:6, blast:6, bump:3, uppercut:8, hammer:10};
+const DRAIN = {punch:1, charged:3, blade:2, neck:2, blast:2, bump:2, uppercut:3, hammer:4};
 const GEO = (() => {
   const chest = new THREE.CylinderGeometry(0.215, 0.14, 0.36, 6); chest.rotateY(Math.PI/6); chest.scale(1, 1, 0.62);
   const abs = new THREE.CylinderGeometry(0.135, 0.12, 0.13, 6); abs.rotateY(Math.PI/6); abs.scale(1, 1, 0.66);
@@ -920,7 +922,7 @@ function buildPlan(){
   return p;
 }
 function newGame(){
-  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0}, leaks:0, fatal:0,
+  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0}, leaks:0, fatal:0,
     blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, perRound:Array(cfg.rounds).fill(0)};
 }
 
@@ -1110,12 +1112,12 @@ function hurtPlayer(n){
   if (G.hp <= 0) knockout();
 }
 // send an enemy tumbling away; above a few m/s it stops fighting and has to fly back round to its slot in front
-function shove(e, dir, v){
-  const d = dir.clone(); d.y = Math.max(-0.2, Math.min(0.35, d.y)); d.normalize();
+function shove(e, dir, v, lift = 0.35){
+  const d = dir.clone(); d.y = Math.max(-0.2, Math.min(lift, d.y)); d.normalize();
   e.kv.addScaledVector(d, v);
   if (v > 2.5 && e.state !== 'grabbed' && e.state !== 'stunned'){ e.state = 'shoved'; e.held = null; e.setCharge(0); e.bumped = new Set([e]); }
 }
-// kind: punch | charged | blade | neck | blast | bump; h is the hand (null for blasts and collisions)
+// kind: punch | charged | blade | neck | blast | bump | uppercut | hammer; h is the hand (null for blasts and collisions)
 function hit(e, kind, h, at, dir){
   const u = h?.userData, away = awayFromMe(at);
   dir = dir || strikeDir(h, away);
@@ -1125,8 +1127,9 @@ function hit(e, kind, h, at, dir){
     e.shield = Math.max(0, e.shield - DRAIN[kind]); e.shieldT = 0; e.fieldFlash = 1;
     spray(at, away, 10, e.field, 1.6); SFX.shield(); if (h) pulse(h, 0.5, 50);
     // a punch on the shield shoves the enemy a few metres back; blade hands only nudge it
-    const v = {punch:SHOVE, charged:SHOVE * 2, blast:6.5, bump:5}[kind] || 2;
-    shove(e, dir, v / e.mass);
+    const v = {punch:SHOVE, charged:SHOVE * 2, blast:6.5, bump:5, uppercut:SHOVE * 1.2, hammer:SHOVE * 1.5}[kind] || 2;
+    shove(e, dir, v / e.mass, kind === 'uppercut' ? 0.7 : 0.35);
+    if (SUPER[kind]){ SFX.thunder(); bulletTime(); showToast(SUPER[kind], '#ffc861'); }
     e.flinch = 1; e.charge = Math.max(0, e.charge - 0.8);
     if (e.state === 'swing'){ e.state = 'recover'; e.rec = 0.5; }
     if (!e.shield){ SFX.shieldDown(); spray(e.g.position, away, 24, e.field, 2.4); showToast('TARCZA PADŁA', '#6fb0ff'); }
@@ -1138,12 +1141,13 @@ function hit(e, kind, h, at, dir){
   if (u) u.blood = Math.min(1, u.blood + 0.3);
   if (h) pulse(h, 0.6, 60);
   SFX[kind === 'blade' || kind === 'neck' ? 'chop' : 'punch'](); SFX.splat();
+  if (SUPER[kind]){ SFX.thunder(); showToast(SUPER[kind], '#ffc861'); }
   const sp = u ? u.speed : 2;
   spray(at, away, 4, 0xffc861, 1.2);
   blood(at, dir, 14 + Math.round(sp * 6), 1.2 + sp * 0.3); mist(at);
   const w = wound(e, at); if (w) bleed(e.upper, w, v3(0, -0.2, 1), 12, 3, 0.4);
   // the hit shoves them back; harder hits shove further, heavier enemies less
-  if (kind === 'charged' || kind === 'blast' || kind === 'bump') shove(e, dir, (kind === 'charged' ? SHOVE : 5) / e.mass);
+  if (kind === 'charged' || kind === 'blast' || kind === 'bump' || SUPER[kind]) shove(e, dir, (kind === 'blast' || kind === 'bump' ? 5 : SHOVE) / e.mass, kind === 'uppercut' ? 0.7 : 0.35);
   else e.kv.addScaledVector(dir, (0.5 + Math.min(sp, 4) * 0.35) / e.mass);
   e.flinch = 1;
   e.flinchSide = Math.sign(dir.dot(v3(1, 0, 0).transformDirection(e.g.matrixWorld))) || 1;
@@ -1153,7 +1157,11 @@ function hit(e, kind, h, at, dir){
 }
 // a one-hit kill: a neck chop takes the head, a punch to the head knocks it off, heavy hits shatter the whole robot
 const CRUSH = ['MIAZGA', 'ROZBITY', 'ZMIAŻDŻONY', 'ROZPRUTY', 'NA KAWAŁKI'];
+// super moves: an uppercut to the chin and a two-fist hammer from above hit harder and have their own finishes
+const SUPER = {uppercut:'PODBRÓDKOWY', hammer:'MŁOT'};
+const SUPER_KILL = {uppercut:'upper', hammer:'smash'};
 function crush(e, kind, h, at){
+  if (SUPER_KILL[kind]){ showToast(kind === 'uppercut' ? 'GŁOWA W KOSMOS' : 'ZGNIECIONY', '#ff4a2b'); kill(e, SUPER_KILL[kind], h, at); return; }
   const onHead = at.distanceTo(e.head.getWorldPosition(v3())) < 0.14 * e.scale;
   const style = kind === 'neck' || (kind === 'punch' && onHead) ? 'decap'
     : kind === 'punch' || kind === 'blade' ? (Math.random() < 0.55 ? 'shatter' : 'punch') : 'shatter';
@@ -1166,11 +1174,11 @@ function stun(e){
 }
 // the finishing blow on a stunned enemy; chop to the neck and the rip are fatalities
 function finish(e, kind, h, at){
-  const fatal = kind === 'neck' || kind === 'rip';
+  const fatal = kind === 'neck' || kind === 'rip' || !!SUPER[kind];
   if (fatal){
     G.fatal++; G.mana = Math.min(MANA, G.mana + 3); SFX.fatal(); showToast('FATALITY', '#ff4a2b');
   }
-  kill(e, kind === 'neck' ? 'decap' : kind === 'rip' ? 'rip' : kind === 'blast' ? 'blast' : 'punch', h, at);
+  kill(e, SUPER_KILL[kind] || (kind === 'neck' ? 'decap' : kind === 'rip' ? 'rip' : kind === 'blast' ? 'blast' : 'punch'), h, at);
 }
 function kill(e, style, h, at){
   e.state = 'dead'; bulletTime();
@@ -1201,10 +1209,13 @@ function kill(e, style, h, at){
     }
     bleed(e.upper, v3(0, 0.04, 0.12 * e.bulk), v3(0, 0.2, 1), 60, 2.2, 1.2); // the chest burst open
     addDebris(e.g, dir.multiplyScalar(6).add(v3(0, 0.8, 0)), v3(4, 6, 2), 2.4);
-  } else if (style === 'shatter'){
+  } else if (style === 'shatter' || style === 'smash'){
     // the whole robot comes apart: head, both arms, chest and hips fly off in different directions
+    // (smash: the hammer from above drives everything down and out)
     SFX.punch(); SFX.rip(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 160); h.userData.blood = 1; }
-    const dir = strikeDir(h, away), mid = e.g.position.clone();
+    const smash = style === 'smash';
+    if (smash){ hands.forEach(x => { pulse(x, 1, 220); x.userData.blood = 1; }); SFX.boom(); }
+    const dir = smash ? away.clone().multiplyScalar(0.6).add(v3(0, -1, 0)).normalize() : strikeDir(h, away), mid = e.g.position.clone();
     e.arms.forEach(a => {
       const sp = a.shoulder.position;
       stump(e.upper, sp.x, sp.y, sp.z, 1); bleed(a.shoulder, v3(), v3(0, 1, 0), 30, 1.8, 0.8);
@@ -1213,7 +1224,8 @@ function kill(e, style, h, at){
     });
     stump(e.upper, 0, 0.29, 0, 1); bleed(e.head, v3(0, -0.09, 0), v3(0, -1, 0), 40, 1.8, 0.8);
     tear(e, 'head', e.head);
-    addDebris(e.head, dir.clone().multiplyScalar(2.5).add(v3(0, 2.2, 0)).add(jitter(0.8)), jitter(12), 2.6);
+    addDebris(e.head, smash ? away.clone().multiplyScalar(1.5).add(v3(0, -2.5, 0)).add(jitter(0.8)) : dir.clone().multiplyScalar(2.5).add(v3(0, 2.2, 0)).add(jitter(0.8)), jitter(12), 2.6);
+    if (smash){ blood(mid, UP, 60, 2.6); meat(mid, UP, 10, 2.4); spray(mid, UP, 16, 0xffc861, 2.8); }
     stump(e.upper, 0, -0.262, 0, -1); stump(e.lower, 0, -0.232, 0, 1);
     bleed(e.upper, v3(0, -0.27, 0), v3(0, -1, 0), 70, 2.2, 1.2); bleed(e.upper, v3(0, 0.3, 0), v3(0, 1, 0.2), 70, 2.2, 1.3);
     bleed(e.lower, v3(0, -0.22, 0), v3(0, 1, 0), 60, 2.2, 1.0);
@@ -1223,20 +1235,22 @@ function kill(e, style, h, at){
     addDebris(e.upper, dir.clone().multiplyScalar(4).add(v3(0, 1, 0)), jitter(8), 2.6);
     addDebris(e.lower, dir.clone().multiplyScalar(2.5).add(v3(0, -0.6, 0)), jitter(6), 2.6);
     scene.remove(e.g);
-  } else if (style === 'decap'){
-    SFX.chop(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 120); h.userData.blood = Math.min(1, h.userData.blood + 0.5); }
+  } else if (style === 'decap' || style === 'upper'){
+    // upper: the uppercut launches the head straight up and the body topples backwards
+    const upper = style === 'upper';
+    SFX[upper ? 'punch' : 'chop'](); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, upper ? 180 : 120); h.userData.blood = Math.min(1, h.userData.blood + 0.5); }
     const hp = e.head.getWorldPosition(v3());
-    const side = h ? h.userData.vel.clone().setY(0) : anchor.right.clone();
-    if (side.lengthSq() < 0.01) side.copy(anchor.right);
-    side.normalize();
+    const side = h && !upper ? h.userData.vel.clone().setY(0) : anchor.right.clone().multiplyScalar(upper ? rnd(-0.3, 0.3) : 1);
+    if (!upper && side.lengthSq() < 0.01) side.copy(anchor.right);
+    if (!upper) side.normalize();
     stump(e.upper, 0, 0.29, 0, 1);
     const hs = new THREE.Mesh(GEO.stump, GORE.raw); hs.position.y = -0.085; e.head.add(hs);
     bleed(e.upper, v3(0, 0.3, 0), v3(0, 1, 0.15), 110, 2.6, 1.6);   // fountain from the neck
     bleed(e.head, v3(0, -0.09, 0), v3(0, -1, 0), 45, 2.2, 0.8);
     tear(e, 'head', e.head);
-    addDebris(e.head, side.multiplyScalar(2.2).add(v3(0, 1.8, 0)).add(away.clone().multiplyScalar(0.8)), v3(9, 5, 7), 2.6);
+    addDebris(e.head, upper ? side.add(v3(0, 5.5, 0)).add(away.clone().multiplyScalar(0.7)) : side.multiplyScalar(2.2).add(v3(0, 1.8, 0)).add(away.clone().multiplyScalar(0.8)), upper ? v3(14, 2, 3) : v3(9, 5, 7), upper ? 3.2 : 2.6);
     blood(hp.clone().add(v3(0, -0.06*e.scale, 0)), v3(0, 1, 0).add(side.clone().multiplyScalar(0.3)), 40, 1.9); mist(hp);
-    addDebris(e.g, away.clone().multiplyScalar(1.0).add(v3(0, -0.3, 0)), v3(-1.2, 0.4, 0.3), 2.8);
+    addDebris(e.g, away.clone().multiplyScalar(upper ? 2.2 : 1.0).add(v3(0, upper ? 0.6 : -0.3, 0)), upper ? v3(-4, 0.4, 0.3) : v3(-1.2, 0.4, 0.3), 2.8);
   } else if (style === 'rip'){
     SFX.rip(); SFX.kill(); SFX.splat();
     hands.forEach(x => { pulse(x, 1, 200); x.userData.blood = 1; });
@@ -1553,9 +1567,28 @@ function combat(e){
     }
   }
 
+  // Młot: both fists together, coming down hard on the head or the torso
+  if (L.ready && R.ready && L.isFist && R.isFist && e.cool[0] <= 0 && e.cool[1] <= 0 && !e.held &&
+      L.pos.distanceTo(R.pos) < 0.25 && L.vel.y < -1.5 && R.vel.y < -1.5){
+    const mid = L.pos.clone().add(R.pos).multiplyScalar(0.5);
+    if (mid.distanceTo(headP) < 0.2 * e.scale || mid.distanceTo(torso) < reachT + 0.04){
+      e.cool[0] = e.cool[1] = 0.6;
+      pulse(hands[0], 1, 120);
+      hit(e, 'hammer', hands[1], mid, awayFromMe(torso).multiplyScalar(0.6).add(v3(0, -1, 0)).normalize());
+      return;
+    }
+  }
+  const chin = headP.clone().add(v3(0, -0.07 * e.scale, 0));
   for (let i = 0; i < 2; i++){
     const h = hands[i], u = h.userData;
     if (!u.ready || e.cool[i] > 0 || u.speed < MIN_SPEED || e.held?.h === h) continue;
+    // Podbródkowy: a fist rising fast and steeply into the chin
+    if (u.stance === 'fist' && u.vel.y > 1.4 && u.vel.y > 0.6 * u.speed && u.pos.distanceTo(chin) < 0.15 * e.scale){
+      e.cool[i] = 0.5;
+      hit(e, 'uppercut', h, u.pos.clone(), awayFromMe(torso).multiplyScalar(0.5).add(UP).normalize());
+      u.charged = false;
+      continue;
+    }
     if (u.stance === 'fist'){
       const onBody = u.pos.distanceTo(torso) < reachT || u.pos.distanceTo(headP) < 0.14 * e.scale;
       if (!onBody) continue;
@@ -1757,7 +1790,7 @@ function enterStep(step){
 }
 
 function fmt(s){ s = Math.max(0, Math.ceil(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
-const totalKills = () => G.kills.punch + G.kills.decap + G.kills.rip + G.kills.blast + G.kills.shatter;
+const totalKills = () => Object.values(G.kills).reduce((a, b) => a + b, 0);
 
 function updateHud(step){
   const left = step.dur - G.t;
@@ -1945,6 +1978,22 @@ window.__obPreview = function(mode, w, h){
     setHand(1, 0.05, 1.35, -0.55, true, 1, 0.1);
     hands[1].userData.vel.set(0, 0, -3);
     kill(e, 'shatter', hands[1], e.g.position.clone()); sim(0.3);
+  } else if (mode === 'uppercut'){
+    G.i = work; G.t = cfg.work - 33;
+    const e = put('grunt', 3, 0.7, -0.3, 'windup', 1.5);
+    setHand(0, -0.25, 1.2, -0.3, true, -1, 0.3);
+    setHand(1, 0.02, 1.5, -0.5, true, 1, 0.1);
+    hands[1].userData.vel.set(0, 3.5, -0.8);
+    kill(e, 'upper', hands[1], e.g.position.clone()); sim(0.3);
+    toast.visible = true;
+  } else if (mode === 'hammer'){
+    G.i = work; G.t = cfg.work - 38;
+    const e = put('soldier', -3, 0.7, -0.38, 'windup', 2);
+    setHand(0, -0.06, 1.25, -0.5, true, -1, 0.1);
+    setHand(1, 0.06, 1.25, -0.5, true, 1, 0.1);
+    hands.forEach(h => h.userData.vel.set(0, -3.5, -0.5));
+    kill(e, 'smash', hands[1], e.g.position.clone()); sim(0.3);
+    toast.visible = true;
   } else if (mode === 'rip'){
     G.i = work; G.t = cfg.work - 47;
     const e = put('soldier', 0, 0.7, -0.38, 'grabbed');

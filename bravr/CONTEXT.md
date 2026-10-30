@@ -27,7 +27,7 @@ _Avoid_: "open palm" on its own, because it doesn't say whether the hand is loos
 - **Shield** (*Pole siłowe*): grunt 0, soldier 2, brute 4 (since v0.6; it was 0/4/8). While it is up, hits drain the shield. A punch drains 1 and **shoves** the enemy back about 2–3 m. A blade-hand strike drains 2 with only a small shove. The shield regenerates slowly after 5 s without being hit.
 - **One-hit kill** (*Miazga*): once the shield is down, any hit kills a grunt or soldier with a gory finish: the head comes off (neck chop, or a punch to the head), or the robot shatters into head, arms, chest and hips, or limbs tear off. (Before v0.6 enemies had 10/20/30 HP.)
 - **Stun** (*Ogłuszenie*): only brutes. The first hit after their shield is down stuns them for about 4 s instead of killing. If the stun runs out, they recover with no shield.
-- **Fatality**: killing a **stunned** brute with a special move: rip or blade-hand decapitation (later: ear clap, nukite through the chest). It refunds 3 mana. Any other hit on a stunned brute is a plain kill.
+- **Fatality**: killing a **stunned** brute with a special move: rip, blade-hand decapitation, uppercut or hammer (later: ear clap, nukite through the chest). It refunds 3 mana. Any other hit on a stunned brute is a plain kill.
 - The **rip** can only be done on a stunned enemy.
 
 _Avoid_: "resilience" or "armor" for the shield.
@@ -36,6 +36,10 @@ _Avoid_: "resilience" or "armor" for the shield.
 
 - **Punch** (*Cios*): a fist hitting the torso or head while moving away from the player.
 - **Blade strikes** (all with the blade hand): **shuto** (edge of the hand through the neck or torso), **nukite** (fingertips driven forward into the chest), **haishu** (backhand: the back of the hand swung outward).
+- **Super moves** (*Super ciosy*), free, no mana:
+  - **Uppercut** (*Podbródkowy*): a fist rising fast and steeply into the chin. Drains 3 shield and pops the enemy up and back; without a shield the head is launched straight up.
+  - **Hammer** (*Młot*): both fists together, brought down hard on the head or torso. Drains 4 shield (a brute's whole shield); without a shield it crushes the robot downwards.
+  - On a stunned brute both are fatalities.
 - **Ear clap** (*Klaśnięcie w uszy*): both hands in blade-hand stance strike opposite sides of the head within 0.15 s of each other, each moving inward. Against a shield it drains 3 and briefly dazes the enemy (it pauses its attack). Otherwise it deals 8 HP. On a stunned enemy it is a fatality: the head bursts.
 
 ## Mana
