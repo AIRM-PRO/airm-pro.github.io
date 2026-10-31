@@ -44,7 +44,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .move{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
 .move b{font:700 15px/1.2 var(--display);text-transform:uppercase;letter-spacing:.06em;color:var(--gold)}
 .move p{margin:0;min-width:0}
-.foes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:4px}
+.foes{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:4px}
 .foe{border:1px solid var(--line);border-radius:6px;padding:10px;text-align:center}
 .foe strong{display:block;font:700 26px/1 var(--display);color:var(--ember)}
 .foe span{font-size:13px;color:var(--muted)}
@@ -75,8 +75,8 @@ th{color:var(--muted);font-weight:400}
 <body>
 <main>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.8</span></h1>
-    <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj. W przerwach wybierasz ulepszenia.</p>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.9</span></h1>
+    <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj, uważaj na latające Szczęki. W przerwach rozwijasz drzewko ulepszeń: laser z oczu, spowolnienie czasu, pancerz.</p>
   </header>
 
 
@@ -96,7 +96,10 @@ th{color:var(--muted);font-weight:400}
         <li>Wróg z bliska ładuje cios (pomarańczowa kula) i rzuca się z pięścią na głowę. Zablokuj ręką albo zrób unik: odchyl się lub przykucnij. Przy zerze HP nokaut: tracisz ostatnie ulepszenie.</li>
         <li>Za tobą jest kadłub statku z włazem 2×2 m, więc wrogowie nadlatują tylko z przodu. Czekają ok. 2,5 m przed tobą, szarżują, wyprowadzają jeden cios i odlatują. Na trafienie masz ok. 1,5 s. Bombardier z tyłu rzuca świecące, piszczące granaty. Złap granat, zaciskając luźną dłoń w pięść, i puść grip, żeby rzucić. Uderzony pięścią wybucha ci w ręce.</li>
         <li>Wroga też złapiesz: zaciśnij dłoń (powoli) na jego ręce, głowie lub tułowiu. Ciągniesz go za sobą, a puszczasz grip w ruchu, żeby nim rzucić, tak jak granatem. Rzucony rozbija się o innych (bilard), o kadłub albo przy lądowaniu. Trzymany ponad 2,5 s wyrwie się i uderzy.</li>
-        <li>Przerwa nie ma limitu. Uderz pięścią jedną z trzech kart ulepszeń, a potem przycisk DALEJ, kiedy chcesz walczyć dalej.</li>
+        <li><b>Szczęka</b> (od fali 2): latająca paszcza z dyszami. Kłapie przed tobą, potem rzuca się do twarzy. Bij ją tylko z góry albo z dołu, kiedy jest zamknięta: odlatuje i wraca, trzecie trafienie ją rozbija. Pięść wbita prosto w nią utknie w zębach i ręka nic nie zrobi; wtedy wal Szczękę drugą ręką (3 razy). Złap ją oburącz z boków, to podniesiesz ją i rzucisz w innych.</li>
+        <li>Martwe roboty nie znikają od razu: dryfują jako wraki, zasłaniają drogę innym i można je złapać i rzucić we wrogów.</li>
+        <li>Przerwa nie ma limitu. Po lewej widzisz swoją postać: HP, manę i drzewko ulepszeń. Uderz pięścią jedną z trzech kart, a potem przycisk DALEJ, kiedy chcesz walczyć dalej.</li>
+        <li><b>A lub B</b> na kontrolerze w każdej chwili pauzuje walkę i pokazuje ściągawkę ruchów.</li>
         <li>Z obciążnikami na nadgarstkach nie prostuj łokcia na siłę do końca.</li>
         <li>Łokcie zostają lekko ugięte. Wrogowie stoją bliżej niż zasięg wyprostowanej ręki.</li>
       </ol>
@@ -168,6 +171,7 @@ th{color:var(--muted);font-weight:400}
         <div class="foe"><strong>1</strong><span>Szeregowy: oliwkowy robot, bez tarczy</span></div>
         <div class="foe"><strong>2+1</strong><span>Żołnierz: czarno-złoty, niebieska tarcza</span></div>
         <div class="foe"><strong>4+F</strong><span>Brutal: większy, rdzawy, czerwona tarcza, potem fatality</span></div>
+        <div class="foe"><strong>3</strong><span>Szczęka: latająca paszcza, tylko z góry lub z dołu</span></div>
       </div>
       <p class="note" style="margin-top:10px">Ciosy w tarczę + cios kończący. Paski nad głową: niebieski to tarcza, żółty ogłuszenie. Tarcza wraca po 5 s bez trafienia.</p>
     </section>
@@ -175,12 +179,14 @@ th{color:var(--muted);font-weight:400}
     <section class="panel">
       <h2>Ulepszenia</h2>
       <div class="moves">
-        <div class="move"><b>Haishu</b><p>Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.</p></div>
-        <div class="move"><b>Przysiad</b><p>Przysiad pod ciosem (głowa niżej o 25 cm) daje +2 many.</p></div>
-        <div class="move"><b>Ładunek</b><p>Pięść trzymana nieruchomo przez sekundę świeci. Następny cios odrzuca dwa razy dalej i zbija 3 tarczy.</p></div>
-        <div class="move"><b>Burza</b><p>Zderz pięści przed klatką: za 4 many zrywasz tarcze wszystkim w promieniu metra.</p></div>
+        <div class="move"><b>Pięść: Ładunek → Burza</b><p>Pięść trzymana nieruchomo 1 s świeci, następny cios odrzuca 2× dalej. Burza: zderz pięści przed klatką, za 4 many zrywasz tarcze w promieniu metra.</p></div>
+        <div class="move"><b>Pięść: Imadło → Rękawice</b><p>Szczęka w obu rękach: grzmotnij nią w dół i pęka. Rękawice: ugryziona ręka dalej działa, wsadź drugą pięść w paszczę i rozerwij ją jak polano.</p></div>
+        <div class="move"><b>Dłoń: Haishu</b><p>Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.</p></div>
+        <div class="move"><b>Oczy: Laser (3 poziomy)</b><p>Luźna dłoń przy skroni pokazuje celownik, spust (salut) strzela z oczu: krótki błysk, potem 1 s, potem 2 s. 2 many. Na czas strzału widzisz wszystko na czerwono.</p></div>
+        <div class="move"><b>Czas: Przysiad, Bóg prędkości (3 poziomy)</b><p>Przysiad pod ciosem daje +2 many. Obie ręce daleko za plecy: świat zwalnia na 2 / 3,5 / 5 s, za 3 many.</p></div>
+        <div class="move"><b>Ciało: Pancerz, Zbiornik (po 3 poziomy)</b><p>+2 maks. HP na poziom; +3 maks. many i szybsza odnowa na poziom.</p></div>
       </div>
-      <p class="note" style="margin-top:10px">Jedno ulepszenie na przerwę. Nokaut zabiera ostatnie.</p>
+      <p class="note" style="margin-top:10px">Jedna karta na przerwę. Niektóre ulepszenia wymagają innych (strzałka), niektóre mają 3 poziomy. Nokaut zabiera ostatnio wybrany poziom.</p>
     </section>
   </div>
 
@@ -194,12 +200,15 @@ th{color:var(--muted);font-weight:400}
       <div class="move"><b>Młot</b><p>Obie pięści razem, z góry na głowę lub tułów. Zbija 4 tarczy naraz (cała tarcza Brutala), bez tarczy zgniata robota.</p></div>
       <div class="move"><b>Fatality</b><p>Ogłuszonego Brutala (żółty pasek) dobij cięciem w szyję, podbródkowym, młotem albo rozerwij: obie pięści na tułów, jedna w górę, druga w dół.</p></div>
       <div class="move"><b>Granat</b><p>Zaciśnij luźną dłoń na granacie, puść grip, żeby rzucić. Wybuch rani wszystkich w pobliżu, ciebie też.</p></div>
+      <div class="move"><b>Szczęka</b><p>Z góry lub z dołu, kiedy zamknięta. Ugryzła pięść? Wal ją drugą ręką. Oburącz z boków: rzut.</p></div>
+      <div class="move"><b>Pauza</b><p>A lub B: zatrzymujesz walkę i widzisz wszystkie ruchy i swoje ulepszenia.</p></div>
       <div class="move"><b>Rzut</b><p>Złap wroga (zaciśnij dłoń powoli), zamachnij się i puść grip. Rozbija się o innych wrogów, o kadłub albo przy lądowaniu.</p></div>
     </div>
     <div class="foes" style="margin-top:14px">
       <div class="foe"><strong>1</strong><span>Szeregowy</span></div>
       <div class="foe"><strong>2+1</strong><span>Żołnierz</span></div>
       <div class="foe"><strong>4+F</strong><span>Brutal</span></div>
+      <div class="foe"><strong>3</strong><span>Szczęka</span></div>
     </div>
     <p class="note" style="margin-top:10px">Ciosy w tarczę + cios kończący (F = ogłuszenie i fatality). Brutal uderza za 2 HP, reszta za 1.</p>
   </section>
@@ -443,9 +452,9 @@ function drawWatch(w, label, val, max, col){
   tex.needsUpdate = true;
 }
 function drawWatches(){
-  const hp = G.hp;
-  drawWatch(watches.hp, 'HP', hp, PLAYER_HP, hp > 6 ? '#5cf08a' : hp > 3 ? '#ffc861' : '#ff4a2b');
-  drawWatch(watches.mana, 'MANA', Math.floor(G.mana), MANA, '#6fb0ff');
+  const hp = G.hp, mx = maxHp();
+  drawWatch(watches.hp, 'HP', hp, mx, hp > 0.6 * mx ? '#5cf08a' : hp > 0.3 * mx ? '#ffc861' : '#ff4a2b');
+  drawWatch(watches.mana, 'MANA', Math.floor(G.mana), maxMana(), '#6fb0ff');
 }
 
 /* ---------- hands ---------- */
@@ -488,7 +497,7 @@ function poseHand(m, curl, blade = 0){
 const hands = [0, 1].map(i => {
   const c = renderer.xr.getControllerGrip(i);
   c.userData = {hand:null, src:null, model:null, side:0, prev:v3(), pos:v3(), palm:v3(), vel:v3(), speed:0, ready:false,
-    stance:'loose', grabEv:false, isFist:false, curl:0, bladeK:0, blood:0, still:0, charged:false};
+    stance:'loose', was:'loose', grabEv:false, isFist:false, curl:0, bladeK:0, blood:0, still:0, charged:false, bitten:null};
   const fit = side => {
     const u = c.userData; if (u.side === side) return;
     if (u.model) c.remove(u.model.g);
@@ -555,7 +564,10 @@ const SFX = {
   pick(){ tone(392, 0.15, 0.15, 'triangle'); setTimeout(() => tone(587, 0.3, 0.15, 'triangle'), 110); },
   denied(){ tone(160, 0.2, 0.15, 'square', -60); },
   wave(){ tone(330, 0.3, 0.15, 'sawtooth', 220); },
-  rest(){ tone(440, 0.4, 0.12, 'sine', -120); }
+  rest(){ tone(440, 0.4, 0.12, 'sine', -120); },
+  chomp(){ noise(0.09, 2200, 0.45, 'bandpass'); tone(150, 0.1, 0.25, 'square', -90); },
+  laser(){ tone(1400, 0.35, 0.1, 'sawtooth', -900); tone(700, 0.35, 0.08, 'square', -300); },
+  slow(){ tone(500, 0.9, 0.18, 'sine', -380); noise(0.6, 400, 0.3); }
 };
 
 /* ---------- enemies ---------- */
@@ -565,8 +577,8 @@ const TYPES = {
   brute:  {hp:1, shield:4, stuns:true, field:0xff4a2b, scale:1.28, armor:0x40454e, trim:0x9a5530, emblem:0xff3b24, cape:0x1c1d24, crest:false, spikes:true,  bulk:1.25}
 };
 // HP damage once the shield is down; on a shield every hit drains it instead
-const DMG = {punch:3, charged:5, blade:4, neck:6, blast:6, bump:3, uppercut:8, hammer:10};
-const DRAIN = {punch:1, charged:3, blade:2, neck:2, blast:2, bump:2, uppercut:3, hammer:4};
+const DMG = {punch:3, charged:5, blade:4, neck:6, blast:6, bump:3, uppercut:8, hammer:10, laser:4};
+const DRAIN = {punch:1, charged:3, blade:2, neck:2, blast:2, bump:2, uppercut:3, hammer:4, laser:1};
 const GEO = (() => {
   const chest = new THREE.CylinderGeometry(0.215, 0.14, 0.36, 6); chest.rotateY(Math.PI/6); chest.scale(1, 1, 0.62);
   const abs = new THREE.CylinderGeometry(0.135, 0.12, 0.13, 6); abs.rotateY(Math.PI/6); abs.scale(1, 1, 0.66);
@@ -907,7 +919,7 @@ function animate(e, gdt){
 /* ---------- game state ---------- */
 let G = null, session = null;
 const clock = new THREE.Clock();
-const head = {pos:v3(), fwd:new THREE.Vector3(0,0,-1)};
+const head = {pos:v3(), fwd:new THREE.Vector3(0,0,-1), dir:new THREE.Vector3(0,0,-1)};
 const anchor = {pos:new THREE.Vector3(0,1.6,0), fwd:new THREE.Vector3(0,0,-1), right:new THREE.Vector3(1,0,0)};
 const enemies = [], debris = [], bleeders = [], bombs = [];
 let ts = 1, tsHold = 0; // world time scale for bullet-time
@@ -922,14 +934,15 @@ function buildPlan(){
   return p;
 }
 function newGame(){
-  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0}, leaks:0, fatal:0,
-    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, perRound:Array(cfg.rounds).fill(0)};
+  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0, jaw:0}, leaks:0, fatal:0,
+    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, jawT:6, perRound:Array(cfg.rounds).fill(0)};
 }
 
 function updateHead(){
   const xc = renderer.xr.getCamera(camera);
   head.pos.setFromMatrixPosition(xc.matrixWorld);
   const q = new THREE.Quaternion(); xc.matrixWorld.decompose(v3(), q, v3());
+  head.dir.set(0, 0, -1).applyQuaternion(q);
   head.fwd.set(0, 0, -1).applyQuaternion(q); head.fwd.y = 0;
   if (head.fwd.lengthSq() < 1e-4) head.fwd.set(0, 0, -1);
   head.fwd.normalize();
@@ -1103,7 +1116,12 @@ function strikeDir(h, away){
   const hv = h ? h.userData.vel.clone() : away.clone();
   return hv.lengthSq() > 0.01 ? hv.normalize().add(away).normalize() : away.clone();
 }
-const has = id => !!G && G.ups.includes(id);
+// G.ups is the pick order (a knockout pops the last one); an upgrade's level is how many times it was picked
+const lvl = id => G ? G.ups.filter(x => x === id).length : 0;
+const has = id => lvl(id) > 0;
+const maxHp = () => PLAYER_HP + 2 * lvl('armor');
+const maxMana = () => MANA + 3 * lvl('tank');
+const manaRegen = () => MANA_REGEN * (1 + 0.3 * lvl('tank'));
 function hurtPlayer(n){
   G.hp = Math.max(0, G.hp - n); G.leaks++;
   SFX.hurt(); hands.forEach(h => pulse(h, 0.9, 250));
@@ -1176,7 +1194,7 @@ function stun(e){
 function finish(e, kind, h, at){
   const fatal = kind === 'neck' || kind === 'rip' || !!SUPER[kind];
   if (fatal){
-    G.fatal++; G.mana = Math.min(MANA, G.mana + 3); SFX.fatal(); showToast('FATALITY', '#ff4a2b');
+    G.fatal++; G.mana = Math.min(maxMana(), G.mana + 3); SFX.fatal(); showToast('FATALITY', '#ff4a2b');
   }
   kill(e, SUPER_KILL[kind] || (kind === 'neck' ? 'decap' : kind === 'rip' ? 'rip' : kind === 'blast' ? 'blast' : 'punch'), h, at);
 }
@@ -1208,7 +1226,7 @@ function kill(e, style, h, at){
       addDebris(e.head, dir.clone().multiplyScalar(3).add(v3(0, 1.2, 0)), jitter(10), 2.4);
     }
     bleed(e.upper, v3(0, 0.04, 0.12 * e.bulk), v3(0, 0.2, 1), 60, 2.2, 1.2); // the chest burst open
-    addDebris(e.g, dir.multiplyScalar(6).add(v3(0, 0.8, 0)), v3(4, 6, 2), 2.4);
+    wreck(e.g, dir.multiplyScalar(2.5).add(v3(0, 0.5, 0)), v3(2, 3, 1), bodyR(e));
   } else if (style === 'shatter' || style === 'smash'){
     // the whole robot comes apart: head, both arms, chest and hips fly off in different directions
     // (smash: the hammer from above drives everything down and out)
@@ -1232,8 +1250,8 @@ function kill(e, style, h, at){
     tear(e, 'chest', e.upper); tear(e, 'lower', e.lower);
     blood(mid, dir, 90, 2.8); meat(mid, dir, 16, 2.6); guts(mid, dir, 6); mist(mid); mist(mid.clone().addScaledVector(dir, 0.15));
     spray(mid, dir, 12, 0xff6a3a, 2.6);
-    addDebris(e.upper, dir.clone().multiplyScalar(4).add(v3(0, 1, 0)), jitter(8), 2.6);
-    addDebris(e.lower, dir.clone().multiplyScalar(2.5).add(v3(0, -0.6, 0)), jitter(6), 2.6);
+    wreck(e.upper, dir.clone().multiplyScalar(2).add(v3(0, 0.6, 0)), jitter(4), 0.17 * e.scale);
+    wreck(e.lower, dir.clone().multiplyScalar(1.4).add(v3(0, -0.4, 0)), jitter(3), 0.15 * e.scale);
     scene.remove(e.g);
   } else if (style === 'decap' || style === 'upper'){
     // upper: the uppercut launches the head straight up and the body topples backwards
@@ -1250,7 +1268,7 @@ function kill(e, style, h, at){
     tear(e, 'head', e.head);
     addDebris(e.head, upper ? side.add(v3(0, 5.5, 0)).add(away.clone().multiplyScalar(0.7)) : side.multiplyScalar(2.2).add(v3(0, 1.8, 0)).add(away.clone().multiplyScalar(0.8)), upper ? v3(14, 2, 3) : v3(9, 5, 7), upper ? 3.2 : 2.6);
     blood(hp.clone().add(v3(0, -0.06*e.scale, 0)), v3(0, 1, 0).add(side.clone().multiplyScalar(0.3)), 40, 1.9); mist(hp);
-    addDebris(e.g, away.clone().multiplyScalar(upper ? 2.2 : 1.0).add(v3(0, upper ? 0.6 : -0.3, 0)), upper ? v3(-4, 0.4, 0.3) : v3(-1.2, 0.4, 0.3), 2.8);
+    wreck(e.g, away.clone().multiplyScalar(upper ? 2.2 : 1.0).add(v3(0, upper ? 0.6 : -0.3, 0)), upper ? v3(-3, 0.4, 0.3) : v3(-1.2, 0.4, 0.3), bodyR(e));
   } else if (style === 'rip'){
     SFX.rip(); SFX.kill(); SFX.splat();
     hands.forEach(x => { pulse(x, 1, 200); x.userData.blood = 1; });
@@ -1266,8 +1284,8 @@ function kill(e, style, h, at){
     blood(mid, v3(0, 0.5, 0).add(away), 60, 2.0); meat(mid, away, 8); guts(mid, away, 8); mist(mid); mist(mid);
     spray(mid, away, 6, 0xff6a3a, 1.5);
     tear(e, 'upper', e.upper); tear(e, 'lower', e.lower);
-    addDebris(e.upper, axis.clone().multiplyScalar(2.0).add(v3(0, 0.6, 0)).add(away.clone().multiplyScalar(0.6)), v3(3, 2, 6), 2.8);
-    addDebris(e.lower, axis.clone().multiplyScalar(-2.0).add(away.clone().multiplyScalar(0.6)), v3(-4, 1, -5), 2.8);
+    wreck(e.upper, axis.clone().multiplyScalar(1.6).add(v3(0, 0.5, 0)).add(away.clone().multiplyScalar(0.6)), v3(2, 1, 3), 0.17 * e.scale);
+    wreck(e.lower, axis.clone().multiplyScalar(-1.6).add(away.clone().multiplyScalar(0.6)), v3(-2, 1, -3), 0.15 * e.scale);
     scene.remove(e.g);
   }
 }
@@ -1283,7 +1301,7 @@ function block(e, h){
 function dodged(e){
   G.dodges++;
   // Przysiad: ducking under the punch refills mana
-  if (has('squat') && head.pos.y < e.aimHead.y - 0.25){ G.mana = Math.min(MANA, G.mana + 2); SFX.mana(); showToast('PRZYSIAD +2 MANY', '#6fb0ff'); }
+  if (has('squat') && head.pos.y < e.aimHead.y - 0.25){ G.mana = Math.min(maxMana(), G.mana + 2); SFX.mana(); showToast('PRZYSIAD +2 MANY', '#6fb0ff'); }
   else showToast('UNIK', '#8fb3e8');
 }
 function hitPlayer(e){
@@ -1291,9 +1309,10 @@ function hitPlayer(e){
   hurtPlayer(e.type === 'brute' ? 2 : 1);
 }
 function knockout(){
-  G.kos++; G.hp = PLAYER_HP; SFX.ko(); hurt.material.opacity = 0.95; bulletTime();
-  // a knockout costs the most recent upgrade
+  G.kos++; SFX.ko(); hurt.material.opacity = 0.95; bulletTime();
+  // a knockout costs the most recent upgrade (one level of it)
   const lost = G.ups.pop();
+  G.hp = maxHp(); G.mana = Math.min(G.mana, maxMana());
   showToast(lost ? `NOKAUT · tracisz ${UPGRADES[lost].name}` : 'NOKAUT', '#ff4a2b');
   enemies.forEach(e => {
     if (e.state === 'dead') return;
@@ -1383,32 +1402,60 @@ function updateBombs(gdt){
 function clearBombs(){ bombs.forEach(b => scene.remove(b.m)); bombs.length = 0; }
 
 /* ---------- upgrades (picked in the rest period) ---------- */
+// a small tree: branches, some upgrades need another first (req), some go to level 3 (desc per level)
 const UPGRADES = {
-  haishu:{name:'HAISHU', desc:'Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.'},
-  squat:{name:'PRZYSIAD', desc:'Przysiad pod ciosem (głowa niżej o 25 cm) daje +2 many.'},
-  charge:{name:'ŁADUNEK', desc:'Pięść trzymana nieruchomo 1 s się ładuje. Następny cios odrzuca 2× dalej i zbija 3 tarczy.'},
-  thunder:{name:'BURZA', desc:'Zderz pięści przed klatką: za 4 many zrywasz tarcze wszystkim w promieniu 1 m.'}
+  charge:{branch:'PIĘŚĆ', name:'ŁADUNEK', desc:['Pięść trzymana nieruchomo 1 s się ładuje. Następny cios odrzuca 2× dalej i zbija 3 tarczy.'],
+    how:'Trzymaj pięść nieruchomo 1 s, potem uderz.'},
+  thunder:{branch:'PIĘŚĆ', name:'BURZA', req:'charge', desc:['Zderz pięści przed klatką: za 4 many zrywasz tarcze wszystkim w promieniu 1 m.'],
+    how:'Zderz pięści przed klatką (4 many).'},
+  vise:{branch:'PIĘŚĆ', name:'IMADŁO', desc:['Złap Szczękę oburącz z boków i grzmotnij nią w dół: pęka.'],
+    how:'Szczęka w obu rękach: szybko w dół.'},
+  gloves:{branch:'PIĘŚĆ', name:'RĘKAWICE', req:'vise', desc:['Szczęka nie blokuje ręki. Druga pięść w paszczę i rozerwij ją jak polano.'],
+    how:'Pięść w paszczy, druga też, jedna w górę, druga w dół.'},
+  haishu:{branch:'DŁOŃ', name:'HAISHU', desc:['Grzbiet dłoni bojowej odbija granat bez łapania. 1 mana.'],
+    how:'Grzbietem dłoni bojowej w granat.'},
+  laser:{branch:'OCZY', name:'LASER', max:3, desc:['Luźna dłoń przy skroni celuje, spust (salut) strzela z oczu krótkim promieniem. 2 many. Oślepia na czerwono.',
+    'Promień z oczu trwa 1 s.', 'Promień z oczu trwa 2 s.'],
+    how:'Luźna dłoń przy skroni = celownik, spust = strzał (2 many).'},
+  squat:{branch:'CZAS', name:'PRZYSIAD', desc:['Przysiad pod ciosem (głowa niżej o 25 cm) daje +2 many.'],
+    how:'Przykucnij pod ciosem: +2 many.'},
+  speed:{branch:'CZAS', name:'BÓG PRĘDKOŚCI', max:3, desc:['Obie ręce daleko za siebie: wszystko zwalnia na 2 s. 3 many.',
+    'Spowolnienie 3,5 s, mocniejsze.', 'Spowolnienie 5 s, świat prawie stoi.'],
+    how:'Obie ręce daleko za plecy: spowolnienie (3 many).'},
+  armor:{branch:'CIAŁO', name:'PANCERZ', max:3, desc:['+2 maks. HP.', '+2 maks. HP (razem +4).', '+2 maks. HP (razem +6).'], how:'Więcej HP.'},
+  tank:{branch:'CIAŁO', name:'ZBIORNIK', max:3, desc:['+3 maks. many, mana wraca o 30% szybciej.', 'Znowu +3 many i +30% odnowy.', 'Znowu +3 many i +30% odnowy.'], how:'Więcej many.'}
 };
+const BRANCHES = ['PIĘŚĆ', 'DŁOŃ', 'OCZY', 'CZAS', 'CIAŁO'];
+const maxLvl = id => UPGRADES[id].max || 1;
 const cardPlanes = [0, 1, 2].map(() => { const p = textPlane(0.24, 0.3, 384, 480); p.visible = false; p.renderOrder = 21; return p; });
+const FONT = (w, px) => `${w} ${px}px "Chakra Petch", "Arial Narrow", sans-serif`;
+// word-wraps text at x (left or centre aligned, whatever ctx.textAlign is); returns the y below it
+function wrap(ctx, text, x, y, maxW, lh){
+  let line = '';
+  text.split(' ').forEach(w => {
+    if (line && ctx.measureText(line + w).width > maxW){ ctx.fillText(line.trim(), x, y); y += lh; line = ''; }
+    line += w + ' ';
+  });
+  if (line.trim()){ ctx.fillText(line.trim(), x, y); y += lh; }
+  return y;
+}
 function drawCard(p, id){
-  const {c, ctx, tex} = p.userData, U = UPGRADES[id];
+  const {c, ctx, tex} = p.userData, U = UPGRADES[id], next = lvl(id) + 1, mx = maxLvl(id);
   ctx.clearRect(0, 0, c.width, c.height);
   ctx.fillStyle = 'rgba(10,14,26,.92)'; ctx.fillRect(0, 0, c.width, c.height);
   ctx.strokeStyle = '#ffc861'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, c.width - 8, c.height - 8);
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#ffc861';
-  ctx.font = '700 52px "Chakra Petch", "Arial Narrow", sans-serif'; ctx.fillText(U.name, c.width / 2, 34);
-  ctx.fillStyle = '#e9ecf5'; ctx.font = '500 34px "Chakra Petch", "Arial Narrow", sans-serif';
-  let line = '', y = 130;
-  U.desc.split(' ').forEach(w => {
-    if (ctx.measureText(line + w).width > c.width - 50){ ctx.fillText(line.trim(), c.width / 2, y); y += 42; line = ''; }
-    line += w + ' ';
-  });
-  ctx.fillText(line.trim(), c.width / 2, y);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillStyle = '#6fb0ff'; ctx.font = FONT(700, 26); ctx.fillText(U.branch, c.width / 2, 22);
+  ctx.fillStyle = '#ffc861'; ctx.font = FONT(700, U.name.length > 10 ? 38 : 48); ctx.fillText(U.name, c.width / 2, 54);
+  if (mx > 1){ ctx.fillStyle = '#e9ecf5'; ctx.font = FONT(700, 28); ctx.fillText(`POZIOM ${next}/${mx}`, c.width / 2, 110); }
+  ctx.fillStyle = '#e9ecf5'; ctx.font = FONT(500, 31);
+  wrap(ctx, U.desc[next - 1], c.width / 2, 156, c.width - 44, 38);
   ctx.fillStyle = '#8a95ad'; ctx.font = '500 28px "Chakra Petch", "Arial Narrow", sans-serif'; ctx.fillText('uderz pięścią', c.width / 2, c.height - 60);
   tex.needsUpdate = true; p.userData.key = id;
 }
 function offerCards(){
-  const pool = Object.keys(UPGRADES).filter(id => !G.ups.includes(id)).sort(() => Math.random() - 0.5).slice(0, 3);
+  const pool = Object.keys(UPGRADES).filter(id => lvl(id) < maxLvl(id) && (!UPGRADES[id].req || has(UPGRADES[id].req)))
+    .sort(() => Math.random() - 0.5).slice(0, 3);
   if (!pool.length) return;
   G.cards = pool.map((id, i) => {
     const p = cardPlanes[i], off = (i - (pool.length - 1) / 2) * 0.3;
@@ -1437,13 +1484,15 @@ function updateCards(){
   for (const h of hands){
     const u = h.userData;
     if (!u.ready || u.stance !== 'fist' || u.speed < MIN_SPEED) continue;
-    if (nextBtn.visible && u.pos.distanceTo(nextBtn.position) < 0.13){ nextBtn.visible = false; hideCards(); SFX.pick(); pulse(h, 0.8, 120); advance(); return; }
+    if (nextBtn.visible && u.pos.distanceTo(nextBtn.position) < 0.13){ nextBtn.visible = false; hideCards(); stats.visible = false; SFX.pick(); pulse(h, 0.8, 120); advance(); return; }
     if (!G.cards) continue;
     const c = G.cards.find(c => u.pos.distanceTo(c.p.position) < 0.14);
     if (!c) continue;
     G.ups.push(c.id); SFX.pick(); pulse(h, 0.8, 120);
+    G.hp = maxHp(); G.mana = maxMana();
     spray(c.p.position, awayFromMe(c.p.position), 20, 0xffc861, 1.5);
-    showToast(UPGRADES[c.id].name, '#ffc861');
+    showToast(maxLvl(c.id) > 1 ? `${UPGRADES[c.id].name} ${lvl(c.id)}` : UPGRADES[c.id].name, '#ffc861');
+    showStats();
     hideCards(); G.cards = []; // empty, not null: one pick per rest
     return;
   }
@@ -1465,13 +1514,20 @@ function updateHands(dt){
     u.prev.copy(u.pos); u.ready = !!u.hand;
     // grip = fist, trigger = blade hand, nothing = loose; the fist wins when both are held
     const b = u.src?.gamepad?.buttons;
+    u.was = u.stance;
     if (b){
       const prev = u.stance;
+      // A/X or B/Y pauses and shows the moves
+      const ab = !!(b[4]?.pressed || b[5]?.pressed);
+      if (ab && !u.ab) togglePause();
+      u.ab = ab;
       u.stance = b[1]?.pressed ? 'fist' : b[0]?.pressed ? 'blade' : 'loose';
       // a hand that just closed into a fist can grab for a short while (VR timing is rarely frame-exact)
       if (prev !== 'fist' && u.stance === 'fist'){ u.grabT = 0; u.grabUsed = false; } else u.grabT = (u.grabT ?? 9) + dt;
       u.grabEv = u.stance === 'fist' && !u.grabUsed && u.grabT < 0.25;
     }
+    // a hand stuck in a Szczęka's mouth can't do anything (unless you wear the heavy gloves)
+    if (u.bitten && !has('gloves')){ u.stance = 'loose'; u.grabEv = false; }
     u.isFist = u.stance === 'fist';
     // Ładunek: a fist held still for a second charges up
     if (u.stance !== 'fist'){ u.still = 0; u.charged = false; }
@@ -1748,6 +1804,469 @@ function separate(){
   }
 }
 
+/* ---------- wrecks: dead robots float off slowly; they block others and you can throw them ---------- */
+const wrecks = [], tmpC = v3();
+function wreck(obj, vel, spin, r){
+  if (obj.parent !== scene) scene.attach(obj);
+  wrecks.push({obj, vel:vel.clone(), spin:spin.clone(), r, age:0, held:null, off:v3(), thrown:false, hitSet:null});
+  while (wrecks.length > 10) dropWreck(wrecks[0]);
+}
+// shrinks away as ordinary debris
+function dropWreck(w){ wrecks.splice(wrecks.indexOf(w), 1); addDebris(w.obj, w.vel.clone(), w.spin.clone(), 0.8); }
+function clearWrecks(){ wrecks.forEach(w => scene.remove(w.obj)); wrecks.length = 0; }
+function updateWrecks(gdt){
+  for (let i = wrecks.length - 1; i >= 0; i--){
+    const w = wrecks[i], p = w.obj.position; w.age += gdt;
+    if (w.held){
+      const u = w.held.userData;
+      if (u.ready && u.stance === 'fist'){ p.lerp(tmpC.copy(u.pos).add(w.off), 1 - Math.exp(-gdt * 20)); w.vel.copy(u.vel); continue; }
+      // let go: a swing throws it like an enemy
+      const h = w.held; w.held = null; w.thrown = u.speed > 1; w.hitSet = new Set();
+      if (w.thrown){ w.vel.copy(u.vel).multiplyScalar(1.4); SFX.swing(); pulse(h, 0.8, 100); showToast('RZUT WRAKIEM', '#ffc861'); }
+    }
+    if (w.thrown){ w.vel.multiplyScalar(Math.exp(-0.5 * gdt)); if (w.vel.length() < 1.2) w.thrown = false; }
+    else w.vel.lerp(tmpC.copy(awayFromMe(p)).multiplyScalar(0.18).add(v3(0, 0.03, 0)), 1 - Math.exp(-2 * gdt)); // the fling dies down to a slow drift
+    p.addScaledVector(w.vel, gdt);
+    w.obj.rotation.x += w.spin.x * gdt; w.obj.rotation.y += w.spin.y * gdt; w.obj.rotation.z += w.spin.z * gdt;
+    if (!w.thrown) w.spin.multiplyScalar(Math.exp(-0.5 * gdt));
+    const fz = tmpC.copy(p).sub(anchor.pos).dot(anchor.fwd);
+    if (fz < WALL_Z + w.r){ p.addScaledVector(anchor.fwd, WALL_Z + w.r - fz); const vn = w.vel.dot(anchor.fwd); if (vn < 0) w.vel.addScaledVector(anchor.fwd, -1.5 * vn); }
+    // in the way: robots and jaws get pushed round it; a thrown one hits them like Bilard
+    for (const o of enemies){
+      if (o.state === 'dead' || o.state === 'held' || o.state === 'grabbed') continue;
+      const d = o.g.position.distanceTo(p), min = bodyR(o) + w.r;
+      if (d >= min || d < 1e-5) continue;
+      const n = tmpC.copy(o.g.position).sub(p).normalize();
+      if (w.thrown && !w.hitSet.has(o)){
+        w.hitSet.add(o); hit(o, 'bump', null, o.g.position.clone(), w.vel.clone().normalize());
+        w.vel.multiplyScalar(0.5); spray(o.g.position, n, 14, 0xffffff, 2); SFX.block(); showToast('BILARD', '#ffc861');
+      } else o.g.position.addScaledVector(n, min - d);
+    }
+    for (const j of jaws){
+      if (j.state === 'bite' || j.state === 'held' || j.state === 'pry') continue;
+      const d = j.g.position.distanceTo(p), min = JAW_R + w.r;
+      if (d >= min || d < 1e-5) continue;
+      if (w.thrown && !w.hitSet.has(j)){ w.hitSet.add(j); w.vel.multiplyScalar(0.5); smackJaw(j, Math.sign(w.vel.y) || 1, null); }
+      else j.g.position.addScaledVector(tmpC.copy(j.g.position).sub(p).normalize(), min - d);
+    }
+    // grab it like an enemy: close the hand on it
+    for (const h of hands){
+      const u = h.userData;
+      if (!u.ready || !u.grabEv || u.speed > 1.4 || u.palm.distanceTo(p) > w.r + 0.07) continue;
+      u.grabEv = false; u.grabUsed = true; w.held = h; w.off.copy(p).sub(u.pos); SFX.grab(); pulse(h, 0.5, 60);
+      break;
+    }
+    if (!w.held && (w.age > 40 || p.distanceTo(anchor.pos) > 10)) dropWreck(w);
+  }
+}
+
+/* ---------- Szczęka: a flying chomper with jets behind ---------- */
+// A metal jaw (about 45 cm across) that hovers in front of you chomping: open 0.7 s, shut 0.6 s, then lunges at
+// your face. A fist or blade pushed into it gets bitten and stuck. It takes JAW_HP hits: a smack from above or
+// below while it is shut (it tumbles off and comes back), a smack with the free hand while it hangs on the other,
+// a thrown wreck, or the laser. Two hands closing on its sides lift it; then it can be thrown (Bilard),
+// slammed down (Imadło) or, with Rękawice, pried open and split in two.
+const JAW_HP = 3, JAW_R = 0.23;
+const jaws = [];
+const JAW_GEO = {
+  dome:[0, Math.PI / 2].map(t0 => new THREE.SphereGeometry(JAW_R, 16, 6, 0, Math.PI * 2, t0, Math.PI / 2)),
+  inner:[0, Math.PI / 2].map(t0 => new THREE.SphereGeometry(JAW_R * 0.9, 14, 5, 0, Math.PI * 2, t0, Math.PI / 2)),
+  lip:(() => { const g = new THREE.RingGeometry(JAW_R * 0.88, JAW_R * 1.03, 24); g.rotateX(-Math.PI / 2); return g; })(),
+  tooth:new THREE.ConeGeometry(0.016, 0.055, 4),
+  nozzle:(() => { const g = new THREE.CylinderGeometry(0.035, 0.05, 0.1, 8); g.rotateX(Math.PI / 2); return g; })(),
+  flame:(() => { const g = new THREE.ConeGeometry(0.04, 0.22, 8); g.rotateX(-Math.PI / 2); g.translate(0, 0, -0.11); return g; })(),
+  eye:new THREE.SphereGeometry(0.022, 8, 6),
+  fin:new THREE.BoxGeometry(0.012, 0.07, 0.14),
+  pip:new THREE.BoxGeometry(0.035, 0.012, 0.004)
+};
+const JAW_MAT = {
+  steel:new THREE.MeshStandardMaterial({color:0x58616d, metalness:0.8, roughness:0.32, flatShading:true}),
+  plate:new THREE.MeshStandardMaterial({color:0xd0761c, metalness:0.5, roughness:0.4, flatShading:true, side:THREE.DoubleSide}),
+  tooth:new THREE.MeshStandardMaterial({color:0xece6d6, metalness:0.4, roughness:0.25, flatShading:true}),
+  mouth:new THREE.MeshStandardMaterial({color:0x6a0c10, roughness:0.55, emissive:0x2a0204, side:THREE.BackSide, flatShading:true}),
+  flame:new THREE.MeshBasicMaterial({color:0x7fc8ff, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false})
+};
+function makeJaw(){
+  const g = new THREE.Group(), eyeMat = new THREE.MeshBasicMaterial({color:0xffd23a});
+  // each half hangs on a hinge at the back, so the front opens
+  const [up, lo] = [true, false].map(top => {
+    const hinge = new THREE.Group(); hinge.position.z = -JAW_R * 0.8;
+    const half = new THREE.Group(); half.position.z = JAW_R * 0.8; hinge.add(half);
+    half.add(new THREE.Mesh(JAW_GEO.dome[top ? 0 : 1], JAW_MAT.steel), new THREE.Mesh(JAW_GEO.inner[top ? 0 : 1], JAW_MAT.mouth), new THREE.Mesh(JAW_GEO.lip, JAW_MAT.plate));
+    for (let k = 0; k < 11; k++){
+      const a = -0.8 * Math.PI + k * 0.16 * Math.PI, t = new THREE.Mesh(JAW_GEO.tooth, JAW_MAT.tooth);
+      t.position.set(Math.sin(a) * JAW_R * 0.9, top ? -0.022 : 0.022, Math.cos(a) * JAW_R * 0.9);
+      if (top) t.rotation.x = Math.PI;
+      half.add(t);
+    }
+    const fin = new THREE.Mesh(JAW_GEO.fin, JAW_MAT.plate); fin.position.set(0, (top ? 1 : -1) * JAW_R * 0.98, -0.02); half.add(fin);
+    if (top) [-1, 1].forEach(s => { const eye = new THREE.Mesh(JAW_GEO.eye, eyeMat); eye.position.set(s * 0.07, JAW_R * 0.72, JAW_R * 0.6); half.add(eye); });
+    else { const tongue = new THREE.Mesh(GEO.gut, GORE.gut); tongue.rotation.x = Math.PI / 2 - 0.3; tongue.position.set(0, 0.035, 0.02); tongue.scale.set(2.4, 1.3, 1); half.add(tongue); }
+    g.add(hinge);
+    return hinge;
+  });
+  const flames = [-1, 1].map(s => {
+    const n = new THREE.Mesh(JAW_GEO.nozzle, JAW_MAT.steel); n.position.set(s * 0.09, -0.02, -JAW_R - 0.02); g.add(n);
+    const f = new THREE.Mesh(JAW_GEO.flame, JAW_MAT.flame); f.position.set(s * 0.09, -0.02, -JAW_R - 0.07); g.add(f);
+    return f;
+  });
+  const pips = [0, 1, 2].map(k => { const m = new THREE.Mesh(JAW_GEO.pip, matOf(0xff3b24)); m.position.set((k - 1) * 0.045, JAW_R + 0.1, 0); g.add(m); return m; });
+  return {g, up, lo, flames, pips, eyeMat, hp:JAW_HP, state:'approach', ang:0, goal:v3(), from:v3(), aim:v3(), open:0, ph:0, cycles:0, rest:0,
+    kv:v3(), roll:0, spin:0, t:0, cool:[0, 0], bite:null, gnaw:0, held:[], off:v3(), pry:null, lasT:0, thrown:false, hitSet:null, bob:Math.random() * 6};
+}
+const jawCap = round => round >= 4 ? 2 : round >= 2 ? 1 : 0;
+function spawnJaws(gdt, round){
+  G.jawT -= gdt;
+  if (G.jawT > 0 || jaws.length >= jawCap(round)) return;
+  G.jawT = rnd(8, 14);
+  const j = makeJaw(); j.ang = rnd(-35, 35);
+  j.g.position.copy(anchor.pos).addScaledVector(dirAt(j.ang + rnd(-15, 15)), 9).setY(anchor.pos.y + rnd(-1, 2));
+  scene.add(j.g); jaws.push(j);
+}
+const jawStage = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(j.ang), 2.3).setY(anchor.pos.y - 0.1 + Math.sin(j.bob * 1.3) * 0.08);
+const jawFront = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(Math.max(-25, Math.min(25, j.ang))), 0.6).setY(anchor.pos.y - 0.22 + Math.sin(j.bob * 2) * 0.03);
+function releaseJaw(j){
+  if (j.bite) j.bite.userData.bitten = null;
+  j.bite = null; j.held = []; j.pry = null;
+}
+function jawAway(j, v = 2){ releaseJaw(j); j.state = 'tumble'; j.kv.copy(awayFromMe(j.g.position)).multiplyScalar(v).add(v3(0, rnd(-0.5, 0.5), 0)); j.spin = rnd(-4, 4); }
+function biteHand(j, h){
+  const u = h.userData;
+  releaseJaw(j);
+  j.state = 'bite'; j.bite = h; j.t = 0; j.gnaw = 0; u.bitten = j;
+  SFX.chomp(); pulse(h, 1, 220); blood(u.pos, UP, 10, 1); spray(u.pos, UP, 6, 0xffffff, 1);
+  showToast(has('gloves') ? 'ZAKLINOWANA' : 'UGRYZIONA RĘKA', '#ff4a2b');
+}
+// s: +1 knocks it up, -1 down, 0 just rattles it (while it hangs on your hand)
+function smackJaw(j, s, h){
+  j.hp--; if (G) G.blows++;
+  SFX.block(); SFX.punch(); if (h) pulse(h, 0.8, 90);
+  spray(j.g.position, v3(0, s || 1, 0), 14, 0xffc861, 2);
+  if (j.hp <= 0){ killJaw(j, 'burst', h); return; }
+  showToast(`SZCZĘKA ${JAW_HP - j.hp}/${JAW_HP}`, '#ffc861');
+  if (j.state === 'bite' || j.state === 'pry'){ j.roll = 0.5 * (Math.random() < 0.5 ? -1 : 1); return; }
+  releaseJaw(j);
+  j.state = 'tumble'; j.thrown = false;
+  j.kv.copy(awayFromMe(j.g.position)).multiplyScalar(1.6).add(v3(0, 3.2 * (s || 1), 0)); j.spin = 9 * (s || 1);
+}
+function killJaw(j, style, h){
+  releaseJaw(j); jaws.splice(jaws.indexOf(j), 1); bulletTime();
+  if (G) G.kills.jaw++;
+  const p = j.g.position.clone(), away = awayFromMe(p);
+  j.eyeMat.color.setHex(0x221100); SFX.kill(); SFX.splat(); SFX.boom();
+  spray(p, away, 16, 0xece6d6, 2.4); spray(p, UP, 10, 0xffa040, 2); mist(p);
+  if (style === 'split'){
+    // pried apart like a log: the halves go up and down, the insides spill out
+    if (G){ G.fatal++; G.mana = Math.min(maxMana(), G.mana + 3); }
+    SFX.fatal(); SFX.rip(); showToast('ROZŁUPANA', '#ff4a2b');
+    hands.forEach(x => { pulse(x, 1, 220); x.userData.blood = 1; });
+    blood(p, UP, 70, 2.4); guts(p, away, 6); meat(p, away, 8); mist(p);
+    bleed(j.up, v3(0, -0.02, JAW_R * 0.8), v3(0, -1, 0.3), 60, 2, 0.8); bleed(j.lo, v3(0, 0.02, JAW_R * 0.8), v3(0, 1, 0.3), 60, 2, 0.8);
+    wreck(j.up, v3(0, 1.8, 0).addScaledVector(away, 0.6), v3(5, 1, 1), JAW_R * 0.8);
+    wreck(j.lo, v3(0, -1.6, 0).addScaledVector(away, 0.6), v3(-5, 1, 1), JAW_R * 0.8);
+  } else if (style === 'crushed'){
+    showToast('ZGNIECIONA', '#ff4a2b'); hands.forEach(x => pulse(x, 1, 200));
+    blood(p, v3(0, 1, 0), 50, 2.2); meat(p, away, 10); spray(p, away, 16, 0xece6d6, 3);
+    wreck(j.up, away.clone().multiplyScalar(1.5).add(v3(-0.8, -0.8, 0)), v3(6, 2, 1), JAW_R * 0.8);
+    wreck(j.lo, away.clone().multiplyScalar(1.5).add(v3(0.8, -1.2, 0)), v3(-6, 2, 1), JAW_R * 0.8);
+  } else {
+    showToast('ROZBITA', '#ff4a2b'); if (h) h.userData.blood = Math.min(1, h.userData.blood + 0.5);
+    blood(p, away, 30, 2); meat(p, away, 5);
+    wreck(j.up, away.clone().multiplyScalar(1.5).add(v3(0, 2, 0)), v3(4, 2, 1), JAW_R * 0.8);
+    wreck(j.lo, away.clone().multiplyScalar(1.5).add(v3(0, -1.2, 0)), v3(-4, 2, 1), JAW_R * 0.8);
+  }
+  scene.remove(j.g);
+}
+function clearJaws(){ jaws.forEach(j => { releaseJaw(j); scene.remove(j.g); }); jaws.length = 0; }
+// fists and blades on the jaw: two hands closing on its sides lift it; otherwise a smack from above or below
+// while it is shut knocks it away, anything else gets bitten
+function jawHands(j){
+  const p = j.g.position, right = v3(1, 0, 0).transformDirection(j.g.matrixWorld);
+  for (let i = 0; i < 2; i++){
+    const h = hands[i], u = h.userData;
+    if (!u.ready || u.bitten || !u.grabEv || u.speed > 1.4 || j.held.includes(h)) continue;
+    const rel = tmpC.copy(u.palm).sub(p);
+    if (rel.length() > JAW_R + 0.08 || Math.abs(rel.dot(right)) < 0.07) continue;
+    u.grabEv = false; u.grabUsed = true; j.held.push(h); j.t = 0; SFX.grab(); pulse(h, 0.6, 80);
+    if (j.held.length === 1){ j.state = 'held'; j.off.copy(p).sub(u.pos); }
+    return true;
+  }
+  if (j.state === 'held') return false;
+  for (let i = 0; i < 2; i++){
+    const h = hands[i], u = h.userData;
+    if (!u.ready || u.bitten || j.cool[i] > 0 || u.speed < MIN_SPEED || (u.stance !== 'fist' && u.stance !== 'blade')) continue;
+    if (u.pos.distanceTo(p) > JAW_R + 0.05) continue;
+    j.cool[i] = 0.4;
+    const rel = u.pos.y - p.y, vertical = u.speed > 1.0 && Math.abs(u.vel.y) > 0.6 * u.speed;
+    if (j.open < 0.35 && vertical && (u.vel.y < 0 ? rel > 0.02 : rel < -0.02)) smackJaw(j, Math.sign(u.vel.y), h);
+    else biteHand(j, h);
+    return true;
+  }
+  return false;
+}
+function updateJaws(dt, gdt){
+  for (let i = jaws.length - 1; i >= 0; i--){
+    const j = jaws[i], p = j.g.position;
+    j.t += gdt; j.bob += gdt;
+    j.cool[0] = Math.max(0, j.cool[0] - dt); j.cool[1] = Math.max(0, j.cool[1] - dt);
+    let want = 0.25 + 0.2 * Math.sin(j.bob * 5), fast = false; // idle: nervous chatter
+    if (j.state === 'approach' || j.state === 'come'){
+      if (j.state === 'approach') jawStage(j); else jawFront(j);
+      const d = p.distanceTo(j.goal), sp = (j.state === 'come' ? 2.6 : 2.2) * (1 + Math.min(2, Math.max(0, d - 2) / 2));
+      if (d > 1e-4) p.addScaledVector(tmpC.copy(j.goal).sub(p).divideScalar(d), Math.min(d, sp * gdt));
+      if (d < 0.05){ if (j.state === 'come'){ j.state = 'front'; j.ph = 0; j.cycles = 0; } else { j.state = 'stage'; j.rest = rnd(1.0, 2.5); } }
+      want = 0.1; fast = true;
+    } else if (j.state === 'stage'){
+      jawStage(j); p.lerp(j.goal, 1 - Math.exp(-3 * gdt));
+      j.rest -= gdt;
+      // one jaw in your face at a time
+      if (j.rest <= 0 && !jaws.some(o => o !== j && ['come', 'front', 'lunge', 'bite', 'held', 'pry'].includes(o.state))) j.state = 'come';
+    } else if (j.state === 'front'){
+      jawFront(j); p.lerp(j.goal, 1 - Math.exp(-5 * gdt));
+      const was = j.ph; j.ph += gdt;
+      want = j.ph < 0.7 ? 1 : 0;
+      if (was < 0.7 && j.ph >= 0.7) SFX.chomp();
+      if (j.ph >= 1.3){ j.ph = 0; if (++j.cycles >= 3){ j.state = 'lunge'; j.t = 0; j.aim.copy(head.pos); j.from.copy(p); SFX.swing(); } }
+    } else if (j.state === 'lunge'){
+      // straight at your face, mouth wide; a hand in the way gets bitten instead
+      const f = Math.min(1, j.t / 0.35);
+      p.lerpVectors(j.from, j.aim, f * f * 0.85); want = 1; fast = true;
+      const blocker = hands.find(h => h.userData.ready && !h.userData.bitten && h.userData.pos.distanceTo(p) < JAW_R);
+      if (blocker) biteHand(j, blocker);
+      else if (f >= 1){
+        SFX.chomp();
+        if (head.pos.distanceTo(j.aim) > 0.22){ G.dodges++; showToast('UNIK', '#8fb3e8'); }
+        else { hurtPlayer(1); showToast('UGRYZIONY', '#ff4a2b'); }
+        j.state = 'approach'; j.ang = rnd(-35, 35);
+      }
+    } else if (j.state === 'tumble'){
+      p.addScaledVector(j.kv, gdt); j.kv.multiplyScalar(Math.exp(-1.6 * gdt));
+      j.roll += j.spin * gdt; j.spin *= Math.exp(-1.2 * gdt); want = 0;
+      if (j.thrown && j.kv.length() > 1.5){
+        for (const o of enemies){
+          if (o.state === 'dead' || j.hitSet.has(o) || o.g.position.distanceTo(p) > bodyR(o) + JAW_R) continue;
+          j.hitSet.add(o); hit(o, 'bump', null, o.g.position.clone(), j.kv.clone().normalize());
+          j.kv.multiplyScalar(0.55); spray(o.g.position, j.kv.clone().normalize(), 14, 0xffffff, 2); SFX.block(); showToast('BILARD', '#ffc861');
+        }
+      }
+      const fz = tmpC.copy(p).sub(anchor.pos).dot(anchor.fwd);
+      if (fz < WALL_Z + JAW_R){ p.addScaledVector(anchor.fwd, WALL_Z + JAW_R - fz); const vn = j.kv.dot(anchor.fwd); if (vn < 0) j.kv.addScaledVector(anchor.fwd, -1.6 * vn); }
+      if (j.kv.length() < 0.6){ j.thrown = false; j.state = 'approach'; j.ang = rnd(-35, 35); }
+    } else if (j.state === 'bite'){
+      const u = j.bite.userData, ix = hands.indexOf(j.bite), o = hands[1 - ix], ou = o.userData;
+      p.copy(u.pos).addScaledVector(awayFromMe(u.pos), 0.03); want = 0.12;
+      if (!has('gloves')){ j.gnaw += gdt; if (j.gnaw > 2.5){ j.gnaw = 0; hurtPlayer(1); SFX.chomp(); blood(u.pos, UP, 10, 1); } }
+      if (Math.random() < dt * 12) pulse(j.bite, 0.35, 30);
+      if (!u.ready || j.t > 6){ jawAway(j); showToast('PUŚCIŁA', '#8a95ad'); }
+      // Rękawice: the other fist closing inside the mouth starts the split
+      else if (has('gloves') && ou.ready && ou.grabEv && ou.speed < 1.4 && ou.palm.distanceTo(p) < JAW_R * 0.8){
+        ou.grabEv = false; ou.grabUsed = true; j.state = 'pry'; j.pry = {d0:Math.abs(u.pos.y - ou.pos.y)}; SFX.grab(); showToast('ROZEPCHNIJ', '#ffc861');
+      } else if (ou.ready && j.cool[1 - ix] <= 0 && ou.speed > MIN_SPEED && (ou.stance === 'fist' || ou.stance === 'blade') && ou.pos.distanceTo(p) < JAW_R + 0.06){
+        j.cool[1 - ix] = 0.4; smackJaw(j, 0, o);
+      }
+    } else if (j.state === 'pry'){
+      const a = hands[0].userData, b = hands[1].userData;
+      if (!a.ready || !b.ready || !a.isFist || !b.isFist){ jawAway(j); continue; }
+      p.copy(a.pos).add(b.pos).multiplyScalar(0.5);
+      const f = (Math.abs(a.pos.y - b.pos.y) - j.pry.d0) / 0.22;
+      j.open = Math.max(0.1, Math.min(1.7, 0.1 + 1.6 * f)); want = j.open;
+      if (Math.random() < Math.max(0, f) * 0.5) drip(p);
+      if (Math.random() < 0.3) hands.forEach(h => pulse(h, 0.2 + 0.6 * Math.max(0, f), 30));
+      if (f >= 1){ killJaw(j, 'split'); continue; }
+    } else if (j.state === 'held'){
+      const hs = j.held.map(h => h.userData);
+      if (hs.some(u => !u.ready || u.stance !== 'fist')){
+        // let go: with both hands in a swing it is thrown and knocks into others like Bilard
+        const v = hs.length === 2 ? hs[0].vel.clone().add(hs[1].vel).multiplyScalar(0.5) : hs[0].vel.clone(), two = hs.length === 2;
+        releaseJaw(j); j.state = 'tumble';
+        if (two && v.length() > 1){ j.kv.copy(v).multiplyScalar(1.5); j.thrown = true; j.hitSet = new Set(); j.spin = 6; SFX.swing(); showToast('RZUT', '#ffc861'); }
+        else { j.kv.copy(v).add(awayFromMe(p)); j.spin = 2; }
+      } else if (hs.length === 1){
+        p.lerp(tmpC.copy(hs[0].pos).add(j.off), 1 - Math.exp(-15 * gdt)); want = 0.3;
+        if (j.t > 0.8) biteHand(j, j.held[0]); // one hand is not enough: it twists round and bites it
+      } else {
+        p.lerp(tmpC.copy(hs[0].pos).add(hs[1].pos).multiplyScalar(0.5), 1 - Math.exp(-20 * gdt)); want = 0; j.roll = Math.sin(j.t * 25) * 0.12;
+        if (Math.random() < dt * 10) j.held.forEach(h => pulse(h, 0.3, 30));
+        if (has('vise') && hs.every(u => u.vel.y < -2.0)){ killJaw(j, 'crushed', j.held[1]); continue; }
+        if (j.t > 3){ jawAway(j); showToast('WYRWAŁA SIĘ', '#ff4a2b'); }
+      }
+    }
+    // keep out of the robots' torsos
+    if (j.state !== 'bite' && j.state !== 'held' && j.state !== 'pry'){
+      for (const o of enemies){
+        if (o.state === 'dead') continue;
+        const d = o.g.position.distanceTo(p), min = bodyR(o) + JAW_R;
+        if (d < min && d > 1e-5) p.addScaledVector(tmpC.copy(p).sub(o.g.position).divideScalar(d), min - d);
+      }
+    }
+    if (!jaws.includes(j)) continue;
+    if ((['come', 'front', 'lunge', 'stage', 'approach'].includes(j.state) || (j.state === 'held' && j.held.length === 1)) && p.distanceTo(head.pos) < 1.2){ j.g.updateMatrixWorld(true); jawHands(j); }
+    // pose: face you, open the jaw (snaps shut fast), roll when tumbling, jets flicker
+    if (j.state !== 'pry'){ const k = want > j.open ? 8 : 30; j.open += (want - j.open) * (1 - Math.exp(-k * gdt)); }
+    if (j.state !== 'tumble') j.roll *= Math.exp(-6 * gdt);
+    j.g.lookAt(anchor.pos.x, p.y, anchor.pos.z); j.g.rotateX(j.roll);
+    j.up.rotation.x = -0.75 * j.open; j.lo.rotation.x = 0.45 * j.open;
+    j.flames.forEach(f => { f.scale.set(1, 1, (fast ? 1.4 : 0.7) + Math.random() * 0.5); f.visible = j.state !== 'bite' && j.state !== 'pry'; });
+    if (fast && Math.random() < 0.6) particle(GEO.spark, matOf(0x9fd8ff), j.flames[i % 2].getWorldPosition(tmpB), awayFromMe(p).multiplyScalar(1.2).add(jitter(0.3)), 0.3, 0, 1.2);
+    j.pips.forEach((m, k) => m.visible = k < j.hp);
+  }
+}
+
+/* ---------- powers: laser eyes and the god of speed ---------- */
+const LASER = [0, 0.3, 1.0, 2.0];                                         // beam seconds per level
+const SLOW = [null, {dur:2, k:0.45}, {dur:3.5, k:0.35}, {dur:5, k:0.25}];  // slow-motion length and world speed per level
+const beamGeo = new THREE.CylinderGeometry(0.003, 0.009, 1, 6); beamGeo.translate(0, 0.5, 0);
+const beamMat = new THREE.MeshBasicMaterial({color:0xff2a1a, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false});
+const beams = [-1, 1].map(() => { const m = new THREE.Mesh(beamGeo, beamMat); m.visible = false; scene.add(m); return m; });
+const crosshair = new THREE.Mesh(new THREE.RingGeometry(0.016, 0.024, 24), new THREE.MeshBasicMaterial({color:0xff4a2b, transparent:true, opacity:0.9, depthTest:false, side:THREE.DoubleSide}));
+crosshair.renderOrder = 31; crosshair.visible = false; scene.add(crosshair);
+const overlay = color => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), new THREE.MeshBasicMaterial({color, transparent:true, opacity:0, side:THREE.BackSide, depthTest:false})); m.renderOrder = 30; scene.add(m); return m; };
+const blind = overlay(0xff1a0a), chrono = overlay(0x3a7cff);
+const slowK = () => G?.pw?.slowT > 0 ? SLOW[Math.max(1, lvl('speed'))].k : 1;
+function rayDist(o, d, p){ const t = tmpC.copy(p).sub(o).dot(d); return t < 0 ? Infinity : tmpC.copy(o).addScaledVector(d, t).distanceTo(p); }
+function updatePowers(dt){
+  const P = G.pw || (G.pw = {beamT:0, beamCool:0, slowT:0, slowCool:0, behindT:0, aim:false, buzz:0});
+  P.beamCool -= dt; P.slowCool -= dt;
+  const right = v3(-head.fwd.z, 0, head.fwd.x);
+  // Laser: a loose hand at the side of the head aims, pulling the trigger (a flat hand, a salute) fires
+  P.aim = false;
+  const L = lvl('laser');
+  if (L) hands.forEach(h => {
+    const u = h.userData; if (!u.ready || u.bitten) return;
+    const rel = tmpC.copy(u.pos).sub(head.pos);
+    const temple = rel.length() < 0.2 && Math.abs(rel.dot(right)) > 0.05 && Math.abs(rel.dot(head.fwd)) < 0.1 && rel.y > -0.12;
+    if (!temple) return;
+    if (u.stance === 'loose') P.aim = true;
+    if (u.stance === 'blade' && u.was === 'loose' && P.beamT <= 0 && P.beamCool <= 0){
+      if (G.mana < 2){ SFX.denied(); showToast('BRAK MANY', '#6fb0ff'); P.beamCool = 0.5; return; }
+      G.mana -= 2; P.beamT = LASER[L]; P.buzz = 0; showToast('LASER', '#ff4a2b'); pulse(h, 0.6, 100);
+    }
+  });
+  if (P.beamT > 0){
+    P.beamT -= dt; P.buzz -= dt;
+    if (P.buzz <= 0){ SFX.laser(); P.buzz = 0.35; }
+    const d = head.dir.clone().normalize(), q = new THREE.Quaternion().setFromUnitVectors(UP, d);
+    beams.forEach((b, k) => {
+      // starts a little way out, so it reads as two beams converging ahead rather than a wall over each eye
+      b.position.copy(head.pos).addScaledVector(d, 0.35).addScaledVector(right, (k ? 1 : -1) * 0.03).y -= 0.03;
+      b.quaternion.copy(q); b.scale.set(1 + Math.random() * 0.6, 9, 1 + Math.random() * 0.6); b.visible = true;
+    });
+    // burns whatever it crosses, a tick every 0.3 s
+    for (const e of enemies){
+      if (e.state === 'dead') continue;
+      e.lasT = (e.lasT || 0) - dt; if (e.lasT > 0) continue;
+      const hp = e.head.getWorldPosition(v3()), r = 0.17 * e.scale;
+      const at = rayDist(head.pos, d, e.g.position) < r + 0.05 ? e.g.position.clone() : rayDist(head.pos, d, hp) < r ? hp : null;
+      if (!at) continue;
+      e.lasT = 0.3; spray(at, d.clone().negate(), 8, 0xff6a3a, 1.5);
+      hit(e, 'laser', null, at, d.clone());
+    }
+    for (const j of jaws.slice()){
+      j.lasT -= dt; if (j.lasT > 0 || rayDist(head.pos, d, j.g.position) > JAW_R) continue;
+      j.lasT = 0.5; smackJaw(j, Math.random() < 0.5 ? 1 : -1, null);
+    }
+    if (P.beamT <= 0) P.beamCool = 1.0;
+  } else beams.forEach(b => b.visible = false);
+  // the price: everything goes red while the eyes burn
+  blind.material.opacity += ((P.beamT > 0 ? 0.42 : 0) - blind.material.opacity) * Math.min(1, dt * 10);
+  crosshair.visible = P.aim || P.beamT > 0;
+  if (crosshair.visible){ crosshair.position.copy(head.pos).addScaledVector(head.dir, 1.2); crosshair.lookAt(head.pos); }
+  // Bóg prędkości: both hands far behind your back slows the world down
+  const S = lvl('speed');
+  if (S && P.slowT <= 0 && P.slowCool <= 0){
+    const behind = hands.every(h => h.userData.ready && tmpC.copy(h.userData.pos).sub(head.pos).dot(head.fwd) < -0.2);
+    P.behindT = behind ? P.behindT + dt : 0;
+    if (P.behindT > 0.15){
+      P.behindT = 0;
+      if (G.mana < 3){ SFX.denied(); showToast('BRAK MANY', '#6fb0ff'); P.slowCool = 1; }
+      else { G.mana -= 3; P.slowT = SLOW[S].dur; SFX.slow(); showToast('BÓG PRĘDKOŚCI', '#6fb0ff'); hands.forEach(h => pulse(h, 0.5, 120)); }
+    }
+  }
+  if (P.slowT > 0){ P.slowT -= dt; if (P.slowT <= 0){ P.slowCool = 3; SFX.slow(); } }
+  chrono.material.opacity += ((P.slowT > 0 ? 0.13 : 0) - chrono.material.opacity) * Math.min(1, dt * 6);
+  blind.position.copy(head.pos); chrono.position.copy(head.pos);
+}
+function hidePowers(){ beams.forEach(b => b.visible = false); crosshair.visible = false; blind.material.opacity = chrono.material.opacity = 0; if (G?.pw) G.pw.beamT = G.pw.slowT = 0; }
+
+/* ---------- pause (A/B): the moves in front of you ---------- */
+let paused = false;
+const tut = textPlane(1.5, 1.07, 1536, 1100); tut.visible = false; tut.renderOrder = 40;
+const TUT = [
+  ['CIOS', 'Grip = pięść. Wypchnij ją od siebie w tułów lub głowę.'],
+  ['DŁOŃ BOJOWA', 'Spust = płaska dłoń. Przez szyję ścina głowę. 1 mana.'],
+  ['PODBRÓDKOWY', 'Pięść szybko z dołu w podbródek: 3 tarczy, głowa w kosmos.'],
+  ['MŁOT', 'Obie pięści razem, z góry na głowę lub tułów: 4 tarczy.'],
+  ['RZUT', 'Zaciśnij dłoń na wrogu albo wraku, zamach, puść grip.'],
+  ['GRANAT', 'Złap luźną dłonią, puść grip w zamachu, żeby odrzucić.'],
+  ['FATALITY', 'Ogłuszony Brutal: cięcie w szyję, podbródkowy, młot albo rozerwanie (obie pięści, jedna w górę, druga w dół).'],
+  ['SZCZĘKA', 'Bij z góry lub z dołu, kiedy zamknięta (3 razy). Pięść w paszczy utknie: wal Szczękę drugą ręką. Oburącz z boków: podnosisz i rzucasz.']
+];
+function drawTut(){
+  const {c, ctx, tex} = tut.userData;
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(8,11,20,.94)'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = '#6fb0ff'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, c.width - 6, c.height - 6);
+  ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffc861'; ctx.font = FONT(700, 64); ctx.fillText('PAUZA', 50, 34);
+  ctx.fillStyle = '#8a95ad'; ctx.font = FONT(500, 34); ctx.textAlign = 'right'; ctx.fillText('A / B: wracasz do walki', c.width - 50, 52);
+  ctx.textAlign = 'left';
+  const rows = TUT.concat(Object.keys(UPGRADES).filter(has).map(id => [UPGRADES[id].name + (maxLvl(id) > 1 ? ' ' + lvl(id) : ''), UPGRADES[id].how, true]));
+  let y = 130;
+  const lh = rows.length > 14 ? 38 : rows.length > 11 ? 44 : 50;
+  ctx.font = FONT(500, lh - 6);
+  for (const [name, how, up] of rows){
+    ctx.fillStyle = up ? '#6fb0ff' : '#ffc861'; ctx.font = FONT(700, lh - 4); ctx.fillText(name, 50, y);
+    ctx.fillStyle = '#e9ecf5'; ctx.font = FONT(500, lh - 6);
+    y = wrap(ctx, how, 420, y, c.width - 470, lh) + 8;
+  }
+  tex.needsUpdate = true; tut.userData.key = 'tut';
+}
+function togglePause(){
+  if (!G || G.plan[G.i].kind === 'done') return;
+  paused = !paused;
+  if (paused){
+    drawTut();
+    tut.position.copy(head.pos).addScaledVector(head.fwd, 1.3); tut.position.y = head.pos.y - 0.1;
+    tut.lookAt(head.pos.x, tut.position.y, head.pos.z);
+  }
+  tut.visible = paused; SFX.pick();
+}
+
+/* ---------- character sheet shown in the break: stats and the upgrade tree ---------- */
+const stats = textPlane(0.5, 0.72, 700, 1008); stats.visible = false; stats.renderOrder = 21;
+function showStats(){
+  const {c, ctx, tex} = stats.userData;
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.fillStyle = 'rgba(10,14,26,.92)'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = '#6fb0ff'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, c.width - 6, c.height - 6);
+  ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffc861'; ctx.font = FONT(700, 50); ctx.fillText('TWOJA POSTAĆ', 36, 28);
+  ctx.fillStyle = '#e9ecf5'; ctx.font = FONT(500, 32);
+  ctx.fillText(`HP ${maxHp()}   Mana ${maxMana()}   odnowa ${manaRegen().toFixed(2)}/s`, 36, 96);
+  ctx.fillStyle = '#8a95ad';
+  ctx.fillText(`Zabici ${totalKills()}   fatality ${G.fatal}   Szczęki ${G.kills.jaw}`, 36, 138);
+  let y = 200;
+  for (const br of BRANCHES){
+    ctx.fillStyle = '#6fb0ff'; ctx.font = FONT(700, 30); ctx.fillText(br, 36, y); y += 40;
+    for (const id of Object.keys(UPGRADES).filter(k => UPGRADES[k].branch === br)){
+      const U = UPGRADES[id], n = lvl(id), locked = U.req && !has(U.req);
+      ctx.fillStyle = n ? '#e9ecf5' : locked ? '#4a5368' : '#8a95ad'; ctx.font = FONT(n ? 700 : 500, 30);
+      ctx.fillText(U.name, 66, y);
+      if (locked){ ctx.font = FONT(500, 24); ctx.fillText(`po: ${UPGRADES[U.req].name}`, 400, y + 4); }
+      else for (let k = 0; k < maxLvl(id); k++){
+        ctx.beginPath(); ctx.arc(420 + k * 40, y + 16, 12, 0, Math.PI * 2);
+        if (k < n){ ctx.fillStyle = '#ffc861'; ctx.fill(); } else { ctx.strokeStyle = '#4a5368'; ctx.lineWidth = 3; ctx.stroke(); }
+      }
+      y += 42;
+    }
+    y += 8;
+  }
+  tex.needsUpdate = true; stats.userData.key = G.ups.join();
+  stats.position.copy(anchor.pos).addScaledVector(anchor.fwd, 0.85).addScaledVector(anchor.right, -0.62); stats.position.y = anchor.pos.y - 0.12;
+  stats.lookAt(anchor.pos.x, stats.position.y, anchor.pos.z);
+  stats.visible = true;
+}
+
 function updateEnemies(dt, gdt){
   if (G) charges(gdt);
   for (let i = enemies.length - 1; i >= 0; i--){
@@ -1780,13 +2299,15 @@ function clearEnemies(){
 }
 
 function enterStep(step){
-  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 1.0; SFX.wave(); hideCards(); nextBtn.visible = false; }
+  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 1.0; SFX.wave(); hideCards(); nextBtn.visible = false; stats.visible = false; }
   if (step.kind === 'rest'){
-    G.hp = PLAYER_HP; G.mana = MANA; clearBombs(); offerCards(); showNext();
+    G.hp = maxHp(); G.mana = maxMana(); clearBombs(); offerCards(); showNext(); showStats();
     enemies.forEach(e => { if (e.state !== 'dead'){ e.state = 'dead'; addDebris(e.g, awayFromMe(e.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); } });
+    jaws.forEach(j => { releaseJaw(j); addDebris(j.g, awayFromMe(j.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); }); jaws.length = 0;
+    wrecks.slice().forEach(dropWreck); hidePowers();
     SFX.rest();
   }
-  if (step.kind === 'done'){ clearEnemies(); clearBombs(); hideCards(); nextBtn.visible = false; SFX.wave(); }
+  if (step.kind === 'done'){ clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); hideCards(); nextBtn.visible = false; stats.visible = false; hidePowers(); SFX.wave(); }
 }
 
 function fmt(s){ s = Math.max(0, Math.ceil(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
@@ -1832,8 +2353,11 @@ function updateHud(step){
 function loop(){
   const dt = Math.min(0.05, clock.getDelta());
   updateHead(); updateHands(dt);
+  // paused (A/B): the world stands still behind the moves panel
+  if (paused){ toast.visible = false; renderer.render(scene, camera); return; }
+  if (G && G.plan[G.i].kind === 'work') updatePowers(dt); else hidePowers();
   if (tsHold > 0) tsHold -= dt; else ts += (1 - ts) * Math.min(1, dt * 4);
-  const gdt = dt * ts;
+  const gdt = dt * Math.min(ts, slowK());
   headLight.position.copy(head.pos).add(v3(0, 0.3, 0));
   hurt.position.copy(head.pos); hurt.material.opacity = Math.max(0, hurt.material.opacity - dt * 1.2);
   if (toastT > 0){ toastT -= dt; toast.visible = true; } else toast.visible = false;
@@ -1848,8 +2372,9 @@ function loop(){
       const role = G.spawnT <= 0 && wantSpawn(step.round);
       if (role){ spawn(step.round, role); G.spawnT = 1.6 + Math.random() * 1.2 - Math.min(step.round, 6) * 0.12; }
     }
-    if (step.kind === 'work') G.mana = Math.min(MANA, G.mana + MANA_REGEN * dt);
-    updateEnemies(dt, gdt); updateBombs(gdt); thunderclap(dt);
+    if (step.kind === 'work') G.mana = Math.min(maxMana(), G.mana + manaRegen() * dt);
+    if (step.kind === 'work') spawnJaws(gdt, step.round);
+    updateEnemies(dt, gdt); updateBombs(gdt); thunderclap(dt); updateJaws(dt, gdt); updateWrecks(gdt);
     if (step.kind === 'rest') updateCards();
     updateHud(step); drawWatches();
   }
@@ -1869,14 +2394,14 @@ async function startSession(){
   }
   session.addEventListener('end', onEnded);
   await renderer.xr.setSession(session);
-  G = newGame(); ts = 1; clock.getDelta();
+  G = newGame(); ts = 1; paused = false; tut.visible = false; clock.getDelta();
   renderer.setAnimationLoop(loop);
   $('status').textContent = 'Walka trwa w goglach.';
 }
 function endSession(){ session?.end(); }
 function onEnded(){
   renderer.setAnimationLoop(null);
-  clearEnemies(); clearBombs(); hideCards(); nextBtn.visible = false; debris.forEach(d => scene.remove(d.obj)); debris.length = 0; bleeders.length = 0;
+  clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); hidePowers(); hideCards(); nextBtn.visible = false; stats.visible = false; paused = false; tut.visible = false; debris.forEach(d => scene.remove(d.obj)); debris.length = 0; bleeders.length = 0;
   if (G && (totalKills() + G.leaks) > 0){
     const rec = {date:new Date().toISOString(), kills:totalKills(), punch:G.kills.punch, decap:G.kills.decap, rip:G.kills.rip, fatal:G.fatal,
       leaks:G.leaks, blows:G.blows, blocks:G.blocks, dodges:G.dodges, kos:G.kos, rounds:cfg.rounds, work:cfg.work, finished:G.plan[G.i].kind === 'done'};
@@ -2029,8 +2554,8 @@ window.__obPreview = function(mode, w, h){
     hands[0].userData.stance = 'loose'; hands[0].userData.curl = 0.4; hands[0].userData.bladeK = 0; poseHand(hands[0].userData.model, 0.4, 0);
     enemies.forEach(o => o.showStatus());
   } else if (mode === 'cards'){
-    G.i = work + 1; G.t = 9; G.ups = ['squat'];
-    offerCards(); showNext();
+    G.i = work + 1; G.t = 9; G.ups = ['squat', 'laser', 'armor', 'armor', 'charge'];
+    offerCards(); showNext(); showStats();
     setHand(0, -0.25, 1.15, -0.25, false, -1); setHand(1, 0.18, 1.3, -0.35, true, 1, 0.2);
   } else if (mode === 'ship'){
     // looking back from the enemies' side: the hull, the doorway and you guarding it
@@ -2041,6 +2566,41 @@ window.__obPreview = function(mode, w, h){
     setHand(0, -0.22, 1.3, -0.35, true, -1, 0.3); setHand(1, 0.22, 1.3, -0.35, true, 1, 0.3);
     camera.fov = 70; camera.updateProjectionMatrix();
     camera.position.set(-1.6, 2.1, -3.4); camera.lookAt(0, 1.2, 0);
+  } else if (mode === 'jaw'){
+    // one chomping in front of you, one with its teeth in your left fist, one on the staging line
+    G.i = work; G.t = cfg.work - 21;
+    put('grunt', 35, 1.05, -0.2, 'hover');
+    const a = makeJaw(); a.state = 'front'; a.open = 0.9; a.g.position.copy(anchor.pos).addScaledVector(dirAt(8), 0.62).setY(anchor.pos.y - 0.15);
+    const b = makeJaw(); b.state = 'stage'; b.open = 0.3; b.g.position.copy(anchor.pos).addScaledVector(dirAt(-30), 2.0).setY(anchor.pos.y + 0.1);
+    setHand(0, -0.3, 1.25, -0.35, true, -1, 0.3); setHand(1, 0.25, 1.3, -0.35, true, 1, 0.2);
+    const c2 = makeJaw(); c2.state = 'bite'; c2.open = 0.12; c2.g.position.copy(hands[0].userData.pos).addScaledVector(awayFromMe(hands[0].userData.pos), 0.03);
+    [a, b, c2].forEach(j => { scene.add(j.g); j.g.lookAt(anchor.pos.x, j.g.position.y, anchor.pos.z); j.up.rotation.x = -0.75 * j.open; j.lo.rotation.x = 0.45 * j.open; });
+  } else if (mode === 'jawsplit'){
+    G.i = work; G.t = cfg.work - 26;
+    const j = makeJaw(); j.g.position.set(0, 1.35, -0.5); scene.add(j.g); j.g.lookAt(anchor.pos.x, 1.35, anchor.pos.z); jaws.push(j);
+    setHand(0, -0.05, 1.5, -0.45, true, -1, 0.3); setHand(1, 0.05, 1.2, -0.45, true, 1, 0.3);
+    killJaw(j, 'split'); sim(0.35); for (let k = 0; k < 20; k++) updateWrecks(1/60);
+    toast.visible = true;
+  } else if (mode === 'laser'){
+    G.i = work; G.t = cfg.work - 30; G.ups = ['laser', 'laser'];
+    put('soldier', 0, 1.05, -0.05, 'hover'); put('grunt', -30, 0.62, -0.35, 'windup', 0.5);
+    setHand(0, -0.25, 1.2, -0.3, true, -1, 0.3); setHand(1, 0.13, 1.66, -0.02, false, 1, 0.2);
+    head.dir.set(0, -0.05, -1).normalize();
+    G.pw = {beamT:0.8, beamCool:0, slowT:0, slowCool:0, behindT:0, aim:true, buzz:1};
+    updatePowers(1/60); blind.material.opacity = 0.42;
+    camera.lookAt(0, 1.55, -1);
+  } else if (mode === 'pause'){
+    G.i = work; G.t = cfg.work - 30; G.ups = ['charge', 'laser', 'laser', 'speed'];
+    put('soldier', 10, 0.62, -0.35, 'windup', 1);
+    drawTut(); tut.position.set(0, 1.55, -1.3); tut.lookAt(0, 1.55, 0); tut.visible = true;
+    camera.lookAt(0, 1.55, -1);
+  } else if (mode === 'wrecks'){
+    G.i = work; G.t = cfg.work - 40;
+    const a = put('grunt', -20, 0.9, -0.2, 'hover'), b = put('soldier', 15, 1.1, -0.1, 'hover');
+    put('brute', 0, 2.4, -0.1, 'hover');
+    kill(a, 'punch', hands[0], a.g.position.clone()); kill(b, 'shatter', hands[1], b.g.position.clone());
+    setHand(0, -0.25, 1.2, -0.3, true, -1, 0.3); setHand(1, 0.25, 1.2, -0.3, true, 1, 0.3);
+    for (let k = 0; k < 90; k++){ updateWrecks(1/60); updateDebris(1/60); updateBleeders(1/60); }
   } else if (mode === 'rest'){
     G.i = work + 1; G.t = 13; G.cards = []; showNext();
     setHand(0, -0.25, 1.05, -0.2, false, -1); setHand(1, 0.25, 1.05, -0.2, false, 1);
@@ -2081,7 +2641,8 @@ window.__obSim = function(sec, round = 4, puncher = false){
     // optional: the right fist jabs whoever is winding up, twice a second
     if (puncher && target && t % 0.5 < 1/60){ Object.assign(u, {ready:true, isFist:true, stance:'fist', speed:2.5}); u.pos.copy(target.g.position); u.vel.copy(awayFromMe(target.g.position)).multiplyScalar(2.5); }
     else Object.assign(u, {ready:false, speed:0, stance:'loose'});
-    updateEnemies(1/60, 1/60); updateBombs(1/60); updateBleeders(1/60); updateDebris(1/60);
+    spawnJaws(1/60, step.round);
+    updateEnemies(1/60, 1/60); updateBombs(1/60); updateJaws(1/60, 1/60); updateWrecks(1/60); updateBleeders(1/60); updateDebris(1/60);
     swings += enemies.filter(e => e.state === 'swing' && e.sw < 1.5/60).length;
     const near = enemies.filter(e => e.state !== 'approach' && e.state !== 'dead');
     for (let i = 0; i < near.length; i++) for (let j = i + 1; j < near.length; j++){
@@ -2089,13 +2650,15 @@ window.__obSim = function(sec, round = 4, puncher = false){
       minGap = Math.min(minGap, Math.hypot(a.x - b.x, a.z - b.z) - bodyR(near[i]) - bodyR(near[j]));
     }
   }
-  const r = {alive:enemies.length, rings:enemies.map(e => `${e.type}:${e.ring}:${e.state}:${e.ang}`), swings, hits:G.leaks, hp:G.hp, kos:G.kos, kills:totalKills(), blows:G.blows, bombs:G.bombs || 0, minGap:+minGap.toFixed(3)};
-  clearEnemies(); clearBombs(); G = null; return r;
+  const r = {jawsAlive:jaws.length, wrecks:wrecks.length, alive:enemies.length, rings:enemies.map(e => `${e.type}:${e.ring}:${e.state}:${e.ang}`), swings, hits:G.leaks, hp:G.hp, kos:G.kos, kills:totalKills(), blows:G.blows, bombs:G.bombs || 0, minGap:+minGap.toFixed(3)};
+  r.jaws = G.kills.jaw; clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); G = null; return r;
 };
 
 // internals for headless tests of single mechanics (Playwright / devtools)
 window.__obDebug = () => ({G, setG:g => { G = g; }, newGame, enemies, bombs, hands, head, anchor, makeEnemy, spawn, hit, stun, shove, throwBomb,
-  updateEnemies, updateBombs, updateHands, thunderclap, setAnchor, clearEnemies, clearBombs, dirAt, enterStep, updateCards, nextBtn});
+  updateEnemies, updateBombs, updateHands, thunderclap, setAnchor, clearEnemies, clearBombs, dirAt, enterStep, updateCards, nextBtn,
+  jaws, wrecks, makeJaw, spawnJaws, updateJaws, updateWrecks, clearJaws, clearWrecks, smackJaw, biteHand, wreck, updatePowers, togglePause,
+  isPaused:() => paused, offerCards, lvl, maxHp, maxMana, slowK});
 
 /* ---------- headset check ---------- */
 (async () => {

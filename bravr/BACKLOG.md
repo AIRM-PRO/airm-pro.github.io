@@ -2,6 +2,13 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## v0.9 (Oct 2026)
+
+- [x] A/B pause with a moves panel; character sheet with stats and the upgrade tree in the break.
+- [x] Upgrade tree with prerequisites and 3-level upgrades (Laser, Bóg prędkości, Pancerz, Zbiornik); new Imadło and Rękawice.
+- [x] Szczęka: flying jaw, smack from above/below when shut, bites fists, lift with both hands and throw, crush (Imadło), split (Rękawice).
+- [x] Dead robots float as wrecks that block others and can be thrown.
+
 ## v0.8 (Oct 2026)
 
 - [x] Super moves: uppercut to the chin (3 shield, head launched up) and two-fist hammer from above (4 shield, crushes the robot). Both are fatalities on a stunned brute.

@@ -42,9 +42,28 @@ _Avoid_: "resilience" or "armor" for the shield.
   - On a stunned brute both are fatalities.
 - **Ear clap** (*Klaśnięcie w uszy*): both hands in blade-hand stance strike opposite sides of the head within 0.15 s of each other, each moving inward. Against a shield it drains 3 and briefly dazes the enemy (it pauses its attack). Otherwise it deals 8 HP. On a stunned enemy it is a fatality: the head bursts.
 
+## Szczęka (the jaw)
+
+- A flying metal jaw about 45 cm across, pushed by two jets at the back. It hovers in front of you chomping (open, shut, three times), then lunges at your face.
+- **3 hits** kill it: a smack from **above or below while it is shut** (it tumbles up or down a few metres and comes back), a smack with the free hand while it bites the other, a thrown wreck, or the laser.
+- **Bite** (*Ugryzienie*): a fist or blade pushed into it any other way gets stuck in its teeth; that hand does nothing until the jaw dies or lets go (6 s), and it gnaws 1 HP every 2.5 s.
+- **Lift** (*Podniesienie*): two hands closing on its sides. One hand alone isn't enough: it twists round and bites. Released in a swing it is thrown and knocks into others (Bilard). **Imadło**: slam it down to crush it. **Rękawice**: a bite no longer locks the hand; push the other fist into the mouth and pull the hands apart vertically to split it like a log (fatality).
+
+## Wrecks
+
+- **Wreck** (*Wrak*): the body of a dead robot or jaw. It flies off from the kill, slows to a drift away from the ship, blocks other enemies, and can be grabbed and thrown at them (a Bilard hit). It shrinks away after about 40 s or 10 m.
+
 ## Mana
 
 - **Mana** (*Mana*): a pool of 10 that refills at about 1 point per 2 s. It is shown on the right wrist watch (HP is on the left). It pays for the strong moves: a blade strike costs 1, an ear clap 3, and a fatality is free and refunds some mana. Punches are free. With an empty pool, a blade hand acts as a loose hand.
+
+## Upgrade tree and powers
+
+- Upgrades sit on branches (Pięść, Dłoń, Oczy, Czas, Ciało). Some need another first (Burza after Ładunek, Rękawice after Imadło); Laser, Bóg prędkości, Pancerz and Zbiornik have **3 levels**. Each card shows the next level. A knockout takes back the last level picked.
+- **Character sheet** (*Twoja postać*): shown in the break next to the cards: max HP, max mana, regen, kills and the tree with level pips.
+- **Laser**: a loose hand at the side of your head (like a scout salute in waiting) shows a crosshair where you look; pulling the trigger (flat hand) fires from the eyes: 0.3 s, then 1 s, then 2 s by level. 2 mana. While it fires you see everything through red.
+- **Bóg prędkości** (god of speed): both hands far behind your back slows the world (not you) for 2 / 3.5 / 5 s by level. 3 mana.
+- **Pause** (*Pauza*): A or B shows all moves and your upgrades and freezes the fight.
 
 ## Gloves and watches
 
