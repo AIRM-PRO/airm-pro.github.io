@@ -75,7 +75,7 @@ th{color:var(--muted);font-weight:400}
 <body>
 <main>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.9</span></h1>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.9.1</span></h1>
     <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj, uważaj na latające Szczęki. W przerwach rozwijasz drzewko ulepszeń: laser z oczu, spowolnienie czasu, pancerz.</p>
   </header>
 
@@ -1541,7 +1541,9 @@ function updateHands(dt){
     poseHand(u.model, u.curl, u.bladeK);
     u.blood = Math.max(0, u.blood - dt * 0.04);
     u.model.skin.color.copy(GLOVE).lerp(GLOVE_GORE, Math.min(1, u.blood * 1.2));
-    u.model.skin.emissive.setHex(u.charged ? 0x6a2a00 : 0x000000);
+    // a bitten glove throbs red so you can tell which hand is stuck
+    if (u.bitten) u.model.skin.emissive.setRGB(0.5 + 0.4 * Math.sin(performance.now() / 70), 0, 0);
+    else u.model.skin.emissive.setHex(u.charged ? 0x6a2a00 : 0x000000);
     if (u.ready && u.blood > 0.25 && Math.random() < u.blood * dt * 8) drip(u.pos);
   });
 }
@@ -1886,6 +1888,18 @@ const JAW_MAT = {
   mouth:new THREE.MeshStandardMaterial({color:0x6a0c10, roughness:0.55, emissive:0x2a0204, side:THREE.BackSide, flatShading:true}),
   flame:new THREE.MeshBasicMaterial({color:0x7fc8ff, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false})
 };
+// a dead jaw goes dark like a dead robot
+const JAW_DEAD = {
+  steel:new THREE.MeshStandardMaterial({color:0x1c1e22, metalness:0.6, roughness:0.6, flatShading:true}),
+  plate:new THREE.MeshStandardMaterial({color:0x2e1708, metalness:0.4, roughness:0.7, flatShading:true, side:THREE.DoubleSide}),
+  tooth:new THREE.MeshStandardMaterial({color:0x5e574b, metalness:0.3, roughness:0.6, flatShading:true}),
+  mouth:new THREE.MeshStandardMaterial({color:0x1c0306, roughness:0.8, side:THREE.BackSide, flatShading:true})
+};
+function charJaw(j){
+  j.g.traverse(o => { if (!o.isMesh) return; for (const k in JAW_DEAD) if (o.material === JAW_MAT[k]) o.material = JAW_DEAD[k]; });
+  j.eyeMat.color.setHex(0x221100); j.flames.forEach(f => f.visible = false); j.pips.forEach(m => m.visible = false);
+  if (j.tag) scene.remove(j.tag);
+}
 function makeJaw(){
   const g = new THREE.Group(), eyeMat = new THREE.MeshBasicMaterial({color:0xffd23a});
   // each half hangs on a hinge at the back, so the front opens
@@ -1928,13 +1942,25 @@ const jawFront = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(Math.max(-25
 function releaseJaw(j){
   if (j.bite) j.bite.userData.bitten = null;
   j.bite = null; j.held = []; j.pry = null;
+  if (j.tag) j.tag.visible = false;
+}
+// floating label over a biting jaw: what happened, what to do, how long it holds on
+function jawTag(j){
+  const tag = j.tag || (j.tag = textPlane(0.38, 0.152, 512, 205));
+  const left = Math.max(0, Math.ceil(6 - j.t)), gl = has('gloves');
+  draw(tag, [{text:'UGRYZIONA!', size:66, color:'#ff4a2b'},
+    {text:gl ? 'DRUGA PIĘŚĆ W PASZCZĘ' : 'BIJ JĄ DRUGĄ RĘKĄ', size:40, color:'#ffc861'},
+    {text:`${JAW_HP - j.hp}/${JAW_HP}  ·  puści za ${left} s`, size:34, color:'#c9d1e0'}], `${gl}${j.hp}${left}`);
+  tag.visible = true;
+  tag.position.copy(j.g.position).add(v3(0, JAW_R + 0.16, 0)); tag.lookAt(head.pos);
 }
 function jawAway(j, v = 2){ releaseJaw(j); j.state = 'tumble'; j.kv.copy(awayFromMe(j.g.position)).multiplyScalar(v).add(v3(0, rnd(-0.5, 0.5), 0)); j.spin = rnd(-4, 4); }
 function biteHand(j, h){
   const u = h.userData;
   releaseJaw(j);
   j.state = 'bite'; j.bite = h; j.t = 0; j.gnaw = 0; u.bitten = j;
-  SFX.chomp(); pulse(h, 1, 220); blood(u.pos, UP, 10, 1); spray(u.pos, UP, 6, 0xffffff, 1);
+  SFX.chomp(); SFX.hurt(); pulse(h, 1, 350); blood(u.pos, UP, 18, 1.2); spray(u.pos, UP, 8, 0xffffff, 1);
+  hurt.material.opacity = Math.max(hurt.material.opacity, 0.45);
   showToast(has('gloves') ? 'ZAKLINOWANA' : 'UGRYZIONA RĘKA', '#ff4a2b');
 }
 // s: +1 knocks it up, -1 down, 0 just rattles it (while it hangs on your hand)
@@ -1953,7 +1979,7 @@ function killJaw(j, style, h){
   releaseJaw(j); jaws.splice(jaws.indexOf(j), 1); bulletTime();
   if (G) G.kills.jaw++;
   const p = j.g.position.clone(), away = awayFromMe(p);
-  j.eyeMat.color.setHex(0x221100); SFX.kill(); SFX.splat(); SFX.boom();
+  charJaw(j); SFX.kill(); SFX.splat(); SFX.boom();
   spray(p, away, 16, 0xece6d6, 2.4); spray(p, UP, 10, 0xffa040, 2); mist(p);
   if (style === 'split'){
     // pried apart like a log: the halves go up and down, the insides spill out
@@ -1964,20 +1990,30 @@ function killJaw(j, style, h){
     bleed(j.up, v3(0, -0.02, JAW_R * 0.8), v3(0, -1, 0.3), 60, 2, 0.8); bleed(j.lo, v3(0, 0.02, JAW_R * 0.8), v3(0, 1, 0.3), 60, 2, 0.8);
     wreck(j.up, v3(0, 1.8, 0).addScaledVector(away, 0.6), v3(5, 1, 1), JAW_R * 0.8);
     wreck(j.lo, v3(0, -1.6, 0).addScaledVector(away, 0.6), v3(-5, 1, 1), JAW_R * 0.8);
-  } else if (style === 'crushed'){
+    scene.remove(j.g);
+    return;
+  }
+  // otherwise it stays in one piece: crushed flat, or dented with the jaw hanging slack and teeth knocked out
+  j.g.rotation.z += rnd(-0.5, 0.5);
+  [j.up, j.lo].forEach(x => x.traverse(o => {
+    if (o.isMesh && o.geometry === JAW_GEO.tooth && Math.random() < 0.3){
+      particle(JAW_GEO.tooth, JAW_DEAD.tooth, o.getWorldPosition(v3()), away.clone().multiplyScalar(2).add(jitter(1.5)), 1.5, 3);
+      o.visible = false;
+    }
+  }));
+  if (style === 'crushed'){
     showToast('ZGNIECIONA', '#ff4a2b'); hands.forEach(x => pulse(x, 1, 200));
     blood(p, v3(0, 1, 0), 50, 2.2); meat(p, away, 10); spray(p, away, 16, 0xece6d6, 3);
-    wreck(j.up, away.clone().multiplyScalar(1.5).add(v3(-0.8, -0.8, 0)), v3(6, 2, 1), JAW_R * 0.8);
-    wreck(j.lo, away.clone().multiplyScalar(1.5).add(v3(0.8, -1.2, 0)), v3(-6, 2, 1), JAW_R * 0.8);
+    j.up.rotation.x = j.lo.rotation.x = 0; j.up.scale.set(1.15, 0.4, 1.1); j.lo.scale.set(1.15, 0.4, 1.1);
+    wreck(j.g, away.clone().multiplyScalar(1.5).add(v3(0, -1, 0)), v3(4, 2, 1), JAW_R);
   } else {
     showToast('ROZBITA', '#ff4a2b'); if (h) h.userData.blood = Math.min(1, h.userData.blood + 0.5);
     blood(p, away, 30, 2); meat(p, away, 5);
-    wreck(j.up, away.clone().multiplyScalar(1.5).add(v3(0, 2, 0)), v3(4, 2, 1), JAW_R * 0.8);
-    wreck(j.lo, away.clone().multiplyScalar(1.5).add(v3(0, -1.2, 0)), v3(-4, 2, 1), JAW_R * 0.8);
+    j.up.rotation.x = -0.35; j.lo.rotation.x = 0.6; j.up.scale.set(1, 0.85, 1);
+    wreck(j.g, away.clone().multiplyScalar(1.5).add(v3(0, 0.6, 0)), v3(4, 2, 1), JAW_R);
   }
-  scene.remove(j.g);
 }
-function clearJaws(){ jaws.forEach(j => { releaseJaw(j); scene.remove(j.g); }); jaws.length = 0; }
+function clearJaws(){ jaws.forEach(j => { releaseJaw(j); scene.remove(j.g); if (j.tag) scene.remove(j.tag); }); jaws.length = 0; }
 // fists and blades on the jaw: two hands closing on its sides lift it; otherwise a smack from above or below
 // while it is shut knocks it away, anything else gets bitten
 function jawHands(j){
@@ -2054,7 +2090,9 @@ function updateJaws(dt, gdt){
       if (j.kv.length() < 0.6){ j.thrown = false; j.state = 'approach'; j.ang = rnd(-35, 35); }
     } else if (j.state === 'bite'){
       const u = j.bite.userData, ix = hands.indexOf(j.bite), o = hands[1 - ix], ou = o.userData;
-      p.copy(u.pos).addScaledVector(awayFromMe(u.pos), 0.03); want = 0.12;
+      // the fist sits in the front teeth (not hidden in the middle); it shakes it like a dog
+      p.copy(u.pos).addScaledVector(awayFromMe(u.pos), JAW_R * 0.75); want = 0.2 + 0.12 * Math.sin(j.t * 22);
+      j.roll = Math.sin(j.t * 17) * 0.18; jawTag(j);
       if (!has('gloves')){ j.gnaw += gdt; if (j.gnaw > 2.5){ j.gnaw = 0; hurtPlayer(1); SFX.chomp(); blood(u.pos, UP, 10, 1); } }
       if (Math.random() < dt * 12) pulse(j.bite, 0.35, 30);
       if (!u.ready || j.t > 6){ jawAway(j); showToast('PUŚCIŁA', '#8a95ad'); }
@@ -2573,8 +2611,9 @@ window.__obPreview = function(mode, w, h){
     const a = makeJaw(); a.state = 'front'; a.open = 0.9; a.g.position.copy(anchor.pos).addScaledVector(dirAt(8), 0.62).setY(anchor.pos.y - 0.15);
     const b = makeJaw(); b.state = 'stage'; b.open = 0.3; b.g.position.copy(anchor.pos).addScaledVector(dirAt(-30), 2.0).setY(anchor.pos.y + 0.1);
     setHand(0, -0.3, 1.25, -0.35, true, -1, 0.3); setHand(1, 0.25, 1.3, -0.35, true, 1, 0.2);
-    const c2 = makeJaw(); c2.state = 'bite'; c2.open = 0.12; c2.g.position.copy(hands[0].userData.pos).addScaledVector(awayFromMe(hands[0].userData.pos), 0.03);
-    [a, b, c2].forEach(j => { scene.add(j.g); j.g.lookAt(anchor.pos.x, j.g.position.y, anchor.pos.z); j.up.rotation.x = -0.75 * j.open; j.lo.rotation.x = 0.45 * j.open; });
+    [a, b].forEach(j => { scene.add(j.g); j.g.lookAt(anchor.pos.x, j.g.position.y, anchor.pos.z); j.up.rotation.x = -0.75 * j.open; j.lo.rotation.x = 0.45 * j.open; });
+    const c2 = makeJaw(); scene.add(c2.g); jaws.push(c2); biteHand(c2, hands[0]); c2.hp = 2; c2.t = 1.5; updateJaws(1/60, 1/60);
+    hurt.material.opacity = 0; hands[0].userData.model.skin.emissive.setRGB(0.8, 0, 0); toast.visible = true;
   } else if (mode === 'jawsplit'){
     G.i = work; G.t = cfg.work - 26;
     const j = makeJaw(); j.g.position.set(0, 1.35, -0.5); scene.add(j.g); j.g.lookAt(anchor.pos.x, 1.35, anchor.pos.z); jaws.push(j);
@@ -2599,6 +2638,7 @@ window.__obPreview = function(mode, w, h){
     const a = put('grunt', -20, 0.9, -0.2, 'hover'), b = put('soldier', 15, 1.1, -0.1, 'hover');
     put('brute', 0, 2.4, -0.1, 'hover');
     kill(a, 'punch', hands[0], a.g.position.clone()); kill(b, 'shatter', hands[1], b.g.position.clone());
+    [[-5, 'burst'], [25, 'crushed']].forEach(([ang, style]) => { const j = makeJaw(); j.g.position.copy(anchor.pos).addScaledVector(dirAt(ang), 0.8).setY(anchor.pos.y - 0.2); j.g.lookAt(anchor.pos.x, j.g.position.y, anchor.pos.z); scene.add(j.g); jaws.push(j); killJaw(j, style); });
     setHand(0, -0.25, 1.2, -0.3, true, -1, 0.3); setHand(1, 0.25, 1.2, -0.3, true, 1, 0.3);
     for (let k = 0; k < 90; k++){ updateWrecks(1/60); updateDebris(1/60); updateBleeders(1/60); }
   } else if (mode === 'rest'){

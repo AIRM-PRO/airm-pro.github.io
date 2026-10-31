@@ -46,8 +46,8 @@ _Avoid_: "resilience" or "armor" for the shield.
 
 - A flying metal jaw about 45 cm across, pushed by two jets at the back. It hovers in front of you chomping (open, shut, three times), then lunges at your face.
 - **3 hits** kill it: a smack from **above or below while it is shut** (it tumbles up or down a few metres and comes back), a smack with the free hand while it bites the other, a thrown wreck, or the laser.
-- **Bite** (*Ugryzienie*): a fist or blade pushed into it any other way gets stuck in its teeth; that hand does nothing until the jaw dies or lets go (6 s), and it gnaws 1 HP every 2.5 s.
-- **Lift** (*Podniesienie*): two hands closing on its sides. One hand alone isn't enough: it twists round and bites. Released in a swing it is thrown and knocks into others (Bilard). **Imadło**: slam it down to crush it. **Rękawice**: a bite no longer locks the hand; push the other fist into the mouth and pull the hands apart vertically to split it like a log (fatality).
+- **Bite** (*Ugryzienie*): a fist or blade pushed into it any other way gets stuck in its teeth; that hand does nothing until the jaw dies or lets go (6 s), and it gnaws 1 HP every 2.5 s. A label over it says what to do and how long it holds on; the bitten glove throbs red.
+- **Lift** (*Podniesienie*): two hands closing on its sides. One hand alone isn't enough: it twists round and bites. Released in a swing it is thrown and knocks into others (Bilard). **Imadło**: slam it down to crush it. **Rękawice**: a bite no longer locks the hand; push the other fist into the mouth and pull the hands apart vertically to split it like a log (fatality). Rękawice needs Imadło first, so the earliest is the second break. A dead jaw turns dark; it only comes apart in two halves after the split.
 
 ## Wrecks
 
