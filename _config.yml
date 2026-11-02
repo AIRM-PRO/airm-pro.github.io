@@ -1,0 +1,8 @@
+# Plain static site: the games are self-contained HTML. Keep the notes for developers off the site.
+exclude:
+  - README.md
+  - CLAUDE.md
+  - bravr/CLAUDE.md
+  - bravr/CONTEXT.md
+  - bravr/BACKLOG.md
+  - skrzydla/CLAUDE.md
