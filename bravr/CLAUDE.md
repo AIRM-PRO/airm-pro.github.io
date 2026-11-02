@@ -4,6 +4,7 @@ VR brawler for Meta Quest 2, played in the Quest Browser via WebXR. The player w
 
 - Live: https://airm-pro.github.io/bravr (GitHub Pages, repo `AIRM-PRO/airm-pro.github.io`, branch `main`, folder `bravr/`). Moved from jknowak.pl/bravr in Nov 2026; the old URL redirects here.
 - **Version**: shown next to the title in the menu (`<span class="ver">` in the `h1`). Bump it with every change you push: minor for features (v0.5 → v0.6), patch for fixes (v0.5 → v0.5.1). History: v0.1 first version, v0.2 tutorial, v0.3 enemies punch back, v0.4 shields/grenades/upgrades, v0.5 robot enemies, drag and throw, open-ended breaks, v0.5.1 dedicated bombers from wave 1, v0.6 one-hit kills with gory finishes, faster tempo, front-only attack arc (feedback from a playtester), v0.7 ship hull with a doorway behind you, hit-and-run charges, throw on release, Bilard always on, v0.8 super moves (uppercut, two-fist hammer), v0.9 A/B pause with a moves panel, upgrade tree with levels and a character sheet in the break, Szczęka (flying jaw), laser eyes, god of speed, floating wrecks. v0.9.1 clearer bite (label with a hint and countdown, red throbbing glove, the fist held in the front teeth), dead jaws charred and in one piece unless split.
+v0.9.2 moved to airm-pro.github.io, link back to the game menu.
 - The old Claude artifact preview is no longer maintained; don't update it.
 - UI language: Polish. Code comments: English.
 - Domain terms (stances, shield, stun, fatality, bombs, upgrades) are defined in `CONTEXT.md`. The plan is in `BACKLOG.md`.

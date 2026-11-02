@@ -3,7 +3,7 @@
 Winged flight game for Meta Quest 2 in the Quest Browser via WebXR, with a browser fallback (keyboard / touch). You flap your real arms to climb, hold them out to glide, tilt them to bank, and fly through a procedurally generated fantasy city at dusk.
 
 - Live: https://airm-pro.github.io/skrzydla (GitHub Pages, repo `AIRM-PRO/airm-pro.github.io`, branch `main`, folder `skrzydla/`). Moved from jknowak.pl/skrzydla in Nov 2026; the old URL redirects here. Sibling of `bravr/` (Orbital Brawl), same conventions.
-- **Version** is in the `h1` (`<span class="ver">`). Bump with every push: minor for features, patch for fixes. History: v0.1 first version. v0.2 more lift, full-stroke flap bonus, stronger updrafts, endless sky layers (piętra) with campfire updrafts, noise/fog/flicker shaders, night sky with stars at altitude.
+- **Version** is in the `h1` (`<span class="ver">`). Bump with every push: minor for features, patch for fixes. History: v0.1 first version. v0.2 more lift, full-stroke flap bonus, stronger updrafts, endless sky layers (piętra) with campfire updrafts, noise/fog/flicker shaders, night sky with stars at altitude. v0.2.1 moved to airm-pro.github.io, link back to the game menu.
 - UI language: Polish. Code comments: English. No em dashes in UI text.
 
 ## Files
