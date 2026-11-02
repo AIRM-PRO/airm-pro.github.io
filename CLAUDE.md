@@ -1,6 +1,6 @@
-# airm.pro (repo AIRM-PRO/airm.github.io)
+# airm-pro.github.io (repo AIRM-PRO/airm-pro.github.io)
 
-Static GitHub Pages site for WebXR games, custom domain `airm.pro` (`CNAME` file). Branch `main`, deployed from the repo root.
+Static GitHub Pages site for WebXR games, no custom domain yet (to add one later: a `CNAME` file plus DNS records). Branch `main`, deployed from the repo root.
 
 - `index.html`: landing page linking the games. Polish UI.
 - `bravr/`: Orbital Brawl. Notes in `bravr/CLAUDE.md`, `CONTEXT.md`, `BACKLOG.md`.
