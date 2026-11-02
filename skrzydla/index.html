@@ -68,8 +68,8 @@ body:not(.flying) #view{display:none!important}
 <body>
 <main id="menu">
   <header>
-    <h1>Skrzy<em>dła</em> <span class="ver">v0.1</span></h1>
-    <p class="lede">Masz skrzydła. Machaj rękami, żeby się wzbić, rozłóż je, żeby szybować, i lataj między wieżami miasta, które powstaje na nowo przy każdym locie. Zbieraj lampiony, łap prądy wznoszące, płosz ptaki.</p>
+    <h1>Skrzy<em>dła</em> <span class="ver">v0.2</span></h1>
+    <p class="lede">Masz skrzydła. Machaj rękami, żeby się wzbić, rozłóż je, żeby szybować, i lataj między wieżami miasta, które powstaje na nowo przy każdym locie. Nad miastem są kolejne piętra latających wysp, bez końca. Ogniska na wyspach dają prąd, który wynosi cię piętro wyżej.</p>
   </header>
 
   <section class="panel btns">
@@ -86,12 +86,13 @@ body:not(.flying) #view{display:none!important}
   <section class="panel">
     <h2>Jak latać</h2>
     <div class="moves">
-      <div class="move"><b>Machnięcie</b><p>Ręce szeroko na boki, potem szybko w dół. Każde machnięcie unosi cię i pcha do przodu. Z ziemi albo z wieży machaj kilka razy, aż złapiesz prędkość.</p></div>
+      <div class="move"><b>Machnięcie</b><p>Ręce szeroko na boki, potem szybko w dół. Każde machnięcie unosi cię i pcha do przodu. Pełny zamach, od góry aż do bioder, daje do dwóch razy więcej siły. Z ziemi albo z wieży machaj kilka razy, aż złapiesz prędkość.</p></div>
       <div class="move"><b>Szybowanie</b><p>Trzymaj ręce rozłożone. Im szybciej lecisz, tym wolniej opadasz. Gdy ręce się zmęczą, wciśnij grip na obu kontrolerach: skrzydła zostaną rozłożone.</p></div>
       <div class="move"><b>Skręt</b><p>Przechyl skrzydła jak samolot. Lewa ręka w górę, prawa w dół: skręt w prawo. Odwrotnie: w lewo.</p></div>
       <div class="move"><b>Nurkowanie</b><p>Patrz w dół (albo ręce do tyłu w trybie „Ręce”). Złóż ręce przy ciele, żeby spadać jak kamień, i rozłóż je, żeby wyjść z nurkowania z dużą prędkością.</p></div>
       <div class="move"><b>Hamulec</b><p>Spusty (trigger) na kontrolerach. Przydaje się przed wieżą.</p></div>
-      <div class="move"><b>Prądy</b><p>Złote, migoczące kolumny unoszą cię w górę, jeśli masz rozłożone skrzydła.</p></div>
+      <div class="move"><b>Prądy</b><p>Złote, migoczące kolumny unoszą cię w górę, jeśli masz rozłożone skrzydła. Na wyspach biją z ognisk i sięgają następnego piętra.</p></div>
+      <div class="move"><b>Piętra</b><p>Miasto, potem Ogrody, Chmury, Kryształy, Świątynie i dalej w kółko, coraz bliżej nocy. Twój rekord piętra zapisuje się w lotach.</p></div>
       <div class="move"><b>Pauza</b><p>A albo X. W pauzie B albo Y kończy lot.</p></div>
     </div>
     <p class="note" style="margin-top:14px">W przeglądarce: <kbd>Spacja</kbd> machnięcie, <kbd>A</kbd>/<kbd>D</kbd> przechył, <kbd>W</kbd> dziób w dół, <kbd>S</kbd> dziób w górę, <kbd>Shift</kbd> złóż skrzydła, <kbd>E</kbd> hamulec, <kbd>P</kbd> pauza, <kbd>Esc</kbd> koniec. Na telefonie: przytrzymaj ekran, żeby machać, przesuń palec w bok, żeby skręcić.</p>
@@ -111,6 +112,7 @@ body:not(.flying) #view{display:none!important}
     <table id="hist"></table>
   </section>
 
+  <p class="note">Szum w shaderach: webgl-noise, Ashima Arts i Stefan Gustavson (licencja MIT).</p>
   <p class="note">Potrzebujesz miejsca na rozłożone ręce. Ustaw szeroką granicę Guardiana i odsuń meble. Jeśli zakręci ci się w głowie, zdejmij gogle na chwilę.</p>
 </main>
 
@@ -155,11 +157,71 @@ let SEED = store.get('sk-seed', 0) || (Math.random() * 1e9 | 0);
 const CHUNK = 140, VIEW = 2;          // chunk size (m) and how many rings of chunks are kept around you
 const G = 6.6;                         // gravity (m/s²), lighter than real for arcade flight
 const STALL = 9;                       // airspeed (m/s) where the wings give full lift
-const FLAP_UP = 2.5, FLAP_FWD = 1.3;   // flap impulse per (m/s of downward hand speed · s)
-const LIFT = 0.55;                     // share of gravity the spread wings carry at full speed
+const FLAP_UP = 3.1, FLAP_FWD = 1.3;   // flap impulse per (m/s of downward hand speed · s)
+const ROM_BONUS = 1.0;                 // up to +100% flap power once a stroke has travelled ROM_FULL
+const ROM_FULL = 1.0;                  // metres of downward hand travel that count as a full stroke
+const LIFT = 0.7;                      // share of gravity the spread wings carry at full speed
 const TURN = 1.15;                     // max turn rate (rad/s) at full bank
 const VMAX = 48;
 const BODY_R = 0.9;                    // collision sphere radius around the body
+const DRAFT = 26, DRAFT_MAX = 18;      // updraft push (m/s²) and the climb speed it tops out at
+// Vertical levels ("piętra"): the city (layer 0) up to L0, then endless sky layers LH tall.
+const L0 = 200, LH = 150;
+const layerOf = y => y < L0 ? 0 : 1 + Math.floor((y - L0) / LH);
+const layerBase = k => k === 0 ? 0 : L0 + (k - 1) * LH;
+const THEMES = [
+  null,
+  {name:'Ogrody',     grass:'#78a650', rock:'#7d6b58', trees:[0, 2, 2, 3], pal:0},
+  {name:'Chmury',     grass:'#9fc7a0', rock:'#a39aa8', trees:[2, 0], pal:3, clouds:true},
+  {name:'Kryształy',  grass:'#5f7f8f', rock:'#5a5470', trees:[1], pal:2, crystal:'#b48cf0'},
+  {name:'Świątynie',  grass:'#8a9a5a', rock:'#8a7558', trees:[3, 0], pal:1, temple:true},
+];
+const themeOf = k => THEMES[1 + (k - 1) % 4];
+
+/* ---------- shaders ---------- */
+// 2D simplex noise: Ian McEwan, Ashima Arts / Stefan Gustavson (github.com/stegu/webgl-noise).
+// Copyright (C) 2011 Ashima Arts. Distributed under the MIT License:
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright
+// notice and this permission notice shall be included in all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+const GLSL_NOISE = `
+vec3 sk_permute(vec3 x){ return mod(((x * 34.0) + 1.0) * x, 289.0); }
+float snoise(vec2 v){
+  const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+  vec2 i = floor(v + dot(v, C.yy)); vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+  i = mod(i, 289.0);
+  vec3 p = sk_permute(sk_permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
+  vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
+  m = m * m; m = m * m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
+  vec3 g; g.x = a0.x * x0.x + h.x * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}`;
+const SUN_DIR_INIT = [-0.55, 0.22, -0.8];
+{ // Fog that glows warm toward the sun and thins when you look up. Replaces three's fog chunks for every material.
+  const sd = new THREE.Vector3(...SUN_DIR_INIT).normalize();
+  THREE.ShaderChunk.fog_pars_vertex = '#ifdef USE_FOG\n varying float fogDepth;\n varying vec3 vFogWP;\n#endif';
+  THREE.ShaderChunk.fog_vertex = '#ifdef USE_FOG\n fogDepth = - mvPosition.z;\n #ifdef USE_INSTANCING\n  vFogWP = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;\n #else\n  vFogWP = (modelMatrix * vec4(transformed, 1.0)).xyz;\n #endif\n#endif';
+  THREE.ShaderChunk.fog_pars_fragment = `#ifdef USE_FOG
+ uniform vec3 fogColor; varying float fogDepth; varying vec3 vFogWP;
+ uniform float fogNear; uniform float fogFar;
+ const vec3 SK_SUN = vec3(${sd.x.toFixed(4)}, ${sd.y.toFixed(4)}, ${sd.z.toFixed(4)});
+#endif`;
+  THREE.ShaderChunk.fog_fragment = `#ifdef USE_FOG
+ float fogFactor = smoothstep(fogNear, fogFar, fogDepth);
+ vec3 fogDir = normalize(vFogWP - cameraPosition);
+ fogFactor *= mix(1.0, 0.75, clamp(fogDir.y * 2.0, 0.0, 1.0));
+ float sunA = pow(max(dot(fogDir, SK_SUN), 0.0), 6.0);
+ gl_FragColor.rgb = mix(gl_FragColor.rgb, mix(fogColor, vec3(1.0, 0.84, 0.6), sunA * 0.6), fogFactor);
+#endif`;
+}
+const timeU = {value:0};
 
 /* ---------- three.js scene ---------- */
 const renderer = new THREE.WebGLRenderer({antialias:true});
@@ -177,18 +239,20 @@ const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 1
 const rig = new THREE.Group();
 scene.add(rig); rig.add(camera);
 
-const SUN = new THREE.Vector3(-0.55, 0.22, -0.8).normalize();
+const SUN = new THREE.Vector3(...SUN_DIR_INIT).normalize();
 const sky = new THREE.Mesh(new THREE.SphereGeometry(1000, 32, 16), new THREE.ShaderMaterial({
   side:THREE.BackSide, depthWrite:false, fog:false,
   uniforms:{top:{value:new THREE.Color('#2f3f86')}, mid:{value:new THREE.Color('#9a7fb8')}, hor:{value:HORIZON}, low:{value:new THREE.Color('#b88079')},
-            sunDir:{value:SUN}, sunCol:{value:new THREE.Color('#fff0c8')}},
+            sunDir:{value:SUN}, sunCol:{value:new THREE.Color('#fff0c8')}, stars:{value:0}},
   vertexShader:'varying vec3 vDir; void main(){ vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-  fragmentShader:`uniform vec3 top, mid, hor, low, sunDir, sunCol; varying vec3 vDir;
+  fragmentShader:`uniform vec3 top, mid, hor, low, sunDir, sunCol; uniform float stars; varying vec3 vDir;
+    float hash(vec3 p){ return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
     void main(){ vec3 d = normalize(vDir); float y = d.y; vec3 c;
       if (y > 0.0) c = mix(hor, mix(mid, top, smoothstep(0.2, 0.75, y)), smoothstep(0.0, 0.22, y));
       else c = mix(hor, low, smoothstep(0.0, -0.25, y));
       float s = max(dot(d, sunDir), 0.0);
       c += sunCol * (smoothstep(0.9993, 0.9996, s) * 1.2 + pow(s, 28.0) * 0.3);
+      if (stars > 0.0 && y > 0.0){ vec3 q = floor(d * 300.0); float h = hash(q); c += vec3(step(0.9975, h) * stars * smoothstep(0.0, 0.3, y) * (0.6 + 0.4 * fract(h * 97.0))); }
       gl_FragColor = vec4(c, 1.0); }`
 }));
 sky.renderOrder = -1;
@@ -201,6 +265,34 @@ scene.add(sunL);
 
 const matSolid = new THREE.MeshLambertMaterial({vertexColors:true});
 const matGlow = new THREE.MeshBasicMaterial({vertexColors:true});
+// Surface detail without textures: large colour patches + grain from noise, stone courses / roof-tile rows on
+// steep faces, and lighter tops. Only within 120 m; past that the fog hides it anyway.
+matSolid.onBeforeCompile = sh => {
+  sh.vertexShader = 'varying vec3 vWP; varying vec3 vWN;\n' + sh.vertexShader.replace('#include <fog_vertex>',
+    '#include <fog_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
+  sh.fragmentShader = 'varying vec3 vWP; varying vec3 vWN;\n' + GLSL_NOISE + '\n' + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+  float skDist = distance(vWP, cameraPosition);
+  if (skDist < 120.0){
+    float fade = 1.0 - smoothstep(50.0, 120.0, skDist);
+    float up = abs(vWN.y);
+    float n1 = snoise(vWP.xz * 0.045 + vWP.y * 0.03);
+    float n2 = snoise(vec2(vWP.x + vWP.z, vWP.y * 1.7) * 0.8);
+    float wall = 1.0 - smoothstep(0.5, 0.85, up);
+    float course = smoothstep(0.0, 0.07, fract(vWP.y * 0.85)) * smoothstep(1.0, 0.93, fract(vWP.y * 0.85));
+    float k = 1.0 + (n1 * 0.09 + n2 * 0.05) * fade;
+    k *= mix(1.0, 0.8 + 0.2 * course, wall * fade);
+    k *= 1.0 + 0.06 * smoothstep(0.85, 1.0, vWN.y) * fade;
+    diffuseColor.rgb *= k;
+  }`);
+};
+// Windows and crystals flicker a little, each on its own phase.
+matGlow.onBeforeCompile = sh => {
+  sh.uniforms.uTime = timeU;
+  sh.vertexShader = 'varying vec3 vWP;\n' + sh.vertexShader.replace('#include <fog_vertex>', '#include <fog_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  sh.fragmentShader = 'uniform float uTime; varying vec3 vWP;\n' + sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+  float ph = fract(sin(dot(floor(vWP * 0.6), vec3(12.99, 78.23, 37.71))) * 43758.5);
+  diffuseColor.rgb *= 0.82 + 0.18 * sin(uTime * (1.5 + ph * 2.5) + ph * 30.0) * (0.5 + 0.5 * sin(uTime * 0.37 + ph * 11.0));`);
+};
 
 /* ---------- merged geometry builder ---------- */
 // Every chunk is baked into one lit mesh (stone, roofs, plants) and one unlit mesh (windows), so the
@@ -286,7 +378,8 @@ function buildTower(B, W, ch, rng, pal, x, z, R, H, opt = {}){
   const secs = opt.secs || (H > 90 ? 3 + (rng() * 2 | 0) : 2 + (rng() * 2 | 0));
   const wts = []; let tot = 0;
   for (let i = 0; i < secs; i++){ const w = 0.7 + rng() * 0.6; wts.push(w); tot += w; }
-  let y = 0, r = R;
+  const oy = opt.oy || 0;
+  let y = oy, r = R;
   const SEG = 10, apo = Math.cos(Math.PI / SEG);
   for (let s = 0; s < secs; s++){
     const h = H * wts[s] / tot;
@@ -342,8 +435,8 @@ function buildTower(B, W, ch, rng, pal, x, z, R, H, opt = {}){
   if (!opt.noTurrets){
     const nt = (rng() * (H > 90 ? 4 : 2.5)) | 0;
     for (let k = 0; k < nt; k++){
-      const a = rng() * TAU, ty = H * (0.3 + rng() * 0.5);
-      const rr = R * (1 - (ty / H) * 0.3) * 0.82, tr = 1.4 + rng() * 1.6, th = 5 + rng() * 7;
+      const a = rng() * TAU, ty = oy + H * (0.3 + rng() * 0.5);
+      const rr = R * (1 - ((ty - oy) / H) * 0.3) * 0.82, tr = 1.4 + rng() * 1.6, th = 5 + rng() * 7;
       const px = x + Math.sin(a) * (rr + tr * 0.55), pz = z + Math.cos(a) * (rr + tr * 0.55);
       B.add(geoCone(8), M(px, ty - 1.5, pz, tr, 3, tr, 0, Math.PI), wall, 0.1);
       B.add(geoCyl(8), M(px, ty + th / 2, pz, tr, th, tr), wall, 0.1);
@@ -382,14 +475,14 @@ function buildBridge(B, W, ch, rng, pal, ta, tb, hb){
   return {x:mx, z:mz, y:hb, depth};
 }
 
-function buildIsland(B, W, ch, rng, x, y, z, R){
-  const rock = tint(COL.rock, rng);
+function buildIsland(B, W, ch, rng, x, y, z, R, th){
+  const rock = tint(th ? new THREE.Color(th.rock) : COL.rock, rng);
   B.add(geoCone(9), M(x, y - R * 0.8, z, R, R * 1.6, R, rng() * TAU, Math.PI), rock, -0.35);
   for (let k = 0; k < 3; k++){
     const a = rng() * TAU, d = R * (0.3 + rng() * 0.4), s = R * (0.25 + rng() * 0.2);
     B.add(geoSph(0), M(x + Math.sin(a) * d, y - R * (0.4 + rng() * 0.5), z + Math.cos(a) * d, s, s * 1.4, s, rng() * TAU), COL.rock2);
   }
-  B.add(geoCyl(12), M(x, y + 0.3, z, R * 1.03, 1.2, R * 1.03), tint(COL.grass, rng), 0.3);
+  B.add(geoCyl(12), M(x, y + 0.3, z, R * 1.03, 1.2, R * 1.03), tint(th ? new THREE.Color(th.grass) : COL.grass, rng), 0.3);
   const nv = 5 + (rng() * 6 | 0);
   for (let k = 0; k < nv; k++){
     const a = rng() * TAU, L = 3 + rng() * 8, rr = R * 0.93;
@@ -397,8 +490,9 @@ function buildIsland(B, W, ch, rng, x, y, z, R){
   }
   const nt = 2 + (rng() * Math.min(6, R / 2.5) | 0);
   for (let k = 0; k < nt; k++){
-    const a = rng() * TAU, d = rng() * R * 0.7;
-    buildTree(B, rng, x + Math.sin(a) * d, y + 0.9, z + Math.cos(a) * d, 0.7 + rng() * 0.6, rng() * 4 | 0);
+    const a = rng() * TAU, d = R * (0.35 + rng() * 0.45);
+    const kind = th ? th.trees[rng() * th.trees.length | 0] : rng() * 4 | 0;
+    buildTree(B, rng, x + Math.sin(a) * d, y + 0.9, z + Math.cos(a) * d, 0.7 + rng() * 0.6, kind);
   }
   if (rng() < 0.4){ // waterfall off the rim
     const a = rng() * TAU, rr = R * 0.98;
@@ -412,14 +506,117 @@ function buildIsland(B, W, ch, rng, x, y, z, R){
     W.add(geoQuad(), M(sx, y + 2.2, sz + 1.52, 0.9, 1.4, 1), COL.glow);
   }
   ch.col.push({t:'f', x, z, y0:y - R * 1.6, y1:y + 0.9, r0:R * 0.12, r1:R * 1.03});
-  return {x, y, z, R};
+  return {x, y, z, R, top:y + 0.9};
+}
+
+// Campfire in the middle of an island: logs, a ring of stones and a flame; its heat makes an updraft
+// that reaches the next level up.
+function buildFire(B, ch, rng, x, y, z){
+  for (let k = 0; k < 8; k++){ const a = k / 8 * TAU; B.add(geoSph(0), M(x + Math.sin(a) * 1.3, y + 0.2, z + Math.cos(a) * 1.3, 0.35, 0.28, 0.35, a), COL.rock2); }
+  for (let k = 0; k < 3; k++){ const a = rng() * TAU; B.add(geoBox(), M(x, y + 0.25, z, 0.25, 0.25, 1.8, a, 0.2), COL.bark); }
+  ch.fires.push({x, y:y + 0.3, z, s:1 + rng() * 0.3});
+  ch.up.push({x, z, r:6.5, y0:y + 1, top:y + LH + 60});
+}
+
+// Sky layer k ≥ 1: an archipelago of floating islands, some with towers, linked by rope bridges, plus a
+// theme for the level (gardens, clouds, crystals, temples, repeating). Campfires lift you to the next layer.
+function genSky(cx, cz, k){
+  const rng = mulberry32(hash3(cx * 7 + k * 101, cz * 13 - k * 57, SEED + k));
+  const th = themeOf(k), base = layerBase(k), ox = cx * CHUNK, oz = cz * CHUNK;
+  const B = new Bld(), W = new Bld();
+  const ch = {cx, cz, k, col:[], lan:[], up:[], flocks:[], fires:[], meshes:[]};
+  const pal = PALS[th.pal];
+  const isl = [];
+  const want = 3 + (rng() * 3 | 0);
+  for (let tries = 0; tries < 40 && isl.length < want; tries++){
+    const R = 6 + rng() * 12, m = R + 6;
+    const x = ox + (rng() - 0.5) * (CHUNK - 2 * m), z = oz + (rng() - 0.5) * (CHUNK - 2 * m), y = base + 18 + rng() * (LH - 50);
+    if (isl.some(s => Math.hypot(s.x - x, s.z - z) < s.R + R + 14 && Math.abs(s.y - y) < 35)) continue;
+    if (th.clouds && rng() < 0.45){
+      // cloud platform: soft, landable
+      for (let j = 0; j < 7; j++){
+        const a = rng() * TAU, d = rng() * R * 0.7, sR = R * (0.35 + rng() * 0.3);
+        B.add(geoSph(1), M(x + Math.sin(a) * d, y - sR * 0.2, z + Math.cos(a) * d, sR * 1.3, sR * 0.55, sR * 1.1), COL.cloud, 0.25);
+      }
+      ch.col.push({t:'f', x, z, y0:y - R * 0.4, y1:y + R * 0.15, r0:R * 0.7, r1:R * 0.9});
+      isl.push({x, y, z, R, top:y + R * 0.15, cloud:true});
+      continue;
+    }
+    const s = buildIsland(B, W, ch, rng, x, y, z, R, th);
+    isl.push(s);
+    if (R > 10 && rng() < 0.4){
+      s.tower = buildTower(B, W, ch, rng, pal, x, z, R * 0.4, 20 + rng() * 45, {oy:s.top, noTurrets:rng() < 0.5});
+    } else if (rng() < 0.5){
+      buildFire(B, ch, rng, x, s.top, z); s.fire = true;
+    }
+    if (th.crystal){
+      const n = 3 + (rng() * 5 | 0), cc = new THREE.Color(th.crystal), c2 = new THREE.Color('#7fe0f0');
+      for (let j = 0; j < n; j++){
+        const a = rng() * TAU, d = R * (0.4 + rng() * 0.5), h = 2 + rng() * 6, w = 0.5 + rng() * 0.8;
+        W.add(geoCone(6), M(x + Math.sin(a) * d, s.top + h / 2 - 0.3, z + Math.cos(a) * d, w, h, w, rng() * TAU, (rng() - 0.5) * 0.5, (rng() - 0.5) * 0.5), rng() < 0.6 ? cc : c2);
+      }
+      for (let j = 0; j < 2; j++){   // floating shard under the island
+        const a = rng() * TAU, d = R * (0.6 + rng()), sz_ = 1 + rng() * 2;
+        W.add(geoSph(0), M(x + Math.sin(a) * d, y - R * 0.5 - rng() * 10, z + Math.cos(a) * d, sz_ * 0.6, sz_ * 1.6, sz_ * 0.6, rng() * TAU), cc);
+      }
+    }
+    if (th.temple && !s.tower){
+      const n = 6 + (rng() * 4 | 0), rr = Math.min(R * 0.6, 7), gold = COL.gold, stone = new THREE.Color('#efe6d6');
+      for (let j = 0; j < n; j++){
+        if (rng() < 0.2) continue;   // a broken column here and there
+        const a = j / n * TAU;
+        B.add(geoCyl(8), M(x + Math.sin(a) * rr, s.top + 3, z + Math.cos(a) * rr, 0.45, 6, 0.45), stone, 0.15);
+        ch.col.push({t:'f', x:x + Math.sin(a) * rr, z:z + Math.cos(a) * rr, y0:s.top, y1:s.top + 6, r0:0.45, r1:0.45});
+      }
+      if (rng() < 0.6) B.add(geoCyl(16), M(x, s.top + 6.3, z, rr + 0.8, 0.6, rr + 0.8), gold, 0.2);
+    }
+  }
+  // rope bridges between islands at similar heights
+  let nb = 0;
+  for (let i = 0; i < isl.length; i++) for (let j = i + 1; j < isl.length; j++){
+    const a = isl[i], b = isl[j], d = Math.hypot(a.x - b.x, a.z - b.z);
+    if (nb >= 3 || a.cloud || b.cloud || d > 70 || Math.abs(a.top - b.top) > 18 || rng() < 0.35) continue;
+    const ux = (b.x - a.x) / d, uz = (b.z - a.z) / d;
+    const A = new THREE.Vector3(a.x + ux * a.R * 0.9, a.top, a.z + uz * a.R * 0.9), Bp = new THREE.Vector3(b.x - ux * b.R * 0.9, b.top, b.z - uz * b.R * 0.9);
+    const N = 8, sag = 2 + d * 0.05, pts = [];
+    for (let q = 0; q <= N; q++){ const t = q / N; pts.push(new THREE.Vector3().lerpVectors(A, Bp, t).add(new THREE.Vector3(0, -sag * Math.sin(Math.PI * t), 0))); }
+    const ry = Math.atan2(ux, uz);
+    for (let q = 0; q < N; q++){
+      const p = pts[q], r_ = pts[q + 1], hl = Math.hypot(r_.x - p.x, r_.z - p.z), dy = r_.y - p.y;
+      B.add(geoBox(), M((p.x + r_.x) / 2, (p.y + r_.y) / 2, (p.z + r_.z) / 2, 1.8, 0.2, Math.hypot(hl, dy) * 0.92, ry, -Math.atan2(dy, hl)), COL.bark);
+      for (const sg of [-1, 1]) B.add(geoBox(), M((p.x + r_.x) / 2 + uz * 0.9 * sg, (p.y + r_.y) / 2 + 0.9, (p.z + r_.z) / 2 - ux * 0.9 * sg, 0.06, 0.06, Math.hypot(hl, dy), ry, -Math.atan2(dy, hl)), new THREE.Color('#c9b18a'));
+      if (q % 2 === 0) ch.col.push({t:'c', a:p.clone(), b:pts[Math.min(N, q + 2)].clone(), r:1.0});
+    }
+    const mid = pts[N >> 1];
+    ch.lanP = ch.lanP || []; ch.lanP.push([mid.x, mid.y - 6, mid.z]);
+    nb++;
+  }
+  // lanterns: above islands, under bridges, a couple in open air
+  const L = [];
+  for (const s of isl) if (rng() < 0.75) L.push([s.x, s.top + 6 + (s.tower ? s.tower.top - s.top + 4 : 0), s.z]);
+  for (const p of ch.lanP || []) L.push(p);
+  for (let j = 0; j < 2; j++) L.push([ox + (rng() - 0.5) * 110, base + 20 + rng() * (LH - 40), oz + (rng() - 0.5) * 110]);
+  L.forEach((p, i) => {
+    const id = cx + ',' + cz + ',' + k + ',' + i;
+    ch.lan.push({x:p[0], y:p[1], z:p[2], id, got:collected.has(id), ph:rng() * TAU});
+  });
+  // a flock circling an island
+  if (isl.length && rng() < 0.55){
+    const s = isl[rng() * isl.length | 0], kind = th.crystal ? 3 : rng() < 0.5 ? 0 : rng() < 0.7 ? 2 : 1;
+    const f = {x:s.x, y:s.top + 8 + rng() * 10, z:s.z, r:s.R + 6 + rng() * 10, kind, w:(0.25 + rng() * 0.25) * (rng() < 0.5 ? -1 : 1), n:kind === 3 ? 3 : 6 + (rng() * 5 | 0), birds:[]};
+    for (let j = 0; j < f.n; j++) f.birds.push({ph:rng() * TAU, dr:(rng() - 0.5) * 6, dh:(rng() - 0.5) * 6, fr:9 + rng() * 4,
+      off:new THREE.Vector3(), fv:new THREE.Vector3(), flee:0, prev:new THREE.Vector3(), seen:false});
+    ch.flocks.push(f);
+  }
+  for (const m of [B.mesh(matSolid), W.mesh(matGlow)]) if (m){ scene.add(m); ch.meshes.push(m); }
+  return ch;
 }
 
 function genChunk(cx, cz){
   const rng = mulberry32(hash3(cx, cz, SEED));
   const ox = cx * CHUNK, oz = cz * CHUNK, half = CHUNK / 2;
   const B = new Bld(), W = new Bld();
-  const ch = {cx, cz, col:[], lan:[], up:[], flocks:[], meshes:[]};
+  const ch = {cx, cz, k:0, col:[], lan:[], up:[], flocks:[], fires:[], meshes:[]};
   const pal = PALS[Math.min(3, vnoise(cx * 0.35 + 0.5, cz * 0.35 + 0.5, SEED + 7) * 4 | 0)];
   const hf = 0.55 + vnoise(cx * 0.28, cz * 0.28, SEED + 3) * 1.0;
   const start = cx === 0 && cz === 0;
@@ -441,7 +638,8 @@ function genChunk(cx, cz){
   const want = 2 + (rng() * 2.6 | 0);
   for (let tries = 0; tries < 40 && towers.length < want + (start ? 1 : 0); tries++){
     let R = 4 + rng() * 6, H = (35 + rng() * 110) * hf;
-    if (rng() < 0.07){ H = 190 + rng() * 60; R = 9 + rng() * 3; }   // landmark spire
+    if (rng() < 0.07){ H = 165 + rng() * 25; R = 9 + rng() * 3; }   // landmark spire
+    H = Math.min(H, 190);       // stay below the first sky layer
     const x = ox + (rng() - 0.5) * (CHUNK - 2 * (R + 10)), z = oz + (rng() - 0.5) * (CHUNK - 2 * (R + 10));
     if (inRoute(x, z, R)) continue;
     if (towers.some(t => Math.hypot(t.x - x, t.z - z) < t.R + R + 22)) continue;
@@ -504,16 +702,16 @@ function genChunk(cx, cz){
   for (const b of bridges) L.push([b.x, b.y - b.depth - 3.5, b.z]);
   for (const s of islands) L.push([s.x, s.y + 7, s.z]);
   L.forEach((p, i) => {
-    const id = cx + ',' + cz + ',' + i;
+    const id = cx + ',' + cz + ',0,' + i;
     ch.lan.push({x:p[0], y:p[1], z:p[2], id, got:collected.has(id), ph:rng() * TAU});
   });
   // updraft column
-  for (let tries = 0; tries < 10 && rng() < 0.5 + (start ? 0.5 : 0); tries++){
+  for (let tries = 0; tries < 10 && rng() < 0.6 + (start ? 0.5 : 0); tries++){
     const r = 6 + rng() * 3;
     const x = start ? 30 : ox + (rng() - 0.5) * (CHUNK - 30), z = start ? -40 : oz + (rng() - 0.5) * (CHUNK - 30);
     if (towers.some(t => Math.hypot(t.x - x, t.z - z) < t.R + r + 8)) continue;
     if (islands.some(s => Math.hypot(s.x - x, s.z - z) < s.R + r + 4)) continue;
-    ch.up.push({x, z, r, top:220}); break;
+    ch.up.push({x, z, r, y0:0, top:L0 + 120}); break;
   }
   // bird flocks
   if (rng() < 0.75){
@@ -535,30 +733,39 @@ function genChunk(cx, cz){
 /* ---------- chunk manager ---------- */
 const chunks = new Map();
 const collected = new Set();
-let lanterns = [], updrafts = [], flocks = [];
+let lanterns = [], updrafts = [], flocks = [], fires = [];
 const chunkOf = v => Math.floor((v + CHUNK / 2) / CHUNK);
+const ckey = (cx, cz, k) => cx + ',' + cz + ',' + k;
 function unloadChunk(c){
   for (const m of c.meshes){ scene.remove(m); m.geometry.dispose(); }
-  chunks.delete(c.cx + ',' + c.cz);
+  chunks.delete(ckey(c.cx, c.cz, c.k));
 }
 function relist(){
-  lanterns = []; updrafts = []; flocks = [];
-  for (const c of chunks.values()){ lanterns.push(...c.lan); updrafts.push(...c.up); flocks.push(...c.flocks); }
+  lanterns = []; updrafts = []; flocks = []; fires = [];
+  for (const c of chunks.values()){ lanterns.push(...c.lan); updrafts.push(...c.up); flocks.push(...c.flocks); fires.push(...c.fires); }
 }
+// Keeps a 5×5 block of chunks on your layer and a 3×3 block on the layers just above and below.
 function updateChunks(all){
-  const pcx = chunkOf(rig.position.x), pcz = chunkOf(rig.position.z);
+  const pcx = chunkOf(rig.position.x), pcz = chunkOf(rig.position.z), kp = layerOf(rig.position.y);
   let changed = false;
-  for (const c of [...chunks.values()]) if (Math.max(Math.abs(c.cx - pcx), Math.abs(c.cz - pcz)) > VIEW + 1){ unloadChunk(c); changed = true; }
+  for (const c of [...chunks.values()])
+    if (Math.max(Math.abs(c.cx - pcx), Math.abs(c.cz - pcz)) > (c.k === kp ? VIEW : 1) + 1 || Math.abs(c.k - kp) > 1){ unloadChunk(c); changed = true; }
   const fx = -Math.sin(heading()), fz = -Math.cos(heading());
   const miss = [];
-  for (let dx = -VIEW; dx <= VIEW; dx++) for (let dz = -VIEW; dz <= VIEW; dz++){
-    if (chunks.has((pcx + dx) + ',' + (pcz + dz))) continue;
-    miss.push({cx:pcx + dx, cz:pcz + dz, d:dx * dx + dz * dz - (dx * fx + dz * fz) * 1.5});
+  for (let k = Math.max(0, kp - 1); k <= kp + 1; k++){
+    const v = k === kp ? VIEW : 1;
+    for (let dx = -v; dx <= v; dx++) for (let dz = -v; dz <= v; dz++){
+      if (chunks.has(ckey(pcx + dx, pcz + dz, k))) continue;
+      miss.push({cx:pcx + dx, cz:pcz + dz, k, d:dx * dx + dz * dz - (dx * fx + dz * fz) * 1.5 + Math.abs(k - kp) * 3});
+    }
   }
   miss.sort((a, b) => a.d - b.d);
-  for (let i = 0; i < miss.length && (all || i < 1); i++){
-    const c = genChunk(miss[i].cx, miss[i].cz);
-    chunks.set(c.cx + ',' + c.cz, c); changed = true;
+  let built = 0;
+  for (const m of miss){
+    if (all ? m.k !== kp : built >= 1) continue;
+    built++;
+    const c = m.k === 0 ? genChunk(m.cx, m.cz) : genSky(m.cx, m.cz, m.k);
+    chunks.set(ckey(m.cx, m.cz, m.k), c); changed = true;
   }
   if (changed) relist();
 }
@@ -568,7 +775,7 @@ function resetWorld(){
 }
 
 /* ---------- lanterns, updrafts, birds, sparkles ---------- */
-const MAXL = 300;
+const MAXL = 500;
 const lanMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.62, 0.5, 1.3, 8), new THREE.MeshBasicMaterial({color:'#ffae4a'}), MAXL);
 const halo = new THREE.InstancedMesh(new THREE.SphereGeometry(2.3, 14, 10), new THREE.MeshBasicMaterial({color:'#ffcf7a', transparent:true, opacity:0.2, blending:THREE.AdditiveBlending, depthWrite:false, fog:false}), MAXL);
 lanMesh.frustumCulled = halo.frustumCulled = false;
@@ -585,9 +792,28 @@ const draftMat = new THREE.ShaderMaterial({
       a *= (0.35 + 0.65 * st) * 0.13 * (1.0 - smoothstep(150.0, 320.0, vDist)) * (0.25 + 0.75 * smoothstep(5.0, 35.0, vDist));
       gl_FragColor = vec4(1.0, 0.85, 0.48, a); }`
 });
-const draftMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 24, 1, true), draftMat, 60);
+const draftMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 24, 1, true), draftMat, 240);
 draftMesh.frustumCulled = false;
 scene.add(draftMesh);
+
+const fireMat = new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, side:THREE.DoubleSide,
+  uniforms:{time:timeU},
+  vertexShader:`varying float vH; varying vec2 vA; uniform float time;
+    void main(){ vH = position.y + 0.5; vA = vec2(atan(position.x, position.z), position.y);
+      vec3 p = position; p.xz *= 1.0 + 0.15 * sin(time * 9.0 + position.y * 6.0);
+      gl_Position = projectionMatrix * viewMatrix * modelMatrix * instanceMatrix * vec4(p, 1.0); }`,
+  fragmentShader:GLSL_NOISE + `uniform float time; varying float vH; varying vec2 vA;
+    void main(){ float n = snoise(vec2(vA.x * 1.6, vA.y * 3.0 - time * 4.0)) * 0.5 + 0.5;
+      float a = (1.0 - vH) * smoothstep(0.0, 0.1, vH) * (0.45 + 0.75 * n);
+      a *= step(vH * 0.85, n * 0.9 + 0.25);
+      vec3 c = mix(vec3(1.0, 0.95, 0.6), vec3(1.0, 0.35, 0.08), vH + n * 0.3);
+      gl_FragColor = vec4(c * a, a); }`
+});
+const fireMesh = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 1, 10, 4, true), fireMat, 240);
+fireMesh.frustumCulled = false; fireMesh.count = 0; scene.add(fireMesh);
+const fireGlow = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color:'#ff9a3c', transparent:true, opacity:0.18, blending:THREE.AdditiveBlending, depthWrite:false, fog:false}), 240);
+fireGlow.frustumCulled = false; fireGlow.count = 0; scene.add(fireGlow);
 
 const MAXB = 180;
 const birdMat = new THREE.MeshLambertMaterial({side:THREE.DoubleSide});
@@ -616,7 +842,7 @@ const headL = new THREE.Vector3(0, 1.6, 0);  // head in rig space
 const body = {yaw:0, bank:0};                // body yaw inside the rig (from the arms), smoothed bank
 let headYaw = 0, headPitch = 0;
 let grounded = false, inDraft = false, mode = null, paused = false, T = 0, hold = 0;
-const st = {lan:0, dist:0, vmax:0, hmax:0, crashes:0, t:0, airT:0, took:false};
+const st = {lan:0, dist:0, vmax:0, hmax:0, crashes:0, t:0, airT:0, took:false, layer:0, full:0};
 let lastInp = {s:0, bank:0, pitch:0, P:0, brake:0};
 const heading = () => rig.rotation.y + body.yaw;
 
@@ -741,11 +967,17 @@ function readInput(dt){
   for (const h of [hands.L, hands.R]){
     const out = Math.abs((h.pos.x - headL.x) * rx + (h.pos.z - headL.z) * rz);
     const dn = -h.vel.y;
-    if (out > 0.25 && dn > 0.6 && dn > 0.6 * h.vel.length()){ P += Math.min(dn, 4); peak = Math.max(peak, dn); }
-    if (dn > 1.3 && out > 0.25) h.stroke = Math.max(h.stroke, dn);
+    // stroke travel: how far this hand has come down since it last went up. Long strokes push harder.
+    if (dn > 0.3) h.travel = (h.travel || 0) + dn * dt; else if (dn < -0.3) h.travel = 0;
+    const rom = 1 + ROM_BONUS * clamp(((h.travel || 0) - 0.3) / (ROM_FULL - 0.3), 0, 1);
+    if (out > 0.25 && dn > 0.6 && dn > 0.6 * h.vel.length()){ P += Math.min(dn, 4) * rom; peak = Math.max(peak, dn); }
+    if (dn > 1.3 && out > 0.25){ h.stroke = Math.max(h.stroke, dn); h.full = (h.travel || 0) >= ROM_FULL * 0.9; }
     else if (h.stroke && dn < 0.4){
-      if (whooshCD <= 0){ sfx.whoosh(clamp(h.stroke / 3, 0.3, 1)); whooshCD = 0.22; haptic(h, 0.25, 40); }
-      h.stroke = 0;
+      if (whooshCD <= 0){
+        sfx.whoosh(clamp(h.stroke / 3, 0.3, 1) * (h.full ? 1.4 : 1)); whooshCD = 0.22; haptic(h, h.full ? 0.7 : 0.25, h.full ? 90 : 40);
+        if (h.full && st.full++ < 2) toast('Pełny zamach!');
+      }
+      h.stroke = 0; h.full = false;
     }
   }
   whooshCD -= dt;
@@ -779,14 +1011,17 @@ function physics(dt, inp){
   // plus a direct lift force at speed, so flapping can out-climb gravity
   if (!grounded) V.addScaledVector(Nn, LIFT * G * s * q * dt);
   let g = G;
-  if (rig.position.y > 280) g += (rig.position.y - 280) * 0.15;
   V.y -= g * dt;
   if (inp.P > 0){ const k = inp.P * dt * pw; V.addScaledVector(Nn, FLAP_UP * k).addScaledVector(F, FLAP_FWD * k); }
   inDraft = false;
   const px = rig.position.x, pz = rig.position.z, py = rig.position.y;
   for (const d of updrafts){
     const dd = Math.hypot(px - d.x, pz - d.z);
-    if (dd < d.r && py < d.top){ inDraft = s > 0.3; if (V.y < 11) V.y += 16 * (0.25 + 0.75 * s) * (1 - 0.5 * dd / d.r) * dt; }
+    if (dd < d.r && py > d.y0 - 3 && py < d.top){
+      inDraft = s > 0.3;
+      const fade = clamp((d.top - py) / 25, 0, 1);
+      if (V.y < DRAFT_MAX) V.y += DRAFT * (0.25 + 0.75 * s) * (1 - 0.4 * dd / d.r) * fade * dt;
+    }
   }
   // banked turn: rotate the world around your head, and your velocity with it
   const om = grounded ? 0 : -inp.bank * TURN * (0.3 + 0.7 * s) * clamp(Math.abs(u) / 10, 0.25, 1.3);
@@ -825,7 +1060,8 @@ function collide(){
   if (C.y < r) resolve(0, 1, 0, r - C.y);
   const pcx = chunkOf(C.x), pcz = chunkOf(C.z);
   for (let ix = -1; ix <= 1; ix++) for (let iz = -1; iz <= 1; iz++){
-    const ch = chunks.get((pcx + ix) + ',' + (pcz + iz));
+   for (let kk = Math.max(0, layerOf(C.y) - 1); kk <= layerOf(C.y) + 1; kk++){
+    const ch = chunks.get(ckey(pcx + ix, pcz + iz, kk));
     if (!ch) continue;
     for (const o of ch.col){
       if (o.t === 'f'){
@@ -855,6 +1091,7 @@ function collide(){
         else if (d < r) resolve(_v.x / d, _v.y / d, _v.z / d, r - d);
       }
     }
+   }
   }
 }
 
@@ -946,7 +1183,8 @@ const HINTS_VR = [
   [() => st.airT < 7, 'Trzymaj ręce rozłożone, żeby szybować.'],
   [() => st.airT < 15, 'Lewa ręka w górę, prawa w dół: skręt w prawo.'],
   [() => st.airT < 23, () => cfg.pitch === 'hands' ? 'Ręce do tyłu: nurkujesz. Do przodu: wznosisz się.' : 'Spójrz w dół, żeby zanurkować. Złóż ręce, żeby spadać szybciej.'],
-  [() => st.airT < 31, 'Złote kolumny unoszą w górę. Zbieraj lampiony.'],
+  [() => st.airT < 31, 'Złote kolumny unoszą w górę. Ogniska na wyspach wynoszą na kolejne piętro.'],
+  [() => st.airT < 36, 'Długi zamach, od góry aż do bioder, daje więcej siły.'],
   [() => st.airT < 38, 'Zmęczone ręce? Grip na obu kontrolerach trzyma skrzydła rozłożone.'],
   [() => st.airT < 44, 'A/X: pauza.'],
 ];
@@ -954,7 +1192,7 @@ const HINTS_FLAT = [
   [() => !st.took, 'Przytrzymaj Spację, żeby machać skrzydłami.'],
   [() => st.airT < 8, 'Puść Spację, żeby szybować. A/D: skręt.'],
   [() => st.airT < 16, 'W: nurkowanie, S: dziób w górę, Shift: złóż skrzydła.'],
-  [() => st.airT < 24, 'Złote kolumny unoszą w górę. Zbieraj lampiony.'],
+  [() => st.airT < 24, 'Złote kolumny unoszą w górę. Ogniska na wyspach wynoszą na kolejne piętro.'],
 ];
 function currentHint(){
   for (const [c, t] of (mode === 'vr' ? HINTS_VR : HINTS_FLAT)) if (c()) return typeof t === 'function' ? t() : t;
@@ -964,7 +1202,7 @@ function drawHud(){
   const sp_ = V.length(), alt = Math.max(0, Math.round(rig.position.y));
   hint = currentHint();
   if (mode === 'flat'){
-    $('hudF').innerHTML = `<div><b>✦ ${st.lan}</b> lampiony</div><div><b>${kmh(sp_)}</b> km/h</div><div><b>${alt}</b> m</div>${inDraft ? '<div style="color:#ffd27a"><b>⇑</b> prąd</div>' : ''}${paused ? '<div><b>PAUZA</b> (P)</div>' : ''}`;
+    $('hudF').innerHTML = `<div><b>✦ ${st.lan}</b> lampiony</div><div><b>${kmh(sp_)}</b> km/h</div><div><b>${alt}</b> m</div><div><b>${layerOf(rig.position.y)}</b> piętro</div>${inDraft ? '<div style="color:#ffd27a"><b>⇑</b> prąd</div>' : ''}${paused ? '<div><b>PAUZA</b> (P)</div>' : ''}`;
     $('hintF').textContent = hint;
     $('toastF').textContent = toastTxt; $('toastF').style.opacity = toastT > 0 ? 1 : 0;
     return;
@@ -978,7 +1216,7 @@ function drawHud(){
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(kmh(sp_) + '', 330, 52);
   ctx.textAlign = 'right'; ctx.fillText(alt + '', 590, 52);
   ctx.font = '600 20px "IBM Plex Sans", sans-serif'; ctx.fillStyle = '#d8cde6';
-  ctx.textAlign = 'center'; ctx.fillText('km/h', 330, 88); ctx.textAlign = 'right'; ctx.fillText(inDraft ? '⇑ prąd · m' : 'm', 610, 88);
+  ctx.textAlign = 'center'; ctx.fillText('km/h', 330, 88); ctx.textAlign = 'right'; ctx.fillText((inDraft ? '⇑ prąd · ' : '') + 'm · piętro ' + layerOf(rig.position.y), 610, 88);
   ctx.textAlign = 'center';
   if (toastT > 0){ ctx.font = '700 40px Cinzel, Georgia, serif'; ctx.fillStyle = '#ffd27a'; ctx.fillText(toastTxt, 320, 140); }
   if (hint){
@@ -997,8 +1235,8 @@ function drawPause(){
   ctx.fillStyle = '#ffb26b'; ctx.font = '800 72px Cinzel, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('Pauza', 512, 90);
   ctx.fillStyle = '#fff'; ctx.font = '600 38px "IBM Plex Sans", sans-serif';
-  const rows = [['Lampiony', st.lan], ['Dystans', (st.dist / 1000).toFixed(2) + ' km'], ['Najszybciej', kmh(st.vmax) + ' km/h'], ['Najwyżej', Math.round(st.hmax) + ' m'], ['Czas', fmtT(st.t)]];
-  rows.forEach(([a, b], i) => { ctx.textAlign = 'left'; ctx.fillStyle = '#b4a7c6'; ctx.fillText(a, 200, 190 + i * 62); ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.fillText(b, 824, 190 + i * 62); });
+  const rows = [['Lampiony', st.lan], ['Najwyższe piętro', st.layer], ['Dystans', (st.dist / 1000).toFixed(2) + ' km'], ['Najszybciej', kmh(st.vmax) + ' km/h'], ['Najwyżej', Math.round(st.hmax) + ' m'], ['Czas', fmtT(st.t)]];
+  rows.forEach(([a, b], i) => { ctx.textAlign = 'left'; ctx.fillStyle = '#b4a7c6'; ctx.fillText(a, 200, 170 + i * 58); ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.fillText(b, 824, 170 + i * 58); });
   ctx.textAlign = 'center'; ctx.fillStyle = '#ffd27a'; ctx.font = '700 34px "IBM Plex Sans", sans-serif';
   ctx.fillText('A / X: leć dalej     B / Y: zakończ lot', 512, 580);
   tex.needsUpdate = true;
@@ -1084,15 +1322,23 @@ function updateWorld(dt){
   lanMesh.instanceMatrix.needsUpdate = halo.instanceMatrix.needsUpdate = true;
   // updraft columns
   let k = 0;
-  for (const d of updrafts){ if (k >= 60) break; _m4.makeScale(d.r, d.top, d.r).setPosition(d.x, d.top / 2, d.z); draftMesh.setMatrixAt(k++, _m4); }
+  for (const d of updrafts){ if (k >= 240) break; _m4.makeScale(d.r, d.top - d.y0, d.r).setPosition(d.x, (d.top + d.y0) / 2, d.z); draftMesh.setMatrixAt(k++, _m4); }
   draftMesh.count = k; draftMesh.instanceMatrix.needsUpdate = true;
   draftMat.uniforms.time.value = T;
+  let fi = 0;
+  for (const f of fires){
+    if (fi >= 240) break;
+    _m4.makeScale(0.9 * f.s, 2.6 * f.s, 0.9 * f.s).setPosition(f.x, f.y + 1.2 * f.s, f.z); fireMesh.setMatrixAt(fi, _m4);
+    _m4.makeScale(3.2, 3.2, 3.2).setPosition(f.x, f.y + 1, f.z); fireGlow.setMatrixAt(fi, _m4); fi++;
+  }
+  fireMesh.count = fireGlow.count = fi; fireMesh.instanceMatrix.needsUpdate = fireGlow.instanceMatrix.needsUpdate = true;
   if (inDraft && !wasDraft){ sfx.rise(); toast('Prąd wznoszący'); }
   wasDraft = inDraft;
   // birds
   let b = 0;
   chirpCD -= dt;
   for (const f of flocks){
+    if (Math.abs(f.x - _hw.x) > 260 || Math.abs(f.z - _hw.z) > 260 || Math.abs(f.y - _hw.y) > 160) continue;
     const bt = BIRD[f.kind];
     for (const bd of f.birds){
       if (b >= MAXB) break;
@@ -1143,8 +1389,16 @@ function loop(time){
   frame(dt);
   renderer.render(scene, camera);
 }
+const SKY0 = {hor:HORIZON.clone(), top:new THREE.Color('#2f3f86'), mid:new THREE.Color('#9a7fb8')};
+const SKY1 = {hor:new THREE.Color('#7d6aa8'), top:new THREE.Color('#090a26'), mid:new THREE.Color('#3b2f6e')};
+function skyByAltitude(){
+  // higher levels drift from dusk into night, with stars
+  const a = clamp((rig.position.y - L0) / (LH * 5), 0, 1), u = sky.material.uniforms;
+  u.hor.value.copy(SKY0.hor).lerp(SKY1.hor, a); u.top.value.copy(SKY0.top).lerp(SKY1.top, a); u.mid.value.copy(SKY0.mid).lerp(SKY1.mid, a);
+  u.stars.value = a; scene.fog.color.copy(u.hor.value); scene.background.copy(u.hor.value);
+}
 function frame(dt){
-  T += dt;
+  T += dt; timeU.value = T;
   readHead();
   if (mode === 'vr') updateHandsVR(dt); else updateHandsFlat(dt);
   const inp = readInput(dt);
@@ -1156,6 +1410,8 @@ function frame(dt){
     for (let i = 0; i < n; i++) physics(dt / n, inp);
     const sp_ = V.length();
     st.t += dt; st.vmax = Math.max(st.vmax, sp_); st.hmax = Math.max(st.hmax, rig.position.y);
+    const ly = layerOf(rig.position.y);
+    if (ly > st.layer){ st.layer = ly; toast('Piętro ' + ly + ': ' + themeOf(ly).name); sfx.chime(); for (const h of [hands.L, hands.R]) haptic(h, 0.6, 120); }
     if (!grounded){ st.dist += sp_ * dt; st.airT += dt; if (rig.position.y > spawn.y + 1.5 || st.dist > 25) st.took = true; }
     crashCD -= dt;
   }
@@ -1164,7 +1420,7 @@ function frame(dt){
   updateWing(wings.L, hands.L, -1, inp.s);
   updateWing(wings.R, hands.R, 1, inp.s);
   updateWorld(dt);
-  sky.position.copy(rig.position);
+  sky.position.copy(rig.position); skyByAltitude();
   // camera: VR drives it itself; in the browser it trails behind the shoulders
   avatar.visible = mode === 'flat';
   if (mode === 'flat'){
@@ -1202,10 +1458,10 @@ function beginFlight(m){
   if (cfg.world === 'new' || !store.get('sk-seed', 0)) SEED = Math.random() * 1e9 | 0;
   store.set('sk-seed', SEED);
   resetWorld();
-  Object.assign(st, {lan:0, dist:0, vmax:0, hmax:0, crashes:0, t:0, airT:0, took:false});
+  Object.assign(st, {lan:0, dist:0, vmax:0, hmax:0, crashes:0, t:0, airT:0, took:false, layer:0, full:0});
   rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); rig.updateMatrixWorld();
   updateChunks(true);
-  const t = chunks.get('0,0').startTower;
+  const t = chunks.get(ckey(0, 0, 0)).startTower;
   spawn.set(0, t.top + 0.8, 14 - t.rTop + 1.6);
   for (const h of [hands.L, hands.R]) h.init = false;
   headL.set(0, 1.6, 0); headYaw = 0;
@@ -1246,7 +1502,7 @@ function endFlight(){
 function finish(){
   if (!mode) return;
   renderer.setAnimationLoop(null);
-  const rec = {d:Date.now(), lan:st.lan, dist:Math.round(st.dist), vmax:kmh(st.vmax), hmax:Math.round(st.hmax), t:Math.round(st.t), crashes:st.crashes, seed:SEED, m:mode};
+  const rec = {d:Date.now(), lan:st.lan, dist:Math.round(st.dist), vmax:kmh(st.vmax), hmax:Math.round(st.hmax), t:Math.round(st.t), crashes:st.crashes, layer:st.layer, seed:SEED, m:mode};
   mode = null;
   if (rec.t > 5){ const h = store.get('sk-hist', []); h.unshift(rec); store.set('sk-hist', h.slice(0, 20)); showLast(rec); }
   document.body.classList.remove('flying');
@@ -1260,15 +1516,15 @@ function finish(){
 /* ---------- menu ---------- */
 function showLast(r){
   $('lastP').hidden = false;
-  $('last').innerHTML = [[r.lan, 'lampiony'], [(r.dist / 1000).toFixed(2), 'km'], [r.vmax, 'km/h max'], [r.hmax, 'm max'], [fmtT(r.t), 'czas'], [r.crashes, 'kraksy']]
+  $('last').innerHTML = [[r.lan, 'lampiony'], [r.layer || 0, 'piętro'], [(r.dist / 1000).toFixed(2), 'km'], [r.vmax, 'km/h max'], [r.hmax, 'm max'], [fmtT(r.t), 'czas'], [r.crashes, 'kraksy']]
     .map(([a, b]) => `<div>${a}<small>${b}</small></div>`).join('');
 }
 function renderHist(){
   const h = store.get('sk-hist', []);
   if (!h.length){ $('hist').innerHTML = '<tr><td class="note">Jeszcze nie latałeś.</td></tr>'; return; }
   const best = Math.max(...h.map(r => r.lan));
-  $('hist').innerHTML = '<tr><th>Data</th><th>Lampiony</th><th>Dystans</th><th>Max</th><th>Czas</th></tr>' + h.slice(0, 10).map(r =>
-    `<tr><td>${new Date(r.d).toLocaleDateString('pl-PL', {day:'numeric', month:'short'})}${r.m === 'flat' ? ' 🖥' : ''}</td><td>${r.lan}${r.lan === best && best > 0 ? ' ★' : ''}</td><td>${(r.dist / 1000).toFixed(2)} km</td><td>${r.vmax} km/h</td><td>${fmtT(r.t)}</td></tr>`).join('');
+  $('hist').innerHTML = '<tr><th>Data</th><th>Lampiony</th><th>Piętro</th><th>Dystans</th><th>Max</th><th>Czas</th></tr>' + h.slice(0, 10).map(r =>
+    `<tr><td>${new Date(r.d).toLocaleDateString('pl-PL', {day:'numeric', month:'short'})}${r.m === 'flat' ? ' 🖥' : ''}</td><td>${r.lan}${r.lan === best && best > 0 ? ' ★' : ''}</td><td>${r.layer || 0}</td><td>${(r.dist / 1000).toFixed(2)} km</td><td>${r.vmax} km/h</td><td>${fmtT(r.t)}</td></tr>`).join('');
 }
 function renderSegs(){
   document.querySelectorAll('.seg').forEach(s => {
