@@ -38,6 +38,8 @@ input[type=number]{font:700 22px var(--display);padding:6px 8px;border:1px solid
 .total{font:500 15px var(--display);color:var(--muted);margin-top:12px;font-variant-numeric:tabular-nums}
 #go{font:700 28px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:20px;border:0;border-radius:8px;background:var(--ember);color:#160502;cursor:pointer;width:100%}
 #go:disabled{opacity:.4;cursor:not-allowed}
+#dev{margin-top:10px;font:700 15px var(--display);letter-spacing:.08em;text-transform:uppercase;padding:11px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);cursor:pointer;width:100%}
+#devhelp{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:8px 16px;font:500 14px var(--body);color:#c9d2e6;background:rgba(3,5,11,.7);text-align:center;pointer-events:none}
 button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 #status{margin:8px 0 0;font-size:14px;color:var(--muted)}
 .moves{display:grid;gap:12px}
@@ -76,7 +78,7 @@ th{color:var(--muted);font-weight:400}
 <main>
   <a href="../" style="font:600 14px system-ui,sans-serif;color:#9aa3bd;text-decoration:none;display:inline-block;margin-bottom:6px">← Wszystkie gry (AIRM)</a>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.9.2</span></h1>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.10</span></h1>
     <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj, uważaj na latające Szczęki. W przerwach rozwijasz drzewko ulepszeń: laser z oczu, spowolnienie czasu, pancerz.</p>
   </header>
 
@@ -95,7 +97,7 @@ th{color:var(--muted);font-weight:400}
         <li>Szeregowy pada od jednego ciosu. Żołnierz i Brutal mają pole siłowe: póki trzyma, ciosy zbijają tarczę, a pięść odrzuca wroga na kilka metrów. Musi wtedy wrócić i zaatakować od przodu. Bez tarczy Żołnierz też pada od jednego ciosu.</li>
         <li>Brutal bez tarczy nie pada, tylko jest ogłuszony przez 4 s: chwieje się i sypie iskrami. Dobij go. Cięcie w szyję albo rozerwanie to <b>fatality</b> i oddaje 3 many.</li>
         <li>Wróg z bliska ładuje cios (pomarańczowa kula) i rzuca się z pięścią na głowę. Zablokuj ręką albo zrób unik: odchyl się lub przykucnij. Przy zerze HP nokaut: tracisz ostatnie ulepszenie.</li>
-        <li>Za tobą jest kadłub statku z włazem 2×2 m, więc wrogowie nadlatują tylko z przodu. Czekają ok. 2,5 m przed tobą, szarżują, wyprowadzają jeden cios i odlatują. Na trafienie masz ok. 1,5 s. Bombardier z tyłu rzuca świecące, piszczące granaty. Złap granat, zaciskając luźną dłoń w pięść, i puść grip, żeby rzucić. Uderzony pięścią wybucha ci w ręce.</li>
+        <li>Za tobą jest kadłub statku z włazem 2×2 m, więc wrogowie nadlatują tylko z przodu. Napierają bez przerwy: podlatują, wyprowadzają cios, cofają się o pół metra i wracają. Najwyżej dwóch czeka poza zasięgiem (razem z bombardierami). Bombardier z tyłu rzuca świecące, piszczące granaty. Złap granat, zaciskając luźną dłoń w pięść, i puść grip, żeby rzucić. Uderzony pięścią wybucha ci w ręce.</li>
         <li>Wroga też złapiesz: zaciśnij dłoń (powoli) na jego ręce, głowie lub tułowiu. Ciągniesz go za sobą, a puszczasz grip w ruchu, żeby nim rzucić, tak jak granatem. Rzucony rozbija się o innych (bilard), o kadłub albo przy lądowaniu. Trzymany ponad 2,5 s wyrwie się i uderzy.</li>
         <li><b>Szczęka</b> (od fali 2): latająca paszcza z dyszami. Kłapie przed tobą, potem rzuca się do twarzy. Bij ją tylko z góry albo z dołu, kiedy jest zamknięta: odlatuje i wraca, trzecie trafienie ją rozbija. Pięść wbita prosto w nią utknie w zębach i ręka nic nie zrobi; wtedy wal Szczękę drugą ręką (3 razy). Złap ją oburącz z boków, to podniesiesz ją i rzucisz w innych.</li>
         <li>Martwe roboty nie znikają od razu: dryfują jako wraki, zasłaniają drogę innym i można je złapać i rzucić we wrogów.</li>
@@ -229,6 +231,7 @@ th{color:var(--muted);font-weight:400}
   <div>
     <button id="go" disabled>Wejdź do VR</button>
     <p id="status">Szukam gogli…</p>
+    <button id="dev" type="button" hidden>Tryb dev: graj myszką</button>
   </div>
 
   <section class="panel" aria-labelledby="res">
@@ -241,7 +244,7 @@ th{color:var(--muted);font-weight:400}
     <div id="history"><p class="note">Jeszcze żadnych walk na tych goglach.</p></div>
   </section>
   </div>
-  <p class="note">Model robota: <a href="https://poly.pizza/m/BwjA6Thdzd" style="color:var(--steel)">„Rigged robot”</a> autorstwa joney_lol (poly.pizza), licencja Creative Commons Attribution.</p>
+  <p class="note">Model robota: <a href="https://poly.pizza/m/BwjA6Thdzd" style="color:var(--steel)">„Rigged robot”</a> autorstwa joney_lol (poly.pizza), licencja Creative Commons Attribution. Cios: <a href="https://freesound.org/s/331138/" style="color:var(--steel)">„Door, close, modern, metal, punch…”</a> od fabuafrica (freesound.org, CC0); metal i miażdżenie: „Impact Sounds” od <a href="https://kenney.nl/assets/impact-sounds" style="color:var(--steel)">Kenney</a> (CC0); śmierć robota: <a href="https://freesound.org/s/144470/" style="color:var(--steel)">„Robot_death2.wav”</a> od psychedelic_hands (freesound.org), licencja <a href="https://creativecommons.org/licenses/by/3.0/" style="color:var(--steel)">CC BY 3.0</a>; nowy wróg: <a href="https://freesound.org/s/746988/" style="color:var(--steel)">„Robot Awakening | Power On”</a> od GammaGool (freesound.org, CC0). Tło: <a href="https://freesound.org/s/617033/" style="color:var(--steel)">„Robot Heartbeat”</a> od EminYILDIRIM (freesound.org), licencja <a href="https://creativecommons.org/licenses/by/4.0/" style="color:var(--steel)">CC BY 4.0</a>, przycięte do pętli. Głos robotów: <a href="https://freesound.org/s/406126/" style="color:var(--steel)">„Robot Voice (1).wav”</a> od AnusProductions (freesound.org), licencja <a href="https://creativecommons.org/licenses/by/3.0/" style="color:var(--steel)">CC BY 3.0</a>, pocięte na pojedyncze komendy.</p>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -270,14 +273,16 @@ const store = {
 const cfg = Object.assign({rounds:6, work:60, rest:30, speed:'slow'}, store.get('ob-cfg', {}));
 const SPEED = {slow:1.05, mid:1.5, fast:2.0};          // enemy flight speed, m/s
 const MIN_SPEED = 0.35;                                // a hand must actually be moving
-const CHARGE = 0.7;                                    // average seconds an enemy winds up after charging in, before it swings
-const SWING = 0.28, IMPACT = 0.55, RECOVER = 0.35;     // enemy punch length (s), the fraction at which it lands, pause after
+const CHARGE = {grunt:0.8, soldier:0.7, brute:1.0};   // seconds an enemy winds up before it swings: fixed per type, so the rhythm can be learned
+const SWING = 0.36, IMPACT = 0.55, RECOVER = 0.35;     // enemy punch length (s), the fraction at which it lands, pause after
+const SWING_HOLD = 0.8;                                // the fist stays out at full reach until this fraction of the swing
 const PLAYER_HP = 10;
 const MANA = 10, MANA_REGEN = 0.5;                     // mana pool and refill per second
 const STUN = 4;                                        // seconds a beaten enemy stays stunned, open to a fatality
 const SHOVE = 5.2;                                     // m/s a punch on a shield gives (≈2.5 m flight before it turns back)
 const BOMB = {fuse:3.2, radius:0.7};                   // grenade fuse from the throw (s) and blast radius (m)
-const RING = {inner:{d:0.65, max:45}, outer:{d:2.4, max:45}}; // strike spots and the staging line: distance (m), half-arc (deg), inside the headset's view
+const RING = {inner:{d:0.65, max:45}, wait:{d:1.3, max:50}, outer:{d:2.4, max:45}}; // strike spots, where melee wait their turn, the bombers' line: distance (m), half-arc (deg), inside the headset's view
+const ACCEL = 2.4;                                     // m/s² an enemy speeds up and slows down with (at slow tempo): no dashes
 
 ['rounds','work','rest'].forEach(k => {
   $(k).value = cfg[k];
@@ -420,6 +425,14 @@ function showToast(text, color){ draw(toast, [{text, size:120, color}], text + M
 
 const hurt = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 16), new THREE.MeshBasicMaterial({color:0xff1a0a, transparent:true, opacity:0, side:THREE.BackSide, depthTest:false}));
 hurt.renderOrder = 30; scene.add(hurt);
+// the side a blow came from: two red arcs at the left and right edge of your view (children[0] left, [1] right),
+// kept level with your gaze in loop(); hurtPlayer() lights the one on the attacker's side
+const hurtArcs = new THREE.Group(); scene.add(hurtArcs);
+[0.95, -0.95].forEach(a => {
+  const arc = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12, Math.PI / 2 - 0.5, 1.0, Math.PI / 2 - 0.75, 1.5),
+    new THREE.MeshBasicMaterial({color:0xff1a0a, transparent:true, opacity:0, side:THREE.BackSide, depthTest:false, depthWrite:false}));
+  arc.rotation.y = a; arc.renderOrder = 31; hurtArcs.add(arc);
+});
 
 // Watches on the outside of each wrist cuff: HP on the left, mana on the right (grip space, see makeHand).
 // The cuff is tilted CUFF_TILT about X from grip +Y towards +Z, which is where the real forearm runs.
@@ -515,43 +528,192 @@ const hands = [0, 1].map(i => {
 function pulse(h, power, ms){ try { h.userData.src?.gamepad?.hapticActuators?.[0]?.pulse?.(power, ms); } catch(e){} }
 
 /* ---------- audio ---------- */
-let actx = null, noiseBuf = null;
+// Everything goes through one bus: a compressor and a limiter make the hits loud and dense without clipping.
+// Impacts layer a recorded hit (Kenney "Impact Sounds", CC0, in sfx/) with synth: a crack on contact, a thump that
+// drops in pitch and is saturated so its overtones carry the low end on the headset's small speakers, a metal clang
+// (they're robots). Harder hits (p 0..1) are louder, lower and longer; pan puts the hit left or right.
+let actx = null, noiseBuf = null, bus = null, satCurve = null, samplesAsked = false;
+const SAMPLES = {
+  // "Door, close, modern, metal, punch, low, bass…" by fabuafrica, freesound.org/s/331138, CC0: trimmed to start on
+  // the slam and cut to 1 s (fading from 0.6 s), so quick punches don't smear
+  punch:['metal_punch.ogg'],
+  metal:[0, 1, 2, 3, 4].map(i => `impactMetal_heavy_00${i}.ogg`),
+  plate:[0, 1, 2].map(i => `impactPlate_heavy_00${i}.ogg`),
+  // "Robot_death2.wav" by psychedelic_hands, freesound.org/s/144470, CC BY 3.0 (credited in the menu): cut to 2 s
+  // (fading from 1.6 s) and levelled down to -16 dB RMS, the original is mastered at full scale
+  death:['robot_death.ogg'],
+  // "Robot Heartbeat" by EminYILDIRIM, freesound.org/s/617033, CC BY 4.0 (credited in the menu); cut to 15 beats
+  // (0.476 s each) starting just before a beat, with the trailing silence removed, so it loops without a seam
+  heart:['robot_heartbeat_loop.ogg'],
+  spawn:['robot_power_on.mp3'], // "Robot Awakening | Power On" by GammaGool, freesound.org/s/746988, CC0
+  // "Robot Voice (1).wav" by AnusProductions, freesound.org/s/406126, CC BY 3.0 (credited in the menu): cut at the
+  // pauses into 40 commands of 0.7–1.5 s, each levelled to the same loudness
+  voice:Array.from({length:40}, (_, i) => `voice/v${String(i).padStart(2, '0')}.ogg`)
+};
+let voiceBag = []; // the voice lines left before any repeats
+const HEART_BEAT = 0.476, HEART_BEATS = 15; // the file is 15 beats on a 0.476 s grid, each slice starting 20 ms before its beat
+const sampleBuf = {};
+function makeBus(ctx){
+  const g = ctx.createGain(), comp = ctx.createDynamicsCompressor(), lim = ctx.createDynamicsCompressor();
+  g.gain.value = 1.5;
+  comp.threshold.value = -22; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.18;
+  lim.threshold.value = -2; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.06;
+  g.connect(comp).connect(lim).connect(ctx.destination);
+  g.lim = lim; // the background loop joins after the compressor, so it never pumps the hits
+  return g;
+}
 function initAudio(){
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume?.();
+    bus = bus || makeBus(actx);
     if (!noiseBuf){
       noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.6, actx.sampleRate);
       const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random()*2-1;
     }
+    if (!satCurve){
+      satCurve = new Float32Array(1024);
+      for (let i = 0; i < 1024; i++){ const x = i / 511.5 - 1; satCurve[i] = Math.tanh(3 * x) / Math.tanh(3); }
+    }
+    // the recordings load in the background; until they arrive the synth layers play on their own
+    if (!samplesAsked){
+      samplesAsked = true;
+      Object.values(SAMPLES).flat().forEach(n => fetch(`sfx/${n}`).then(r => r.arrayBuffer()).then(b => actx.decodeAudioData(b)).then(buf => { sampleBuf[n] = buf; }).catch(() => {}));
+    }
   } catch(e){}
 }
-function tone(freq, len = 0.1, vol = 0.15, type = 'triangle', slide = 0){
+// where a sound goes: the bus, through a stereo panner when it comes from one side
+function out(pan = 0){
+  if (!pan || !actx.createStereoPanner) return bus;
+  const p = actx.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); p.connect(bus); return p;
+}
+function tone(freq, len = 0.1, vol = 0.15, type = 'triangle', slide = 0, pan = 0){
   if (!actx) return;
   const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
   o.type = type; o.frequency.setValueAtTime(freq, t);
   if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + len);
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + len);
+  o.connect(g).connect(out(pan)); o.start(t); o.stop(t + len);
 }
-function noise(len, freq, vol, type = 'lowpass'){
+function noise(len, freq, vol, type = 'lowpass', pan = 0){
   if (!actx || !noiseBuf) return;
   const s = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain(), t = actx.currentTime;
   s.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  s.connect(f).connect(g).connect(actx.destination); s.start(t); s.stop(t + len);
+  s.connect(f).connect(g).connect(out(pan)); s.start(t); s.stop(t + len);
+}
+// a random take of a recording; rate < 1 plays it lower and longer (heavier); delay in seconds
+function sample(group, vol, rate = 1, pan = 0, delay = 0){
+  const takes = SAMPLES[group].map(n => sampleBuf[n]).filter(Boolean);
+  if (!actx || !takes.length) return;
+  const s = actx.createBufferSource(), g = actx.createGain();
+  s.buffer = takes[Math.floor(Math.random() * takes.length)]; s.playbackRate.value = rate * rnd(0.96, 1.04); g.gain.value = vol;
+  s.connect(g).connect(out(pan)); s.start(actx.currentTime + delay);
+}
+// the body of a hit: a sine dropping from f0 to f1, driven into saturation (drive) so it has audible overtones
+function thump(f0, f1, len, vol, drive = 2, pan = 0){
+  if (!actx || !satCurve) return;
+  const o = actx.createOscillator(), pre = actx.createGain(), sh = actx.createWaveShaper(), g = actx.createGain(), t = actx.currentTime;
+  o.type = 'sine'; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + len * 0.6);
+  pre.gain.value = drive; sh.curve = satCurve;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  o.connect(pre).connect(sh).connect(g).connect(out(pan)); o.start(t); o.stop(t + len);
+}
+const crack = (vol, pan) => noise(0.035, 2600, vol, 'highpass', pan);
+// The heartbeat under the fight: it plays only while a wave is on (not in breaks, not paused), fading in and out.
+// Its tempo is set per wave (heartTempo: half speed in wave 1, 10% faster each wave after). The beats are played one
+// by one from the loop file, HEART_BEAT / tempo apart, so a slower tempo spaces them out without lowering the pitch.
+// Within a wave it tightens with tension k (0..1): louder and brighter.
+const heartTempo = round => 0.5 * Math.pow(1.1, round - 1);
+let heart = null;
+function heartbeat(k, tempo){
+  const buf = actx && sampleBuf[SAMPLES.heart[0]];
+  if (!buf) return;
+  const t = actx.currentTime;
+  if (!heart){
+    const f = actx.createBiquadFilter(), g = actx.createGain();
+    f.type = 'lowpass'; f.frequency.value = 900; g.gain.setValueAtTime(0.0001, t);
+    f.connect(g).connect(bus.lim);
+    heart = {f, g, i:0, at:t + 0.05, srcs:[], next:0};
+  }
+  const h = heart;
+  if (h.at < t) h.at = t + 0.02; // the page stalled: skip the missed beats rather than firing them all at once
+  // schedule the next beats a little ahead; each is one slice of the file, with 5 ms fades so the cuts don't click
+  while (h.at < t + 0.3){
+    const s = actx.createBufferSource(), e = actx.createGain(), at = h.at;
+    s.buffer = buf; s.connect(e).connect(h.f);
+    e.gain.setValueAtTime(0, at); e.gain.linearRampToValueAtTime(1, at + 0.005);
+    e.gain.setValueAtTime(1, at + HEART_BEAT - 0.005); e.gain.linearRampToValueAtTime(0, at + HEART_BEAT);
+    s.start(at, (h.i % HEART_BEATS) * HEART_BEAT, HEART_BEAT);
+    h.srcs.push(s); s.onended = () => h.srcs.splice(h.srcs.indexOf(s), 1);
+    h.i++; h.at += HEART_BEAT / tempo;
+  }
+  if (t < h.next) return; // a few updates a second are plenty, and keep the automation list short
+  h.next = t + 0.25;
+  h.g.gain.setTargetAtTime(0.2 + 0.18 * k, t, 0.6);
+  h.f.frequency.setTargetAtTime(900 + 3000 * k, t, 0.6);
+}
+function heartbeatOff(){
+  if (!heart) return;
+  const t = actx.currentTime, h = heart;
+  h.g.gain.cancelScheduledValues(t); h.g.gain.setTargetAtTime(0.0001, t, 0.3);
+  h.srcs.slice().forEach(s => { try { s.stop(t + 1.5); } catch(e){} });
+  heart = null;
 }
 const SFX = {
-  punch(){ noise(0.25, 300, 0.6); tone(90, 0.25, 0.3, 'sine', -50); },
+  // fist on a robot: the metal slam recording carries it; a quiet crack and a short saturated thump keep it
+  // audible on the headset's small speakers (the recording is nearly all below 150 Hz)
+  punch(p = 0.7, pan = 0){
+    sample('punch', 0.9 + 0.6 * p, 1.08 - 0.2 * p, pan); crack(0.12 + 0.18 * p, pan);
+    thump(170, 50, 0.15 + 0.1 * p, 0.25 + 0.25 * p, 2 + 2 * p, pan);
+  },
+  // fist on the force field: the punch plus an energy zap
+  shieldHit(p = 0.7, pan = 0){
+    sample('punch', 0.8 + 0.5 * p, 1.12 - 0.2 * p, pan); crack(0.1 + 0.15 * p, pan);
+    thump(140, 55, 0.14 + 0.08 * p, 0.2 + 0.2 * p, 2 + p, pan);
+    tone(880, 0.16, 0.12, 'sine', -500, pan); noise(0.12, 5000, 0.25, 'highpass', pan);
+  },
+  // a robot breaking apart: deeper thump, metal and plate crunch, debris
+  crunch(p = 0.8, pan = 0, big = false){
+    SFX.punch(p, pan); sample('plate', 0.6 + 0.4 * p, big ? 0.7 : 0.85, pan); sample('metal', 0.5 + 0.3 * p, big ? 0.6 : 0.75, pan);
+    thump(120, 32, big ? 0.6 : 0.4, 0.7 + 0.3 * p, 3, pan); noise(big ? 0.5 : 0.35, 900, 0.35, 'lowpass', pan);
+  },
+  // a robot (or a jaw) dying, just after the impact; rate < 1 for the big ones
+  death(pan = 0, rate = 1){ sample('death', 0.16, rate, pan, 0.06); },
+  // a new enemy powering up out in space; the recording is mastered hot, so it sits well under the hits
+  spawn(pan = 0, rate = 1){ sample('spawn', 0.1, rate, pan * 0.7); },
+  // an enemy closing in barks a command: a random line, none repeated until all have played
+  voice(pan = 0, rate = 1){
+    if (!actx) return;
+    if (!voiceBag.length) voiceBag = SAMPLES.voice.filter(n => sampleBuf[n]).sort(() => Math.random() - 0.5);
+    const n = voiceBag.pop(); if (!n) return;
+    const s = actx.createBufferSource(), g = actx.createGain();
+    s.buffer = sampleBuf[n]; s.playbackRate.value = rate; g.gain.value = 0.55;
+    s.connect(g).connect(out(pan)); s.start(actx.currentTime);
+  },
+  // uppercut and hammer: everything, an octave lower
+  superHit(pan = 0){
+    sample('punch', 1.3, 0.72, pan); sample('metal', 0.9, 0.55, pan); crack(0.6, pan);
+    thump(110, 28, 0.8, 1.0, 5, pan); noise(0.9, 140, 0.8, 'lowpass', pan);
+  },
   chop(){ noise(0.18, 2400, 0.35, 'bandpass'); tone(300, 0.12, 0.1, 'sawtooth', -200); },
   rip(){ noise(0.5, 900, 0.55); tone(70, 0.5, 0.3, 'sawtooth', -30); },
   splat(){ noise(0.3, 700, 0.5); noise(0.12, 3200, 0.15, 'highpass'); tone(110, 0.2, 0.2, 'sine', -60); },
   kill(){ tone(160, 0.6, 0.25, 'sine', -120); },
   swing(){ noise(0.3, 1300, 0.3, 'bandpass'); },
-  block(){ tone(520, 0.12, 0.18, 'square', -200); noise(0.1, 4000, 0.3, 'highpass'); },
-  hurt(){ noise(0.4, 200, 0.7); tone(60, 0.4, 0.35, 'square', -20); },
+  block(pan = 0){ sample('metal', 0.7, 1.15, pan); tone(520, 0.12, 0.18, 'square', -200, pan); noise(0.1, 4000, 0.3, 'highpass', pan); thump(160, 70, 0.12, 0.4, 2, pan); },
+  // a punch landing on you: the slam played lower, a deep saturated thump and a crack, from the attacker's side
+  hurt(pan = 0){ sample('punch', 1.3, 0.72, pan * 0.5); thump(100, 30, 0.5, 1.0, 4, pan * 0.5); crack(0.5, pan * 0.5); noise(0.4, 200, 0.7); tone(60, 0.4, 0.35, 'square', -20); },
+  // an enemy's fist starting its swing: a sharp whoosh sweeping up and a crack, from its side
+  enemySwing(pan = 0){
+    if (!actx || !noiseBuf) return;
+    const s = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain(), t = actx.currentTime;
+    s.buffer = noiseBuf; f.type = 'bandpass'; f.Q.value = 2; f.frequency.setValueAtTime(500, t); f.frequency.exponentialRampToValueAtTime(3500, t + 0.18);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.7, t + 0.12); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    s.connect(f).connect(g).connect(out(pan)); s.start(t); s.stop(t + 0.26);
+    crack(0.35, pan);
+  },
   ko(){ noise(0.6, 250, 0.8); tone(90, 1.0, 0.4, 'sawtooth', -60); },
   grab(){ tone(140, 0.15, 0.15, 'sine', 40); },
-  shield(){ tone(880, 0.16, 0.12, 'sine', -500); noise(0.12, 5000, 0.25, 'highpass'); },
   shieldDown(){ tone(600, 0.5, 0.18, 'square', -520); noise(0.4, 3000, 0.3, 'bandpass'); },
   stun(){ tone(1200, 0.5, 0.08, 'sine', -900); tone(1500, 0.5, 0.06, 'sine', -1100); },
   fatal(){ tone(55, 1.0, 0.4, 'sawtooth', -20); noise(0.8, 600, 0.6); },
@@ -611,6 +773,7 @@ const GEO = (() => {
     boot:new THREE.BoxGeometry(0.11, 0.08, 0.17),
     spike:new THREE.ConeGeometry(0.025, 0.11, 5),
     chargeOrb:new THREE.SphereGeometry(0.07, 14, 10),
+    teleRing:new THREE.RingGeometry(0.86, 1, 48),          // unit radius: telegraph() scales it in metres
     chunk:new THREE.TetrahedronGeometry(0.03, 0),
     spark:new THREE.OctahedronGeometry(0.015, 0),
     drop:new THREE.IcosahedronGeometry(0.011, 0),
@@ -831,6 +994,13 @@ function makeEnemy(type){
   }
   // charge telegraph: right fist pulls back and gathers an orb
   const orb = M(GEO.chargeOrb, orbMat); orb.visible = false; arms[1].fist.add(orb);
+  // the punch timer (telegraph()): a ring round the fist that shrinks onto a fixed inner ring and closes exactly
+  // when the punch lands; drawn over everything, so the robot's own body can't hide it
+  const ringMat = () => new THREE.MeshBasicMaterial({color:0xffc861, transparent:true, opacity:0, side:THREE.DoubleSide,
+    depthTest:false, depthWrite:false, blending:THREE.AdditiveBlending});
+  const tele = new THREE.Group(); tele.visible = false; g.add(tele);
+  tele.outer = M(GEO.teleRing, ringMat()); tele.target = M(GEO.teleRing, ringMat()); tele.target.material.opacity = 0.55;
+  tele.outer.renderOrder = tele.target.renderOrder = 30; tele.add(tele.outer, tele.target);
 
   // force field bubble and the shield/HP bars over the head
   const fieldMat = new THREE.MeshBasicMaterial({color:T.field, transparent:true, opacity:0.2, depthWrite:false});
@@ -843,8 +1013,8 @@ function makeEnemy(type){
   body.add(upper, lower); g.add(body); g.scale.setScalar(T.scale);
   const e = {g, body, upper, lower, head, armor, type, hp:T.hp, hpMax:T.hp, shield:T.shield, shieldMax:T.shield, shieldT:0, field:T.field,
     scale:T.scale, mass:T.scale * T.scale, bulk:T.bulk, cape, arms, legs, boots,
-    state:'approach', ring:'inner', ang:0, dy:0, charge:0, wind:CHARGE, sw:0, rec:0, aim:v3(), aimHead:v3(), hitDone:false,
-    kv:v3(), fly:1, flinch:0, flinchSide:1, wounds:0, speedMul:0.85 + Math.random()*0.3, stunT:0, bumped:null, throwT:rnd(2, 4), rest:rnd(0.5, 1.5), retreat:false, thrown:false,
+    state:'approach', ring:'inner', ang:0, dy:0, charge:0, wind:CHARGE[type], sw:0, rec:0, aim:v3(), aimHead:v3(), hitDone:false,
+    kv:v3(), sv:v3(), vel:v3(), prev:null, steering:false, fresh:false, backTo:null, stop:0, near:false, fly:1, flinch:0, flinchSide:1, wounds:0, speedMul:0.85 + Math.random()*0.3, stunT:0, bumped:null, throwT:rnd(2, 4), rest:rnd(0.3, 0.8), retreat:false, thrown:false,
     cool:[0, 0], grab:null, bob:Math.random()*6, ph:Math.random()*6, hitFlash:0, fieldFlash:0, pose:Object.assign({}, GUARD)};
   e.setCharge = (f, showOrb = true) => {
     visorMat.color.copy(VISOR_IDLE).lerp(VISOR_HOT, Math.max(0, Math.min(1, f)));
@@ -859,12 +1029,16 @@ function makeEnemy(type){
     bars.visible = e.state !== 'approach' || e.fly < 0.9;
   };
   e.flicker = () => visorMat.color.setHex(Math.random() < 0.5 ? 0xffffff : 0x220806);
-  e.dim = () => { visorMat.color.setHex(0x3a0a06); emblemMat.color.multiplyScalar(0.25); orb.visible = false; field.visible = false; bars.visible = false; };
-  e.orb = orb;
+  e.dim = () => { visorMat.color.setHex(0x3a0a06); emblemMat.color.multiplyScalar(0.25); orb.visible = false; field.visible = false; bars.visible = false; quiet(e); };
+  e.orb = orb; e.tele = tele;
   if (ROBOT.tpl) fitRobot(e);
   return e;
 }
 
+// The end of the wind-up (the punching arm is arms[1]: s1x/s1z/e1, the guard arm s0x/e0), tuned by eye with
+// __obPreview('telegraph'); the swing starts from it.
+const TRAIL_MAT = new THREE.MeshBasicMaterial({color:0xffb070, transparent:true, opacity:0.7, blending:THREE.AdditiveBlending, depthWrite:false});
+const WINDUP = {s1x:-1.5, s1z:1.6, e1:-2.6, lean:-0.3, twist:0.6, hx:0.25, s0x:0.3, e0:-2.6};
 // Pose targets per state, smoothed into e.pose; a flinch from a hit is layered on top when applied.
 function animate(e, gdt){
   const t = e.bob, P = Object.assign({}, GUARD);
@@ -887,13 +1061,20 @@ function animate(e, gdt){
     // winding up a throw: right arm cocked back over the shoulder
     if (lift > 0) Object.assign(P, {s1x:-0.6 - 2.3 * lift, e1:-1.6 + 1.0 * lift, lean:0.15 - 0.3 * lift, twist:-0.4 * lift});
   } else if (e.state === 'windup'){
-    const f = Math.min(1, e.charge / e.wind), shake = f > 0.75 ? (Math.random() - 0.5) * 0.08 : 0;
-    Object.assign(P, {s1x:-0.35 + f * 1.1, e1:-1.15 - f * 0.9, lean:0.08 - f * 0.2, twist:-f * 0.35 + shake, hx:0.2, s0x:-0.95, e0:-1.65});
+    // a big, readable wind-up: leans back and turns away, the fist rises beside its head (where you can see it)
+    // and the other arm comes up as a guard; it trembles in the last quarter
+    const f = Math.min(1, e.charge / e.wind), shake = f > 0.75 ? (Math.random() - 0.5) * 0.1 : 0, W = WINDUP;
+    const L = (a, b) => a + (b - a) * f;
+    Object.assign(P, {s1x:L(GUARD.s1x, W.s1x), s1z:L(GUARD.s1z, W.s1z), e1:L(GUARD.e1, W.e1), lean:L(GUARD.lean, W.lean), twist:L(0, W.twist) + shake,
+      hx:L(GUARD.hx, W.hx), s0x:L(GUARD.s0x, W.s0x), e0:L(GUARD.e0, W.e0)});
   } else if (e.state === 'swing'){
-    const s = e.sw / SWING, p = s < IMPACT ? Math.pow(s / IMPACT, 2) : 1 - (s - IMPACT) / (1 - IMPACT) * 0.5;
-    const L = (a, b) => a + (b - a) * p;
-    Object.assign(P, {s1x:L(0.75, -1.8), e1:L(-2.05, -0.05), s1z:L(0.22, 0.05), twist:L(-0.35, 0.55), lean:L(-0.12, 0.35), s0x:L(-0.95, 0.25), hx:0.05});
-    k = 40;
+    // the strike: the arm straightens along the line from its shoulder to your face, the body throws its weight
+    // forward and the other arm pulls back; at full reach it holds (SWING_HOLD), then draws back a little
+    const s = e.sw / SWING, p = s < IMPACT ? Math.pow(s / IMPACT, 2) : s < SWING_HOLD ? 1 : 1 - (s - SWING_HOLD) / (1 - SWING_HOLD) * 0.4;
+    const L = (a, b) => a + (b - a) * p, W = WINDUP, A = aimArm(e, e.aim);
+    Object.assign(P, {s1x:L(W.s1x, A.x), s1z:L(W.s1z, A.z), e1:L(W.e1, -0.05), twist:L(W.twist, -W.twist), lean:L(W.lean, 0.45),
+      s0x:L(W.s0x, 0.4), e0:L(W.e0, -1.9), hx:L(W.hx, -0.1)});
+    k = 45;
   } else if (e.state === 'grabbed' || e.state === 'shoved' || e.state === 'held'){
     // thrashing in your grip, or flailing while it tumbles away
     Object.assign(P, {s0x:-1 + Math.sin(t * 7) * 0.6, s0z:1.1 + Math.sin(t * 9) * 0.4, e0:-0.6, s1x:-1 + Math.cos(t * 6) * 0.6, s1z:1.1 + Math.cos(t * 8) * 0.4, e1:-0.7,
@@ -918,7 +1099,7 @@ function animate(e, gdt){
 }
 
 /* ---------- game state ---------- */
-let G = null, session = null;
+let G = null, session = null, dev = null; // dev: the flat-screen mouse mode's state (see startDev)
 const clock = new THREE.Clock();
 const head = {pos:v3(), fwd:new THREE.Vector3(0,0,-1), dir:new THREE.Vector3(0,0,-1)};
 const anchor = {pos:new THREE.Vector3(0,1.6,0), fwd:new THREE.Vector3(0,0,-1), right:new THREE.Vector3(1,0,0)};
@@ -935,12 +1116,12 @@ function buildPlan(){
   return p;
 }
 function newGame(){
-  return {plan:buildPlan(), i:0, t:0, spawnT:1.0, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0, jaw:0}, leaks:0, fatal:0,
-    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, jawT:6, perRound:Array(cfg.rounds).fill(0)};
+  return {plan:buildPlan(), i:0, t:0, spawnT:0.3, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0, jaw:0}, leaks:0, fatal:0,
+    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, jawT:6, voiceT:0, perRound:Array(cfg.rounds).fill(0)};
 }
 
 function updateHead(){
-  const xc = renderer.xr.getCamera(camera);
+  const xc = dev ? camera : renderer.xr.getCamera(camera); // dev mode: no XR session, the flat camera is the head
   head.pos.setFromMatrixPosition(xc.matrixWorld);
   const q = new THREE.Quaternion(); xc.matrixWorld.decompose(v3(), q, v3());
   head.dir.set(0, 0, -1).applyQuaternion(q);
@@ -973,58 +1154,110 @@ function pickType(round){
 
 // Enemies stand on two rings around the player. The inner ring attacks; the outer ring waits for a gap.
 // A spot is free when its arc distance to every other enemy on that ring clears both torsos.
-const bodyR = e => 0.2 * e.scale * e.bulk;
-function freeAngle(ring, r, prefer){
+const bodyR = e => 0.2 * e.scale * e.bulk, typeR = t => 0.2 * TYPES[t].scale * TYPES[t].bulk;
+// pack: only take a spot right against a neighbour or the end of the arc, so the free space stays in one piece
+function freeAngle(ring, r, prefer, pack = false){
   const R = RING[ring], others = enemies.filter(o => o.state !== 'dead' && o.ring === ring);
+  const clear = a => a >= -R.max && a <= R.max && others.every(o => Math.abs(a - o.ang) * Math.PI / 180 * R.d >= r + bodyR(o) + 0.03);
   let best = null, bestD = Infinity;
-  for (let a = -R.max; a <= R.max; a += 2){
-    if (!others.every(o => Math.abs(a - o.ang) * Math.PI / 180 * R.d >= r + bodyR(o) + 0.03)) continue;
+  for (let a = -R.max; a <= R.max; a++){
+    if (!clear(a) || pack && clear(a - 1) && clear(a + 1)) continue;
     const d = Math.abs(a - prefer); if (d < bestD){ bestD = d; best = a; }
   }
   return best;
 }
+// torsos (radii) fit side by side on the strike arc even in the worst order (the two smallest at the ends)
+const STRIKE_ARC = 2 * RING.inner.max * Math.PI / 180 * RING.inner.d;
+function strikeFits(radii){
+  if (radii.length < 2) return true;
+  const s = radii.slice().sort((a, b) => a - b);
+  return 2 * s.reduce((a, b) => a + b, 0) - s[0] - s[1] + 0.03 * (s.length - 1) <= STRIKE_ARC;
+}
 function home(e, out){ return out.copy(anchor.pos).addScaledVector(dirAt(e.ang), RING[e.ring].d).setY(anchor.pos.y + e.dy); }
 const innerDy = () => -0.42 + Math.random() * 0.22;
-// Bombers hold the outer ring from wave 1 and only lob grenades; they don't count against the melee cap
-const meleeCap = round => Math.min(2 + Math.floor(round / 2), 5), bomberCap = round => round >= 5 ? 2 : 1;
+// Bombers hold the outer ring from wave 1 and only lob grenades. At most FAR_MAX enemies wait out there, bombers
+// included: a melee enemy only joins if everyone the outer ring can't hold fits on the strike ring at once, so the
+// rest are always charging in, attacking or flying back
+const FAR_MAX = 2, bomberCap = round => round >= 5 ? 2 : 1;
+const strikeCap = round => Math.min(1 + Math.floor(round / 2), 3);
+function meleeFits(type, round){
+  const live = enemies.filter(e => e.state !== 'dead'), bombers = live.filter(e => e.bomber).length;
+  // whoever charges first, the ones the outer ring can't hold must fit: assume the biggest are the ones in
+  const r = live.filter(e => !e.bomber).map(bodyR).concat(typeR(type)).sort((a, b) => b - a);
+  const near = r.slice(0, Math.max(0, r.length - Math.max(0, FAR_MAX - bombers)));
+  return near.length <= strikeCap(round) && strikeFits(near);
+}
+// a melee enemy comes first, so a wave opens with someone to fight; the bombers follow once one is in play
 function wantSpawn(round){
   const live = enemies.filter(e => e.state !== 'dead'), bombers = live.filter(e => e.bomber).length;
-  if (bombers < bomberCap(round)) return 'bomber';
-  return live.length - bombers < meleeCap(round) ? 'melee' : null;
+  if (bombers < bomberCap(round) && live.length > bombers) return 'bomber';
+  return meleeFits('grunt', round) ? 'melee' : null;
 }
 function spawn(round, role = 'melee'){
-  const e = makeEnemy(pickType(round)), r = bodyR(e), pref = rnd(-60, 60);
-  // everyone first takes a spot on the staging line; melee enemies charge in from there (charges())
-  const ang = freeAngle('outer', r, pref); e.ring = 'outer';
+  let type = pickType(round);
+  // no room on the strike ring for a big one: a smaller one comes instead
+  if (role === 'melee') while (type !== 'grunt' && !meleeFits(type, round)) type = type === 'brute' ? 'soldier' : 'grunt';
+  // with no melee enemy in play (a wave starting, or you've just cleared them) it appears closer, so you're not left waiting
+  const close = role === 'melee' && !enemies.some(o => o.state !== 'dead' && !o.bomber);
+  const e = makeEnemy(type), r = bodyR(e), pref = rnd(-60, 60);
+  // bombers take the far line; melee enemies head for the waiting line and move in from there (charges())
+  const ring = role === 'bomber' ? 'outer' : 'wait', ang = freeAngle(ring, r, pref);
   e.bomber = role === 'bomber' && ang !== null;
   if (ang === null) return;
-  e.ang = ang; e.dy = rnd(-0.3, 0.05);
-  const start = anchor.pos.clone().addScaledVector(dirAt(ang + rnd(-20, 20)), 8 + Math.random()*3);
-  start.y = anchor.pos.y - 1.5 + Math.random()*5;
+  e.ring = ring; e.ang = ang; e.dy = rnd(-0.3, 0.05); e.fresh = !e.bomber;
+  const start = anchor.pos.clone().addScaledVector(dirAt(ang + rnd(-20, 20)), close ? rnd(4.5, 5.5) : rnd(8, 11));
+  start.y = anchor.pos.y + (close ? rnd(-0.6, 1.2) : rnd(-1.5, 3.5));
   e.g.position.copy(start);
   e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
   scene.add(e.g); enemies.push(e);
+  SFX.spawn(panOf(start), {grunt:1.05, soldier:1, brute:0.85}[type]);
 }
-// Hit and run: melee enemies wait on the staging line, then charge in one or two at a time, throw one punch
-// and fly back out, so each one is in reach only briefly.
+// Constant pressure: melee enemies drift in to a strike spot as soon as one is free; one still flying in from deep
+// space, or back after a shove or a throw (e.fresh), turns towards it without stopping on the waiting line first.
+const waitingOf = () => enemies.filter(o => o.ring === 'wait' && o.state === 'hover');
 function charges(gdt){
   G.chargeT -= gdt;
   const round = G.plan[G.i].round || 1;
   const busy = enemies.filter(o => o.state !== 'dead' && o.ring === 'inner').length;
-  if (G.chargeT > 0 || busy >= Math.min(1 + Math.floor(round / 2), 3)) return;
-  const e = enemies.find(o => o.ring === 'outer' && o.state === 'hover' && !o.bomber && o.rest <= 0);
-  if (!e) return;
-  const a = freeAngle('inner', bodyR(e), Math.max(-RING.inner.max, Math.min(RING.inner.max, e.ang)));
-  if (a === null) return;
-  e.ring = 'inner'; e.ang = a; e.dy = innerDy(); e.state = 'approach'; e.retreat = false;
-  G.chargeT = rnd(0.5, 1.3) - Math.min(round, 6) * 0.05;
-  SFX.swing();
+  if (G.chargeT > 0 || busy >= strikeCap(round)) return;
+  // more than FAR_MAX waiting out of reach (bombers included): the one closest to rested skips the rest of its breather
+  const waiting = waitingOf(), bombers = enemies.filter(o => o.state !== 'dead' && o.bomber).length;
+  const crowded = waiting.length + bombers > FAR_MAX;
+  const ready = waiting.filter(o => o.rest <= 0 || crowded).sort((p, q) => p.rest - q.rest)
+    .concat(enemies.filter(o => o.fresh && o.state === 'approach'));
+  // the first one that fits moves in; with more than one strike spot they pack in side by side
+  let e = null, a = null;
+  for (const o of ready){
+    a = freeAngle('inner', bodyR(o), Math.max(-RING.inner.max, Math.min(RING.inner.max, o.ang)), strikeCap(round) > 1);
+    if (a !== null){ e = o; break; }
+  }
+  if (!e){ if (ready.length) compact(); return; }
+  e.ring = 'inner'; e.ang = a; e.dy = innerDy(); e.state = 'approach'; e.fresh = false;
+  G.chargeT = crowded ? 0.1 : rnd(0.2, 0.5);
 }
-// back out to the staging line after a punch, a shove, a throw or a stun
-function toStage(e, rest = rnd(1.2, 2.6)){
-  const a = freeAngle('outer', bodyR(e), e.ang);
-  e.ring = 'outer'; if (a !== null) e.ang = a; e.dy = rnd(-0.3, 0.05);
-  e.state = 'approach'; e.retreat = true; e.rest = rest; e.setCharge(0);
+// someone is waiting but doesn't fit: the attackers slide out to the ends of the arc (left half left, right half
+// right), which opens the gap in front of you; nobody moves while mid-swing or held
+function compact(){
+  const R = RING.inner, occ = enemies.filter(o => o.state !== 'dead' && o.ring === 'inner');
+  if (occ.some(o => o.state === 'swing' || o.state === 'held')) return;
+  const gap = (p, q) => (bodyR(p) + bodyR(q) + 0.03) / R.d * 180 / Math.PI;
+  const left = occ.filter(o => o.ang < 0).sort((p, q) => p.ang - q.ang), right = occ.filter(o => o.ang >= 0).sort((p, q) => q.ang - p.ang);
+  left.forEach((o, i) => o.ang = i ? left[i - 1].ang + gap(left[i - 1], o) : -R.max);
+  right.forEach((o, i) => o.ang = i ? right[i - 1].ang - gap(right[i - 1], o) : R.max);
+}
+// back to the waiting line after a shove or a throw, or to make room after its punch; it keeps the velocity it has
+// (approach() takes it over) and drifts there, then a short breather before it moves in again
+function toWait(e, rest = rnd(0.3, 0.8)){
+  const ring = e.bomber ? 'outer' : 'wait', a = freeAngle(ring, bodyR(e), e.ang);
+  e.ring = ring; if (a !== null) e.ang = a; e.dy = rnd(-0.3, 0.05);
+  e.state = 'approach'; e.rest = rest; e.setCharge(0);
+}
+// after its punch (or a block, a drop, a stun): it drifts back half a metre or so (e.backTo), then curves straight
+// back in to the same strike spot, unless a rested enemy is waiting for one, which then gets the spot
+function reengage(e){
+  if (waitingOf().some(o => o.rest <= 0)){ toWait(e); return; }
+  e.backTo = e.g.position.clone().addScaledVector(awayFromMe(e.g.position), rnd(0.5, 0.75));
+  e.state = 'approach'; e.setCharge(0);
 }
 
 /* ---------- debris, gore & bullet-time ---------- */
@@ -1123,10 +1356,13 @@ const has = id => lvl(id) > 0;
 const maxHp = () => PLAYER_HP + 2 * lvl('armor');
 const maxMana = () => MANA + 3 * lvl('tank');
 const manaRegen = () => MANA_REGEN * (1 + 0.3 * lvl('tank'));
-function hurtPlayer(n){
+// from: where the blow came from (optional): its side of your view flashes red and the sound comes from there
+function hurtPlayer(n, from){
   G.hp = Math.max(0, G.hp - n); G.leaks++;
-  SFX.hurt(); hands.forEach(h => pulse(h, 0.9, 250));
-  hurt.material.opacity = 0.6;
+  const side = from ? panOf(from) / 0.8 : 0;
+  SFX.hurt(side); hands.forEach(h => pulse(h, 1, 280));
+  hurt.material.opacity = from ? 0.35 : 0.6;
+  if (from){ hurtArcs.children[0].material.opacity = 0.8 * Math.max(0.15, Math.min(1, 0.5 - side)); hurtArcs.children[1].material.opacity = 0.8 * Math.max(0.15, Math.min(1, 0.5 + side)); }
   blood(head.pos.clone().addScaledVector(head.fwd, 0.2).add(v3(0, -0.06, 0)), head.fwd.clone().add(v3(0, 0.3, 0)), 18, 0.8);
   if (G.hp <= 0) knockout();
 }
@@ -1136,15 +1372,21 @@ function shove(e, dir, v, lift = 0.35){
   e.kv.addScaledVector(d, v);
   if (v > 2.5 && e.state !== 'grabbed' && e.state !== 'stunned'){ e.state = 'shoved'; e.held = null; e.setCharge(0); e.bumped = new Set([e]); }
 }
+// how hard a hand hits, 0..1, for the sound and the controller buzz; how far left or right something is, for stereo
+const power = h => h ? Math.max(0.15, Math.min(1, (h.userData.speed - 0.5) / 3)) : 0.8;
+const panOf = p => { const d = p.clone().sub(head.pos).setY(0); return Math.max(-1, Math.min(1, d.dot(v3(-head.fwd.z, 0, head.fwd.x)) / Math.max(0.5, d.length()))) * 0.8; };
 // kind: punch | charged | blade | neck | blast | bump | uppercut | hammer; h is the hand (null for blasts and collisions)
 function hit(e, kind, h, at, dir){
-  const u = h?.userData, away = awayFromMe(at);
+  const u = h?.userData, away = awayFromMe(at), p = power(h), pan = panOf(at);
   dir = dir || strikeDir(h, away);
   G.blows++; e.hitFlash = 0.25;
   if (e.state === 'stunned'){ finish(e, kind, h, at); return; }
   if (e.shield > 0){
     e.shield = Math.max(0, e.shield - DRAIN[kind]); e.shieldT = 0; e.fieldFlash = 1;
-    spray(at, away, 10, e.field, 1.6); SFX.shield(); if (h) pulse(h, 0.5, 50);
+    spray(at, away, 10, e.field, 1.6); if (h) pulse(h, 0.35 + 0.65 * p, 40 + 60 * p);
+    if (SUPER[kind]) SFX.superHit(pan); else if (kind === 'blade' || kind === 'neck') SFX.chop(); else SFX.shieldHit(p, pan);
+    // hit-stop: the enemy freezes for a moment on contact, which sells the weight of the blow
+    e.stop = 0.04 + 0.04 * p;
     // a punch on the shield shoves the enemy a few metres back; blade hands only nudge it
     const v = {punch:SHOVE, charged:SHOVE * 2, blast:6.5, bump:5, uppercut:SHOVE * 1.2, hammer:SHOVE * 1.5}[kind] || 2;
     shove(e, dir, v / e.mass, kind === 'uppercut' ? 0.7 : 0.35);
@@ -1158,9 +1400,10 @@ function hit(e, kind, h, at, dir){
   // once the shield is down one hit kills, with a gory finish; brutes are stunned instead and wait for a fatality
   if (e.hp <= 0 && !TYPES[e.type].stuns){ crush(e, kind, h, at); return; }
   if (u) u.blood = Math.min(1, u.blood + 0.3);
-  if (h) pulse(h, 0.6, 60);
-  SFX[kind === 'blade' || kind === 'neck' ? 'chop' : 'punch'](); SFX.splat();
-  if (SUPER[kind]){ SFX.thunder(); showToast(SUPER[kind], '#ffc861'); }
+  if (h) pulse(h, 0.4 + 0.6 * p, 50 + 70 * p);
+  if (kind === 'blade' || kind === 'neck') SFX.chop(); else if (!SUPER[kind]) SFX.punch(p, pan);
+  SFX.splat(); e.stop = 0.05 + 0.04 * p;
+  if (SUPER[kind]){ SFX.superHit(pan); SFX.thunder(); showToast(SUPER[kind], '#ffc861'); }
   const sp = u ? u.speed : 2;
   spray(at, away, 4, 0xffc861, 1.2);
   blood(at, dir, 14 + Math.round(sp * 6), 1.2 + sp * 0.3); mist(at);
@@ -1204,9 +1447,10 @@ function kill(e, style, h, at){
   const step = G.plan[G.i]; if (step.round) G.perRound[step.round - 1]++;
   G.kills[style]++;
   e.dim();
-  const away = awayFromMe(e.g.position);
+  const away = awayFromMe(e.g.position), p = power(h), pan = panOf(at || e.g.position);
+  SFX.death(pan, {grunt:1.05, soldier:0.97, brute:0.85}[e.type]);
   if (style === 'punch' || style === 'blast'){
-    SFX.punch(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 140); h.userData.blood = 1; }
+    SFX.crunch(p, pan); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 140); h.userData.blood = 1; }
     const dir = strikeDir(h, away);
     spray(at, dir, 8, 0xff6a3a, 2.2);
     blood(at, dir, 50, 2.4); meat(at, dir, 10); mist(at); mist(at.clone().addScaledVector(dir, 0.1));
@@ -1231,9 +1475,9 @@ function kill(e, style, h, at){
   } else if (style === 'shatter' || style === 'smash'){
     // the whole robot comes apart: head, both arms, chest and hips fly off in different directions
     // (smash: the hammer from above drives everything down and out)
-    SFX.punch(); SFX.rip(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 160); h.userData.blood = 1; }
+    SFX.crunch(p, pan, true); SFX.rip(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 160); h.userData.blood = 1; }
     const smash = style === 'smash';
-    if (smash){ hands.forEach(x => { pulse(x, 1, 220); x.userData.blood = 1; }); SFX.boom(); }
+    if (smash){ hands.forEach(x => { pulse(x, 1, 220); x.userData.blood = 1; }); SFX.boom(); SFX.superHit(pan); }
     const dir = smash ? away.clone().multiplyScalar(0.6).add(v3(0, -1, 0)).normalize() : strikeDir(h, away), mid = e.g.position.clone();
     e.arms.forEach(a => {
       const sp = a.shoulder.position;
@@ -1257,7 +1501,7 @@ function kill(e, style, h, at){
   } else if (style === 'decap' || style === 'upper'){
     // upper: the uppercut launches the head straight up and the body topples backwards
     const upper = style === 'upper';
-    SFX[upper ? 'punch' : 'chop'](); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, upper ? 180 : 120); h.userData.blood = Math.min(1, h.userData.blood + 0.5); }
+    if (upper) SFX.superHit(pan); else SFX.chop(); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, upper ? 180 : 120); h.userData.blood = Math.min(1, h.userData.blood + 0.5); }
     const hp = e.head.getWorldPosition(v3());
     const side = h && !upper ? h.userData.vel.clone().setY(0) : anchor.right.clone().multiplyScalar(upper ? rnd(-0.3, 0.3) : 1);
     if (!upper && side.lengthSq() < 0.01) side.copy(anchor.right);
@@ -1271,7 +1515,7 @@ function kill(e, style, h, at){
     blood(hp.clone().add(v3(0, -0.06*e.scale, 0)), v3(0, 1, 0).add(side.clone().multiplyScalar(0.3)), 40, 1.9); mist(hp);
     wreck(e.g, away.clone().multiplyScalar(upper ? 2.2 : 1.0).add(v3(0, upper ? 0.6 : -0.3, 0)), upper ? v3(-3, 0.4, 0.3) : v3(-1.2, 0.4, 0.3), bodyR(e));
   } else if (style === 'rip'){
-    SFX.rip(); SFX.kill(); SFX.splat();
+    SFX.crunch(1, 0, true); SFX.rip(); SFX.kill(); SFX.splat();
     hands.forEach(x => { pulse(x, 1, 200); x.userData.blood = 1; });
     // torn vertically: the upper half follows the higher hand, the lower half the lower one
     const [hi, lo] = hands[0].userData.pos.y > hands[1].userData.pos.y ? [hands[0], hands[1]] : [hands[1], hands[0]];
@@ -1292,12 +1536,58 @@ function kill(e, style, h, at){
 }
 
 // enemy punches: the fist lands at IMPACT unless you blocked it with a hand or moved your head out of the way
-function startSwing(e){ e.state = 'swing'; e.sw = 0; e.hitDone = false; e.aimHead.copy(head.pos); e.aim.copy(head.pos).y -= 0.08; SFX.swing(); }
+function startSwing(e){ e.state = 'swing'; e.sw = 0; e.hitDone = false; e.aimHead.copy(head.pos); e.aim.copy(head.pos).y -= 0.08; SFX.enemySwing(panOf(e.g.position)); }
+// The punch telegraph, from the start of the windup to the moment the punch lands: the ring round the fist shrinks
+// onto its inner ring (yellow → red, white in the last 0.15 s) and a whine panned to the attacker rises in pitch.
+// Both close exactly on impact, so you can time a block or a duck by eye or by ear.
+function telegraph(e){
+  const T = e.tele, total = e.wind + SWING * IMPACT;
+  const el = e.state === 'windup' ? e.charge : e.state === 'swing' && !e.hitDone ? e.wind + e.sw : -1;
+  if (el < 0){ quiet(e); return; }
+  const f = Math.min(1, el / total), left = total - el;
+  // a little in front of the fist, facing you
+  T.position.copy(e.g.worldToLocal(fistPos(e, 1, tmpB).lerp(head.pos, 0.1)));
+  T.lookAt(head.pos); T.visible = true;
+  T.outer.scale.setScalar((0.07 + 0.15 * (1 - f)) / e.scale); T.target.scale.setScalar(0.07 / e.scale);
+  T.outer.material.color.setHSL(0.13 * (1 - f), 1, left < 0.15 ? 0.85 : 0.55);
+  T.outer.material.opacity = 0.35 + 0.65 * f;
+  T.target.material.color.copy(T.outer.material.color);
+  whine(e, f);
+}
+// the rising whine: one oscillator per attacker, updated a few times a second
+function whine(e, f){
+  if (!actx || !bus) return;
+  const t = actx.currentTime;
+  if (!e.whine){
+    const o = actx.createOscillator(), bp = actx.createBiquadFilter(), g = actx.createGain(), p = actx.createStereoPanner ? actx.createStereoPanner() : null;
+    o.type = 'sawtooth'; bp.type = 'bandpass'; bp.Q.value = 4; g.gain.setValueAtTime(0.0001, t);
+    o.connect(bp).connect(g); if (p){ g.connect(p).connect(bus); } else g.connect(bus);
+    o.start(t); e.whine = {o, bp, g, p, next:0};
+  }
+  const w = e.whine;
+  if (t < w.next) return;
+  w.next = t + 0.04;
+  const fr = 140 * Math.pow(2, 2.5 * f); // 140 → 790 Hz
+  w.o.frequency.setTargetAtTime(fr, t, 0.02); w.bp.frequency.setTargetAtTime(fr * 2, t, 0.02);
+  w.g.gain.setTargetAtTime(0.03 + 0.14 * f * f, t, 0.03);
+  if (w.p) w.p.pan.setTargetAtTime(panOf(e.g.position), t, 0.05);
+}
+// telegraph off: ring hidden, whine faded out
+function quiet(e){
+  if (e.tele) e.tele.visible = false;
+  if (e.whine && actx){ const t = actx.currentTime; e.whine.g.gain.cancelScheduledValues(t); e.whine.g.gain.setTargetAtTime(0.0001, t, 0.03); e.whine.o.stop(t + 0.2); }
+  e.whine = null;
+}
+// shoulder angles (rotation x, z) that point the punching arm, which hangs along -Y at rest, at a world point
+function aimArm(e, target){
+  const d = e.upper.worldToLocal(target.clone()).sub(e.arms[1].shoulder.position).normalize();
+  return {x:Math.atan2(-d.z, -d.y), z:Math.asin(Math.max(-1, Math.min(1, d.x)))};
+}
 function block(e, h){
   e.state = 'recover'; e.rec = 0.9; e.charge = 0; e.setCharge(0); G.blocks++;
   e.kv.addScaledVector(awayFromMe(e.g.position), 1.2 / e.mass); e.flinch = 0.6;
   spray(h.userData.pos, awayFromMe(h.userData.pos), 8, 0x9fd0ff, 1.2);
-  SFX.block(); pulse(h, 0.7, 80); showToast('BLOK', '#8fb3e8');
+  SFX.block(panOf(h.userData.pos)); pulse(h, 0.8, 90); showToast('BLOK', '#8fb3e8');
 }
 function dodged(e){
   G.dodges++;
@@ -1307,7 +1597,9 @@ function dodged(e){
 }
 function hitPlayer(e){
   e.kv.addScaledVector(awayFromMe(e.g.position), 0.6);
-  hurtPlayer(e.type === 'brute' ? 2 : 1);
+  // the attacker freezes at full reach for a moment, fist in your face (its own hit-stop)
+  e.stop = 0.12;
+  hurtPlayer(e.type === 'brute' ? 2 : 1, e.g.position);
 }
 function knockout(){
   G.kos++; SFX.ko(); hurt.material.opacity = 0.95; bulletTime();
@@ -1670,28 +1962,43 @@ function combat(e){
 }
 
 const tmpA = v3(), tmpB = v3();
+// Steering: the enemy has a velocity (e.sv) that turns towards the goal with limited acceleration and brakes in time
+// to arrive, so it never starts, stops or turns on the spot. Returns the distance to the goal.
+function steer(e, goal, gdt, maxSp){
+  const acc = ACCEL * SPEED[cfg.speed] / SPEED.slow, to = goal.clone().sub(e.g.position), d = to.length();
+  const want = Math.min(maxSp, Math.sqrt(1.6 * acc * d), d * 5); // slow enough to stop by the goal
+  const dv = to.multiplyScalar(d > 1e-4 ? want / d : 0).sub(e.sv), n = dv.length(), lim = acc * gdt;
+  if (n > lim) dv.multiplyScalar(lim / n);
+  e.sv.add(dv);
+  e.g.position.addScaledVector(e.sv, gdt);
+  return d;
+}
 function approach(e, gdt){
-  const goal = home(e, tmpA), d = goal.distanceTo(e.g.position);
-  e.fly = Math.min(1, d / 1.5);
+  // carry on with the velocity it had (a recoil, a shove, a throw) instead of starting from a standstill
+  if (!e.steering){ e.sv.copy(e.vel); e.kv.set(0, 0, 0); e.steering = true; }
+  // backing off after a punch: head out to e.backTo first, turning back in before it gets there
+  if (e.backTo && (e.ring !== 'inner' || e.backTo.distanceTo(e.g.position) < 0.15)) e.backTo = null;
+  const goal = e.backTo ? tmpA.copy(e.backTo) : home(e, tmpA), d = goal.distanceTo(e.g.position);
   // weave sideways on the way in, less as they get close
   const to = goal.clone().sub(e.g.position), side = to.clone().cross(UP);
   if (side.lengthSq() > 1e-6) goal.addScaledVector(side.normalize(), Math.sin(e.bob * 2.1 + e.ph) * Math.min(0.5, d * 0.08));
-  const step = goal.sub(e.g.position), sd = step.length();
-  // cruise fast from deep space, brake into position
-  const dash = e.ring === 'inner' || e.retreat ? 3 : 1; // charging in or flying back out
-  const sp = SPEED[cfg.speed] * e.speedMul * dash * Math.max(0.3, Math.min(1, d / 1.5)) * (1 + 2 * Math.max(0, Math.min(1, (d - 2) / 4)));
+  // cruise faster from deep space, drift in close
+  steer(e, goal, gdt, SPEED[cfg.speed] * e.speedMul * (1 + 2 * Math.max(0, Math.min(1, (d - 2) / 4))));
   e.g.position.addScaledVector(e.kv, gdt); e.kv.multiplyScalar(Math.exp(-3.5 * gdt));
-  if (d < 0.06){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.retreat = false; e.charge = 0; e.wind = CHARGE * rnd(0.75, 1.25); return; }
-  if (sd > 1e-4) e.g.position.addScaledVector(step.divideScalar(sd), Math.min(sd, sp * gdt));
+  // the pose follows the speed: flying like a missile when fast, upright and leaning away when carried backwards
+  const sp = e.sv.length();
+  e.fly = Math.max(0, Math.min(1, (sp - 0.25) / 1.0));
+  e.retreat = e.sv.dot(awayFromMe(e.g.position)) > 0.3;
+  if (d < 0.08 && sp < 0.3){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.retreat = e.fresh = false; e.charge = 0; e.wind = CHARGE[e.type]; return; }
   // angry glowing visor and thruster sparks from the boots
   e.setCharge(0.45 + Math.sin(e.bob * 22) * 0.3, false);
-  if (d > 0.4) e.boots.forEach(b => { if (Math.random() < 0.5) particle(GEO.spark, matOf(0xff8a3a), b.getWorldPosition(tmpB), to.clone().normalize().multiplyScalar(-1.4).add(jitter(0.3)), 0.35, 0, 1.4); });
+  if (sp > 0.4) e.boots.forEach(b => { if (Math.random() < 0.5) particle(GEO.spark, matOf(0xff8a3a), b.getWorldPosition(tmpB), e.sv.clone().normalize().multiplyScalar(-1.4).add(jitter(0.3)), 0.35, 0, 1.4); });
 }
 const UP = v3(0, 1, 0);
 function hold(e, gdt){
   const goal = home(e, tmpA), radial = dirAt(e.ang), tangent = dirAt(e.ang + 90);
   // never quite still: strafe, bob, rock in and out
-  goal.addScaledVector(tangent, Math.sin(e.bob * 0.9 + e.ph) * (e.ring === 'outer' ? 0.14 : 0.07));
+  goal.addScaledVector(tangent, Math.sin(e.bob * 0.9 + e.ph) * (e.ring === 'inner' ? 0.07 : 0.14));
   goal.addScaledVector(radial, Math.sin(e.bob * 1.3 + e.ph) * 0.03);
   goal.y += Math.sin(e.bob * 1.7 + e.ph) * 0.035;
   let k = 3.2;
@@ -1701,7 +2008,9 @@ function hold(e, gdt){
   } else if (e.state === 'swing'){
     e.sw += gdt; const s = e.sw / SWING;
     // lunge at your head
-    const lunge = s < IMPACT ? Math.pow(s / IMPACT, 2) : 1 - (s - IMPACT) / (1 - IMPACT) * 0.7;
+    const lunge = s < IMPACT ? Math.pow(s / IMPACT, 2) : s < SWING_HOLD ? 1 : 1 - (s - SWING_HOLD) / (1 - SWING_HOLD) * 0.7;
+    // a glowing streak behind the fist on its way in
+    if (s < IMPACT + 0.1) particle(GEO.chargeOrb, TRAIL_MAT, fistPos(e, 1, v3()), v3(), 0.16, 0, 0.55 + 0.4 * Math.min(1, s / IMPACT));
     goal.add(e.aim.clone().sub(goal).normalize().multiplyScalar(0.22 * lunge)); k = 14;
     if (!e.hitDone){
       const fist = fistPos(e, 1, tmpB);
@@ -1716,7 +2025,7 @@ function hold(e, gdt){
     if (s >= 1){ e.state = 'recover'; e.rec = RECOVER; }
   } else if (e.state === 'recover'){
     e.rec -= gdt; e.setCharge(0);
-    if (e.rec <= 0){ if (e.ring === 'inner') toStage(e); else e.state = 'hover'; }
+    if (e.rec <= 0){ if (e.ring === 'inner') reengage(e); else e.state = 'hover'; }
   } else if (e.state === 'hover'){
     e.rest = Math.max(0, e.rest - gdt);
     // the queue lobs grenades while it waits
@@ -1783,7 +2092,10 @@ function shoved(e, gdt){
     e.bumped = null;
     // a throw that hit nothing still ends in a crash landing
     if (e.thrown){ e.thrown = false; hit(e, 'bump', null, e.g.position.clone(), e.kv.lengthSq() > 1e-6 ? e.kv.clone().normalize() : UP.clone()); if (e.state !== 'shoved') return; }
-    toStage(e);
+    // the tumble hands its velocity to the steering, so it slows down and turns back in one curve
+    e.sv.copy(e.kv); e.kv.set(0, 0, 0); e.steering = true;
+    // no breather: on its way back it can take a free strike spot without stopping on the waiting line (charges())
+    toWait(e, 0); e.fresh = !e.bomber;
   }
 }
 // keep torsos from passing through each other or through the player
@@ -1936,7 +2248,7 @@ function spawnJaws(gdt, round){
   G.jawT = rnd(8, 14);
   const j = makeJaw(); j.ang = rnd(-35, 35);
   j.g.position.copy(anchor.pos).addScaledVector(dirAt(j.ang + rnd(-15, 15)), 9).setY(anchor.pos.y + rnd(-1, 2));
-  scene.add(j.g); jaws.push(j);
+  scene.add(j.g); jaws.push(j); SFX.spawn(panOf(j.g.position), 1.15);
 }
 const jawStage = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(j.ang), 2.3).setY(anchor.pos.y - 0.1 + Math.sin(j.bob * 1.3) * 0.08);
 const jawFront = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(Math.max(-25, Math.min(25, j.ang))), 0.6).setY(anchor.pos.y - 0.22 + Math.sin(j.bob * 2) * 0.03);
@@ -1980,7 +2292,7 @@ function killJaw(j, style, h){
   releaseJaw(j); jaws.splice(jaws.indexOf(j), 1); bulletTime();
   if (G) G.kills.jaw++;
   const p = j.g.position.clone(), away = awayFromMe(p);
-  charJaw(j); SFX.kill(); SFX.splat(); SFX.boom();
+  charJaw(j); SFX.kill(); SFX.splat(); SFX.boom(); SFX.death(panOf(p), 1.15);
   spray(p, away, 16, 0xece6d6, 2.4); spray(p, UP, 10, 0xffa040, 2); mist(p);
   if (style === 'split'){
     // pried apart like a log: the halves go up and down, the insides spill out
@@ -2307,11 +2619,13 @@ function showStats(){
 }
 
 function updateEnemies(dt, gdt){
-  if (G) charges(gdt);
+  if (G){ charges(gdt); G.voiceT -= dt; }
   for (let i = enemies.length - 1; i >= 0; i--){
     const e = enemies[i];
     if (e.state === 'dead'){ enemies.splice(i, 1); continue; }
     e.cool[0] = Math.max(0, e.cool[0] - dt); e.cool[1] = Math.max(0, e.cool[1] - dt);
+    // hit-stop: frozen for a moment after taking a blow (the shove plays out after it)
+    if (e.stop > 0){ e.stop -= dt; continue; }
     e.bob += gdt; e.flinch = Math.max(0, e.flinch - gdt * 2.2); e.fieldFlash = Math.max(0, e.fieldFlash - gdt * 3);
     // the shield comes back slowly after 5 s without a hit
     e.shieldT += gdt;
@@ -2322,26 +2636,38 @@ function updateEnemies(dt, gdt){
     else if (e.state === 'shoved') shoved(e, gdt);
     else if (e.state === 'held') held(e, gdt);
     else if (e.state !== 'grabbed') hold(e, gdt);
+    if (e.state !== 'approach') e.steering = false;
+    // closing in on you: it barks a command, once per approach (again only after it's been pushed back past 1.6 m),
+    // and never within 2.5–4 s of the last line from anyone
+    const dist = e.g.position.distanceTo(anchor.pos);
+    if (!e.near && dist < 1.1 && e.state !== 'shoved' && e.state !== 'held' && e.state !== 'stunned'){
+      e.near = true;
+      if (G && G.voiceT <= 0){ G.voiceT = rnd(2.5, 4); SFX.voice(panOf(e.g.position), {grunt:1.04, soldier:1, brute:0.88}[e.type]); }
+    } else if (e.near && dist > 1.6) e.near = false;
+    // the velocity it actually moved with, whatever moved it: approach() carries on from it
+    if (e.prev && gdt > 0) e.vel.copy(e.g.position).sub(e.prev).divideScalar(gdt).clampLength(0, 8);
+    e.prev = (e.prev || v3()).copy(e.g.position);
     e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
     animate(e, gdt);
     if (e.hitFlash > 0){ e.hitFlash -= dt; e.armor.emissive.setHex(0x664422); } else e.armor.emissive.setHex(0x000000);
     e.showStatus();
     e.g.updateMatrixWorld(true);
+    telegraph(e);
     if (e.state !== 'approach' || e.g.position.distanceTo(anchor.pos) < 1.2) combat(e);
   }
   separate(); separate(); // a second pass settles pushes that shoved someone into a third enemy
 }
 
 function clearEnemies(){
-  enemies.forEach(e => { scene.remove(e.g); });
+  enemies.forEach(e => { quiet(e); scene.remove(e.g); });
   enemies.length = 0;
 }
 
 function enterStep(step){
-  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 1.0; SFX.wave(); hideCards(); nextBtn.visible = false; stats.visible = false; }
+  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 0.3; SFX.wave(); hideCards(); nextBtn.visible = false; stats.visible = false; }
   if (step.kind === 'rest'){
     G.hp = maxHp(); G.mana = maxMana(); clearBombs(); offerCards(); showNext(); showStats();
-    enemies.forEach(e => { if (e.state !== 'dead'){ e.state = 'dead'; addDebris(e.g, awayFromMe(e.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); } });
+    enemies.forEach(e => { if (e.state !== 'dead'){ e.state = 'dead'; quiet(e); addDebris(e.g, awayFromMe(e.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); } });
     jaws.forEach(j => { releaseJaw(j); addDebris(j.g, awayFromMe(j.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); }); jaws.length = 0;
     wrecks.slice().forEach(dropWreck); hidePowers();
     SFX.rest();
@@ -2391,7 +2717,12 @@ function updateHud(step){
 
 function loop(){
   const dt = Math.min(0.05, clock.getDelta());
+  if (dev) devFrame(dt);
   updateHead(); updateHands(dt);
+  // the heartbeat runs during waves only: its tempo goes up wave by wave, its tension (louder, brighter) through each wave
+  const st = G?.plan[G.i];
+  if (st?.kind === 'work' && !paused) heartbeat(Math.min(1, 0.7 * G.t / st.dur + 0.3 * (st.round - 1) / Math.max(1, cfg.rounds - 1)), heartTempo(st.round));
+  else heartbeatOff();
   // paused (A/B): the world stands still behind the moves panel
   if (paused){ toast.visible = false; renderer.render(scene, camera); return; }
   if (G && G.plan[G.i].kind === 'work') updatePowers(dt); else hidePowers();
@@ -2399,6 +2730,8 @@ function loop(){
   const gdt = dt * Math.min(ts, slowK());
   headLight.position.copy(head.pos).add(v3(0, 0.3, 0));
   hurt.position.copy(head.pos); hurt.material.opacity = Math.max(0, hurt.material.opacity - dt * 1.2);
+  hurtArcs.position.copy(head.pos); hurtArcs.rotation.y = Math.atan2(head.fwd.x, head.fwd.z);
+  hurtArcs.children.forEach(a => a.material.opacity = Math.max(0, a.material.opacity - dt * 1.4));
   if (toastT > 0){ toastT -= dt; toast.visible = true; } else toast.visible = false;
   watches.hp.visible = watches.mana.visible = !!G;
   if (G){
@@ -2437,19 +2770,125 @@ async function startSession(){
   renderer.setAnimationLoop(loop);
   $('status').textContent = 'Walka trwa w goglach.';
 }
-function endSession(){ session?.end(); }
+function endSession(){ if (dev) stopDev(); else session?.end(); }
 function onEnded(){
-  renderer.setAnimationLoop(null);
+  renderer.setAnimationLoop(null); heartbeatOff();
   clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); hidePowers(); hideCards(); nextBtn.visible = false; stats.visible = false; paused = false; tut.visible = false; debris.forEach(d => scene.remove(d.obj)); debris.length = 0; bleeders.length = 0;
   if (G && (totalKills() + G.leaks) > 0){
     const rec = {date:new Date().toISOString(), kills:totalKills(), punch:G.kills.punch, decap:G.kills.decap, rip:G.kills.rip, fatal:G.fatal,
       leaks:G.leaks, blows:G.blows, blocks:G.blocks, dodges:G.dodges, kos:G.kos, rounds:cfg.rounds, work:cfg.work, finished:G.plan[G.i].kind === 'done'};
-    const hist = store.get('ob-hist', []); hist.unshift(rec); store.set('ob-hist', hist.slice(0, 20));
+    // mouse fights stay out of the workout history
+    if (!dev){ const hist = store.get('ob-hist', []); hist.unshift(rec); store.set('ob-hist', hist.slice(0, 20)); }
     showResults(rec); showHistory();
   }
   G = null; session = null;
   $('status').textContent = 'Koniec walki. Gotowy na kolejną.';
 }
+
+/* ---------- dev mode: play on a flat screen with the mouse (no headset) ---------- */
+// Left/right button = left/right fist: it jabs from the guard to what's under the cursor (snapping to an enemy, jaw,
+// grenade, card or DALEJ within arm's reach) and stays out while held, following the cursor. Space ducks, A/D lean,
+// P pauses, Esc quits. The hands get fake gamepads, so stances, grabs and pause run through the normal code.
+const DEV_HEAD = v3(0, 1.65, 0), DEV_REACH = 0.8;
+const DEV_GUARD = [v3(-0.17, -0.27, -0.3), v3(0.17, -0.27, -0.3)]; // fists in front of the chest, relative to the head
+const devRay = new THREE.Raycaster();
+const devPad = () => ({gamepad:{buttons:[0, 1, 2, 3, 4, 5].map(() => ({pressed:false, value:0}))}});
+async function startDev(){
+  if (dev || session) return;
+  initAudio();
+  $('status').textContent = 'Ładuję roboty…';
+  await robotReady;
+  dev = {mouse:new THREE.Vector2(), keys:{}, lean:0, duck:0, pitch:-0.2, fists:[0, 1].map(() => ({down:false, to:v3(), depth:0.6, p:null}))};
+  const cv = renderer.domElement;
+  cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:9;cursor:crosshair';
+  document.body.appendChild(cv); document.documentElement.style.overflow = 'hidden';
+  const help =document.createElement('div'); help.id = 'devhelp';
+  help.textContent = 'LPM lewa pięść · PPM prawa pięść (przytrzymaj: pięść zostaje, blok) · Spacja unik · A/D wychylenie · P pauza · Esc wyjście';
+  document.body.appendChild(help);
+  devResize();
+  hands.forEach((c, i) => {
+    Object.assign(c.userData, {hand:i ? 'right' : 'left', src:devPad(), ready:false});
+    c.visible = true;
+  });
+  G = newGame(); ts = 1; paused = false; tut.visible = false; clock.getDelta();
+  renderer.setAnimationLoop(loop);
+  $('status').textContent = 'Tryb dev: walka myszką.';
+}
+function stopDev(){
+  onEnded();
+  renderer.domElement.remove(); $('devhelp')?.remove(); document.documentElement.style.overflow = '';
+  hands.forEach(c => { Object.assign(c.userData, {hand:null, src:null, ready:false}); c.visible = false; });
+  dev = null;
+}
+function devResize(){
+  if (!dev) return;
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.fov = 75; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+}
+// where a jab under the cursor lands: the nearest target close to the cursor ray and within reach, else a point ahead
+function devAim(f){
+  devRay.setFromCamera(dev.mouse, camera);
+  const o = devRay.ray.origin, d = devRay.ray.direction, pts = [];
+  enemies.forEach(e => { if (e.state !== 'dead') pts.push(e.g.position, e.head.getWorldPosition(v3())); });
+  jaws.forEach(j => pts.push(j.g.position)); bombs.forEach(b => pts.push(b.m.position));
+  G?.cards?.forEach(c => pts.push(c.p.position)); if (nextBtn.visible) pts.push(nextBtn.position);
+  let best = null, bestOff = 0.25;
+  for (const p of pts){
+    const t = p.clone().sub(o).dot(d); if (t < 0.15 || t > DEV_REACH) continue;
+    const off = o.clone().addScaledVector(d, t).distanceTo(p);
+    if (off < bestOff){ bestOff = off; best = p; }
+  }
+  f.depth = best ? best.distanceTo(o) : 0.6;
+  // a little past the target, so the fist goes through it
+  return best ? best.clone().addScaledVector(d, 0.05) : o.clone().addScaledVector(d, f.depth);
+}
+function devFrame(dt){
+  const k = 1 - Math.exp(-dt * 12);
+  dev.lean += ((dev.keys.a ? -0.3 : 0) + (dev.keys.d ? 0.3 : 0) - dev.lean) * k;
+  // a quick duck: the swing lands 0.15 s after it starts and a dodge needs the head 22 cm away by then
+  dev.duck += ((dev.keys[' '] ? -0.35 : 0) - dev.duck) * (1 - Math.exp(-dt * 30));
+  // look further down in a break, where the cards and DALEJ sit low in front of you
+  dev.pitch += ((G?.plan[G.i].kind === 'rest' ? -0.45 : -0.2) - dev.pitch) * (1 - Math.exp(-dt * 4));
+  camera.position.set(DEV_HEAD.x + dev.lean, DEV_HEAD.y + dev.duck, DEV_HEAD.z);
+  camera.rotation.set(dev.pitch, 0, 0); camera.updateMatrixWorld(true);
+  hands.forEach((c, i) => {
+    const f = dev.fists[i], b = c.userData.src.gamepad.buttons;
+    const guard = camera.position.clone().add(DEV_GUARD[i]);
+    if (!f.p) f.p = guard.clone();
+    // out fast while held (a punch), back slower when let go
+    f.p.lerp(f.down ? f.to : guard, 1 - Math.exp(-dt * (f.down ? 30 : 12)));
+    c.position.copy(f.p);
+    c.quaternion.setFromEuler(new THREE.Euler(Math.PI / 2 + 0.3, 0, 0));
+    c.updateMatrix();
+    b[1].pressed = f.down; b[1].value = f.down ? 1 : 0;
+    if (i === 0) b[4].pressed = !!dev.keys.p; // one pad only: updateHands toggles pause per hand
+  });
+}
+addEventListener('resize', devResize);
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!dev) return;
+  dev.mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  // a held fist follows the cursor at the depth it punched to, once the jab has landed
+  dev.fists.forEach(f => { if (f.down && performance.now() - f.t0 > 200){ devRay.setFromCamera(dev.mouse, camera); f.to.copy(devRay.ray.origin).addScaledVector(devRay.ray.direction, f.depth); } });
+});
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (!dev || (e.button !== 0 && e.button !== 2)) return;
+  e.preventDefault();
+  dev.mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  if (G && G.plan[G.i].kind === 'done'){ endSession(); return; }
+  const f = dev.fists[e.button === 0 ? 0 : 1];
+  f.to.copy(devAim(f)); f.down = true; f.t0 = performance.now();
+});
+addEventListener('pointerup', e => { if (dev && (e.button === 0 || e.button === 2)) dev.fists[e.button === 0 ? 0 : 1].down = false; });
+addEventListener('keydown', e => {
+  if (!dev) return;
+  const key = e.key.toLowerCase();
+  if (key === 'escape'){ endSession(); return; }
+  if (key === ' ') e.preventDefault();
+  dev.keys[key] = true;
+});
+addEventListener('keyup', e => { if (dev) dev.keys[e.key.toLowerCase()] = false; });
 
 // older records (before blocks/dodges existed) carry a control % instead
 const dash = v => v === undefined ? '–' : v;
@@ -2502,9 +2941,9 @@ window.__obPreview = function(mode, w, h){
     e.ang = deg; e.ring = dist < 0.8 ? 'inner' : 'outer';
     e.g.position.copy(anchor.pos).addScaledVector(dirAt(deg), dist); e.g.position.y = anchor.pos.y + dy;
     e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
-    e.state = state; e.charge = charge || 0; e.wind = CHARGE; e.fly = Math.min(1, dist / 1.5);
+    e.state = state; e.charge = charge || 0; e.wind = CHARGE[type]; e.fly = Math.min(1, dist / 1.5);
     if (state === 'swing'){ e.sw = SWING * IMPACT * 0.95; e.aim.copy(head.pos); }
-    e.setCharge(state === 'windup' ? e.charge / CHARGE : state === 'approach' ? 0.6 : 0, state === 'windup');
+    e.setCharge(state === 'windup' ? e.charge / e.wind : state === 'approach' ? 0.6 : 0, state === 'windup');
     animate(e, 10);
     scene.add(e.g); enemies.push(e); e.g.updateMatrixWorld(true); return e;
   };
@@ -2521,6 +2960,16 @@ window.__obPreview = function(mode, w, h){
     put('soldier', -12, 9, 2.6, 'approach');
     setHand(0, -0.24, 1.22, -0.32, false, -1, 0.3);
     setHand(1, 0.2, 1.42, -0.42, true, 1, 0.2);
+  } else if (mode === 'telegraph'){
+    // one attacker straight ahead at a point of its attack: window.__obPhase 0..1 runs from the start of the windup
+    // to the impact (above 1 the swing goes on); window.__obSide = true looks from the side
+    G.i = work;
+    const e = put(window.__obType || 'grunt', 0, 0.65, -0.3, 'windup'), total = e.wind + SWING * IMPACT, el = (window.__obPhase ?? 0.8) * total;
+    if (el < e.wind){ e.charge = el; e.setCharge(el / e.wind); }
+    else { e.state = 'swing'; e.sw = el - e.wind; e.aimHead.copy(head.pos); e.aim.copy(head.pos).y -= 0.08; }
+    for (let k = 0; k < 40; k++){ animate(e, 0.05); e.g.updateMatrixWorld(true); } // settle the smoothed pose
+    telegraph(e);
+    if (window.__obSide){ camera.position.set(0.75, 1.6, 0.05); camera.lookAt(0, 1.4, -0.65); }
   } else if (mode === 'swing'){
     G.i = work; G.t = cfg.work - 12;
     put('brute', 0, 0.62, -0.32, 'swing');
@@ -2672,7 +3121,7 @@ window.__obPreview = function(mode, w, h){
 window.__obSim = function(sec, round = 4, puncher = false){
   head.pos.set(0, 1.65, 0); head.fwd.set(0, 0, -1); setAnchor();
   G = newGame(); G.i = G.plan.findIndex(s => s.kind === 'work' && s.round === round); G.t = 0;
-  let minGap = Infinity, swings = 0;
+  let minGap = Infinity, swings = 0, maxFar = 0, farSum = 0, frames = 0;
   for (let t = 0; t < sec; t += 1/60){
     const step = G.plan[G.i];
     G.spawnT -= 1/60;
@@ -2685,25 +3134,49 @@ window.__obSim = function(sec, round = 4, puncher = false){
     spawnJaws(1/60, step.round);
     updateEnemies(1/60, 1/60); updateBombs(1/60); updateJaws(1/60, 1/60); updateWrecks(1/60); updateBleeders(1/60); updateDebris(1/60);
     swings += enemies.filter(e => e.state === 'swing' && e.sw < 1.5/60).length;
+    // enemies waiting out of reach on the staging line (bombers included)
+    const far = enemies.filter(e => e.ring !== 'inner' && e.state === 'hover').length;
+    maxFar = Math.max(maxFar, far); farSum += far; frames++;
     const near = enemies.filter(e => e.state !== 'approach' && e.state !== 'dead');
     for (let i = 0; i < near.length; i++) for (let j = i + 1; j < near.length; j++){
       const a = near[i].g.position, b = near[j].g.position;
       minGap = Math.min(minGap, Math.hypot(a.x - b.x, a.z - b.z) - bodyR(near[i]) - bodyR(near[j]));
     }
   }
-  const r = {jawsAlive:jaws.length, wrecks:wrecks.length, alive:enemies.length, rings:enemies.map(e => `${e.type}:${e.ring}:${e.state}:${e.ang}`), swings, hits:G.leaks, hp:G.hp, kos:G.kos, kills:totalKills(), blows:G.blows, bombs:G.bombs || 0, minGap:+minGap.toFixed(3)};
+  const r = {jawsAlive:jaws.length, wrecks:wrecks.length, alive:enemies.length, rings:enemies.map(e => `${e.type}:${e.ring}:${e.state}:${e.ang}`), swings, hits:G.leaks, hp:G.hp, kos:G.kos, kills:totalKills(), blows:G.blows, bombs:G.bombs || 0, minGap:+minGap.toFixed(3), maxFar, avgFar:+(farSum / frames).toFixed(2)};
   r.jaws = G.kills.jaw; clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); G = null; return r;
 };
 
+// renders a sound offline and measures it: peak, RMS over the first 0.3 s in total and above ~150 Hz (what the
+// headset's speakers can play), and how long it stays within 30 dB of its peak. raw: straight out, without the bus.
+window.__obSfx = async function(play, raw = false, sec = 1.2){
+  initAudio();
+  await new Promise(r => { const t0 = performance.now(), wait = () => Object.keys(sampleBuf).length >= Object.values(SAMPLES).flat().length || performance.now() - t0 > 3000 ? r() : setTimeout(wait, 50); wait(); });
+  const live = [actx, bus], off = new OfflineAudioContext(2, Math.round(44100 * sec), 44100);
+  actx = off; bus = raw ? off.destination : makeBus(off);
+  try { play(SFX, {tone, noise}); } finally { [actx, bus] = live; }
+  const b = await off.startRendering(), x = b.getChannelData(0), y = b.getChannelData(1), n = x.length, win = Math.round(44100 * 0.3);
+  let peak = 0, sum = 0, sumHi = 0, hp = 0, prev = 0, last = 0;
+  const a = 1 / (1 + 2 * Math.PI * 150 / 44100); // one-pole high-pass at 150 Hz
+  for (let i = 0; i < n; i++){ const v = (x[i] + y[i]) / 2; peak = Math.max(peak, Math.abs(v)); hp = a * (hp + v - prev); prev = v; if (i < win){ sum += v * v; sumHi += hp * hp; } }
+  for (let i = 0; i < n; i++) if (Math.abs((x[i] + y[i]) / 2) > peak * 0.0316) last = i;
+  const db = v => +(20 * Math.log10(Math.max(v, 1e-9))).toFixed(1);
+  return {peakDb:db(peak), rmsDb:db(Math.sqrt(sum / win)), rmsAbove150Db:db(Math.sqrt(sumHi / win)), tailMs:Math.round(last / 44.1), samples:Object.keys(sampleBuf).length};
+};
 // internals for headless tests of single mechanics (Playwright / devtools)
 window.__obDebug = () => ({G, setG:g => { G = g; }, newGame, enemies, bombs, hands, head, anchor, makeEnemy, spawn, hit, stun, shove, throwBomb,
   updateEnemies, updateBombs, updateHands, thunderclap, setAnchor, clearEnemies, clearBombs, dirAt, enterStep, updateCards, nextBtn,
   jaws, wrecks, makeJaw, spawnJaws, updateJaws, updateWrecks, clearJaws, clearWrecks, smackJaw, biteHand, wreck, updatePowers, togglePause,
-  isPaused:() => paused, offerCards, lvl, maxHp, maxMana, slowK});
+  isPaused:() => paused, offerCards, lvl, maxHp, maxMana, slowK, wantSpawn, freeAngle, animate, WINDUP, fistPos, telegraph,
+  hurtPlayer, hurtArcs, render:() => renderer.render(scene, camera)});
 
 /* ---------- headset check ---------- */
 (async () => {
   const go = $('go');
+  // dev mode (mouse) is offered wherever VR isn't, and anywhere with ?dev in the address
+  const devBtn = $('dev'); devBtn.addEventListener('click', startDev);
+  if (/[?&]dev\b/.test(location.search)) devBtn.hidden = false;
+  if (!window.isSecureContext || !navigator.xr || !(await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))) devBtn.hidden = false;
   if (!window.isSecureContext){ $('status').textContent = 'VR wymaga adresu https://. Otwórz tę stronę z linku w przeglądarce Quest.'; return; }
   if (!navigator.xr){ $('status').textContent = 'Brak WebXR. Otwórz tę stronę w przeglądarce na Queście.'; return; }
   let ok = false;

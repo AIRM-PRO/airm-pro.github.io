@@ -2,6 +2,17 @@
 
 Terms are defined in `CONTEXT.md`. Items within a phase are in rough priority order.
 
+## v0.10 (Nov 2026)
+
+- [x] At most 2 enemies wait out of reach (bombers included); the rest keep charging in. Shorter breathers, a melee enemy only spawns if it fits on the strike ring, attackers pack side by side.
+- [x] Constant pressure: enemies steer with limited acceleration (no dashes or dead stops), back off half a metre after a punch and drift straight back in; a waiting line at 1.3 m.
+- [x] Heavy hits: compressor/limiter bus, recorded CC0 impacts (Kenney) layered with a saturated thump, crack and metal clang, scaled by punch speed and panned; hit-stop and stronger buzz. Enemy death: "Robot_death2" (freesound 144470, CC BY 3.0), pitched by type. A robot heartbeat plays under each wave (freesound 617033, CC BY 4.0): half tempo in wave 1, 10% faster each wave, louder and brighter as the wave goes on. The hit is a metal door slam (freesound 331138, CC0). Enemies bark random robot voice commands as they close in (freesound 406126 cut into 40 lines, CC BY 3.0). A power-up sound for every spawn (freesound 746988, CC0), panned to where it comes from.
+- [x] Readable enemy punch: fixed windup per type, a big wind-up with the fist beside the head, an aimed strike with a trail that holds at full reach, a shrinking timing ring and a rising whine from the attacker's side; when it lands, the attacker freezes, a red arc flashes on that side and a heavier hit sound plays.
+- [ ] Mark the next attacker (pulsing outline, dimmer telegraph for the others).
+- [x] Waves open with a melee enemy, 0.3 s in and closer (4.5–5.5 m) when none is in play; bombers follow. First punch ~4.5 s into a wave instead of ~9 s.
+- [x] A shoved or thrown enemy comes straight back to a free strike spot instead of parking on the waiting line (back to its windup in ~3.8 s instead of ~4.7 s).
+- [x] Dev mode: play on a flat screen with the mouse (left/right click = left/right fist, Space duck, A/D lean, P pause, Esc quit).
+
 ## v0.9 (Oct 2026)
 
 - [x] A/B pause with a moves panel; character sheet with stats and the upgrade tree in the break.
