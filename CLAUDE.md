@@ -5,9 +5,10 @@ Static GitHub Pages site for WebXR games, no custom domain yet (to add one later
 - `index.html`: landing page linking the games. Polish UI.
 - `bravr/`: Orbital Brawl. Notes in `bravr/CLAUDE.md`, `CONTEXT.md`, `BACKLOG.md`.
 - `skrzydla/`: Skrzydła. Notes in `skrzydla/CLAUDE.md`.
+- `ninjalingo/`: NinjaLingo, English UI. Notes in `ninjalingo/CLAUDE.md`, `CONTEXT.md`, `BACKLOG.md`.
 - `_config.yml` keeps the developer notes off the published site.
 
-Each game: one self-contained `index.html`, three.js r128 from a CDN, no build. Bump the game's version in its `h1` with every push.
+Each game: one `index.html`, three.js r128 from a CDN, no build. Assets sit in the game's folder (`bravr/robot.glb`; NinjaLingo's models, audio and word list). Bump the game's version in its `h1` with every push.
 
 WebXR needs HTTPS: keep "Enforce HTTPS" on in the repo's Pages settings. Game settings and history are stored in the browser's localStorage, which is per domain, so records from jknowak.pl did not carry over.
 

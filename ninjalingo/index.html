@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NinjaLingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root{--bg:#0d0b14;--panel:#191522;--fg:#f3eff7;--muted:#a49bb4;--line:#2e2740;--red:#e0483e;--gold:#ffc861;--display:"Chakra Petch","Arial Narrow",sans-serif;--body:"IBM Plex Sans",system-ui,sans-serif;color-scheme:dark}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--fg);font:16px/1.55 var(--body);min-height:100vh}
+body.playing{overflow:hidden}
+canvas#view{position:fixed;inset:0;width:100%;height:100%;display:none;touch-action:none;cursor:crosshair}
+body.playing canvas#view{display:block}
+main{max-width:640px;margin:0 auto;padding:32px max(16px,env(safe-area-inset-left,0px)) 56px;display:grid;gap:20px}
+.back{font:600 14px system-ui,sans-serif;color:var(--muted);text-decoration:none}
+h1{font:700 clamp(44px,13vw,76px)/.95 var(--display);margin:6px 0 0;letter-spacing:.02em}
+h1 em{font-style:normal;color:var(--red)}
+.ver{font:600 14px var(--body);color:var(--muted);letter-spacing:0;white-space:nowrap}
+.lede{color:var(--muted);margin:12px 0 0;max-width:56ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:12px}
+.panel h2{font:700 20px var(--display);margin:0}
+button{font:700 18px var(--display);padding:14px 18px;border-radius:9px;border:1px solid var(--line);background:#272036;color:var(--fg);cursor:pointer}
+button.main{background:var(--red);border-color:var(--red);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+button.small{font:600 14px var(--body);padding:8px 12px;justify-self:start}
+#status{margin:0;color:var(--muted);font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0}
+.stats div{border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center}
+.stats b{display:block;font:700 26px var(--display)}
+.stats span{font-size:13px;color:var(--muted)}
+ul{margin:0;padding-left:20px}
+small{color:var(--muted)}
+#quit{position:fixed;top:10px;right:12px;display:none;font:600 13px var(--body);padding:8px 12px;background:#0009;border-color:#fff4}
+body.playing.flat #quit{display:block}
+body.playing main{display:none}
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<button id="quit">End session</button>
+<main>
+  <a class="back" href="../">← All games (AIRM)</a>
+  <header>
+    <h1>Ninja<em>Lingo</em> <span class="ver">v0.1</span></h1>
+    <p class="lede">A voice shouts a word in Spanish. Food flies at you. Cut the right one. New words fly alone until you know them, then the air gets crowded.</p>
+  </header>
+  <section class="panel">
+    <button id="go" class="main" disabled>Play in VR</button>
+    <button id="flat" disabled>Play in the browser</button>
+    <p id="status">Loading…</p>
+  </section>
+  <section class="panel">
+    <h2>Your Spanish: Food</h2>
+    <dl class="stats" id="stats"></dl>
+    <p id="best" style="margin:0;color:var(--muted)"></p>
+    <button id="reset" class="small">Reset progress</button>
+  </section>
+  <section class="panel">
+    <h2>How to play</h2>
+    <ul>
+      <li>You hold a saber in each hand. Swing through an object to cut it. Any direction counts, but the swing has to be fast.</li>
+      <li>Wrong cuts and misses drain the health bar, and more for words you already knew. At zero the session ends, but what you learned is kept.</li>
+      <li>In VR, pull a trigger to restart at the end, and press B or Y to leave. In the browser, move the mouse to swing.</li>
+    </ul>
+    <small>Spanish from Spain. Models: Kenney (CC0). Voice: ElevenLabs.</small>
+  </section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- tuning ---------- */
+const SESSION = 300;                 // seconds in a full session
+const APPROACH = 0.9;                // flight from spawn into reach
+const WINDOW_START = 6, WINDOW_MIN = 2.5, WINDOW_MAX = 8;
+const WINDOW_PER_RT = 2.2;           // response window = recent reaction time x this
+const NEW_WINDOW_MIN = 5;
+const FAR = 8, REACH_IN = 1.25, REACH_OUT = 0.85;   // distance from the player, m
+const OBJ_SIZE = 0.3, HIT_R = 0.19;
+const MIN_SWING = 1.3;               // saber tip speed for a cut, m/s
+const BLADE = 0.95;
+const BLADE_TILT = 0.5;              // rad, from the grip's -Z axis towards where the controller points
+const DRAIN = [0, 10, 20], HEAL = 3; // health lost per mistake by stage, gained per correct cut
+const STEP_UP = 2;                   // correct cuts in a row to move an item up a stage
+const IN_PROGRESS = 4;               // introduce a new word only below this many unfinished
+const DISTRACTORS = [[0, 0], [1, 2], [4, 4]];  // min, max by stage
+const STAGES = ['New', 'Learning', 'Known'];
+const GAP = 0.45, FEEDBACK_GOOD = 0.55, FEEDBACK_BAD = 2.1;
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} },
+};
+let progress = store.get('nl-items', {});
+let avgRT = store.get('nl-rt', WINDOW_START / WINDOW_PER_RT);
+let best = store.get('nl-best', 0);
+const rec = id => progress[id] || (progress[id] = {s:0, c:0, seen:0});
+
+/* ---------- content ---------- */
+let items = [];
+const protos = {};
+const voices = {};
+
+function loadModel(loader, name){
+  return new Promise((ok, no) => loader.load('models/' + name + '.glb', g => {
+    const inner = g.scene;
+    // The kit leaves metalness at the glTF default of 1, which renders black without an env map.
+    inner.traverse(m => {
+      if (!m.isMesh) return;
+      const o = m.material;
+      m.material = new THREE.MeshLambertMaterial({color:o.color, map:o.map || null, side:THREE.DoubleSide});
+    });
+    const box = new THREE.Box3().setFromObject(inner);
+    const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+    inner.position.sub(c);
+    const w = new THREE.Group(); w.add(inner);
+    w.scale.setScalar(OBJ_SIZE / Math.max(size.x, size.y, size.z));
+    protos[name] = w;
+    ok();
+  }, undefined, no));
+}
+async function loadContent(){
+  const r = await fetch('words/es.json');
+  if (!r.ok) throw new Error('word list ' + r.status);
+  items = (await r.json()).themes.food.items;
+  const loader = new THREE.GLTFLoader();
+  await Promise.all(items.map(i => loadModel(loader, i.model)));
+}
+async function loadVoices(){
+  await Promise.all(items.flatMap(i => ['shout', 'clear'].map(async take => {
+    const r = await fetch('audio/es/' + i.id + '.' + take + '.mp3');
+    if (!r.ok) throw new Error(i.id + ' ' + take + ' ' + r.status);
+    voices[i.id + take] = await ac.decodeAudioData(await r.arrayBuffer());
+  })));
+}
+
+/* ---------- audio ---------- */
+let ac = null, master, voiceBus, musicBus, sfxBus, curVoice = null, musicTimer = null, nextBeat = 0, beatN = 0;
+function audioInit(){
+  if (ac) { ac.resume(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+  voiceBus = ac.createGain(); voiceBus.gain.value = 1.6; voiceBus.connect(master);
+  musicBus = ac.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(master);
+  sfxBus = ac.createGain(); sfxBus.gain.value = 0.7; sfxBus.connect(master);
+}
+const MUSIC_VOL = 0.3, BPM = 92;
+function playTake(item, take){
+  if (!ac) return;
+  const b = voices[item.id + take];
+  if (!b) return;
+  if (curVoice) { try { curVoice.stop(); } catch(e){} }
+  const s = ac.createBufferSource(); s.buffer = b; s.connect(voiceBus); s.start();
+  curVoice = s;
+  // Duck the music under the voice so the word stays clear.
+  const t = ac.currentTime, g = musicBus.gain;
+  g.cancelScheduledValues(t); g.setTargetAtTime(MUSIC_VOL * 0.35, t, 0.04); g.setTargetAtTime(MUSIC_VOL, t + b.duration, 0.3);
+}
+function tone(freq, dur, vol, type, when, slide){
+  const t = when === undefined ? ac.currentTime : when, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  o.connect(g); return {o, g, t, dur};
+}
+function fire(n, bus){ n.g.connect(bus); n.o.start(n.t); n.o.stop(n.t + n.dur + 0.02); }
+let noiseBuf = null;
+function noise(dur, vol, fc, bus, when, type){
+  const t = when === undefined ? ac.currentTime : when;
+  if (!noiseBuf){ noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  const s = ac.createBufferSource(); s.buffer = noiseBuf;
+  const f = ac.createBiquadFilter(); f.type = type || 'bandpass'; f.frequency.value = fc;
+  const g = ac.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  s.connect(f); f.connect(g); g.connect(bus); s.start(t); s.stop(t + dur + 0.02);
+}
+const sfx = {
+  cut(){ if (!ac) return; noise(0.18, 0.9, 3200, sfxBus); fire(tone(620, 0.16, 0.25, 'triangle', undefined, 180), sfxBus); },
+  good(k){ if (!ac) return; const f = 523 * Math.pow(1.122, Math.min(k, 8)); fire(tone(f, 0.22, 0.3, 'triangle'), sfxBus); fire(tone(f * 1.5, 0.3, 0.18, 'triangle', ac.currentTime + 0.07), sfxBus); },
+  bad(){ if (!ac) return; fire(tone(160, 0.4, 0.4, 'sawtooth', undefined, 80), sfxBus); },
+  miss(){ if (!ac) return; fire(tone(330, 0.5, 0.25, 'sine', undefined, 150), sfxBus); },
+  end(){ if (!ac) return; [392, 330, 262].forEach((f, i) => fire(tone(f, 0.5, 0.3, 'triangle', ac.currentTime + i * 0.2), sfxBus)); },
+};
+// A synth backing loop. It is scheduled ahead of time and nothing in the game follows it.
+const SCALE = [146.83, 174.61, 196, 220, 261.63, 293.66, 349.23, 392];
+const LINE = [0, -1, 3, -1, 4, 3, -1, 2, 0, -1, 2, 3, -1, 5, 4, -1];
+function musicTick(){
+  if (!ac) return;
+  const eighth = 30 / BPM;
+  if (nextBeat < ac.currentTime) nextBeat = ac.currentTime + 0.05;
+  while (nextBeat < ac.currentTime + 0.6){
+    const t = nextBeat, n = beatN % 16;
+    if (n % 8 === 0 || n === 11) fire(tone(90, 0.3, 0.75, 'sine', t, 42), musicBus);
+    if (n % 8 === 4) noise(0.13, 0.28, 1900, musicBus, t);
+    if (n % 2 === 1) noise(0.05, 0.1, 7000, musicBus, t, 'highpass');
+    const bar = Math.floor(beatN / 16) % 4, root = [73.42, 73.42, 87.31, 65.41][bar];
+    if (n % 4 === 0) fire(tone(root, 0.5, 0.3, 'triangle', t), musicBus);
+    const step = LINE[n];
+    if (step >= 0 && (beatN >> 4) % 2 === 1) fire(tone(SCALE[step] * 2, 0.32, 0.1, 'triangle', t), musicBus);
+    nextBeat += eighth; beatN++;
+  }
+}
+function musicOn(){ if (ac && !musicTimer){ nextBeat = 0; beatN = 0; musicTimer = setInterval(musicTick, 150); musicTick(); } }
+function musicOff(){ clearInterval(musicTimer); musicTimer = null; }
+
+/* ---------- scene ---------- */
+const canvas = $('view');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.xr.enabled = true;
+renderer.localClippingEnabled = true;   // the two halves of a cut object
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1230);
+scene.fog = new THREE.Fog(0x2a1a3a, 12, 42);
+const camera = new THREE.PerspectiveCamera(62, 1, 0.05, 120);
+camera.position.set(0, 1.6, 0);
+scene.add(camera);
+
+scene.add(new THREE.HemisphereLight(0xfff2e8, 0x8a7fa6, 0.72));
+const sun = new THREE.DirectionalLight(0xffe2c4, 0.5); sun.position.set(2, 5, 3); scene.add(sun);
+
+function buildWorld(){
+  const sky = new THREE.SphereGeometry(80, 24, 14), cols = [], p = sky.attributes.position;
+  const top = new THREE.Color(0x120d2a), mid = new THREE.Color(0x5a2a55), low = new THREE.Color(0xe0704a), c = new THREE.Color();
+  for (let i = 0; i < p.count; i++){
+    const h = clamp(p.getY(i) / 80, 0, 1);
+    if (h < 0.18) c.copy(low).lerp(mid, h / 0.18); else c.copy(mid).lerp(top, (h - 0.18) / 0.5 > 1 ? 1 : (h - 0.18) / 0.5);
+    cols.push(c.r, c.g, c.b);
+  }
+  sky.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  // Sky and floor are behind everything else, so they stay out of the depth buffer.
+  const skyM = new THREE.Mesh(sky, new THREE.MeshBasicMaterial({vertexColors:true, side:THREE.BackSide, fog:false, depthWrite:false}));
+  skyM.renderOrder = -3; scene.add(skyM);
+
+  const stars = [];
+  for (let i = 0; i < 500; i++){ const a = rand(0, 6.28), e = rand(0.3, 1.5), r = 75; stars.push(r * Math.cos(e) * Math.sin(a), r * Math.sin(e), r * Math.cos(e) * Math.cos(a)); }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(stars, 3));
+  scene.add(new THREE.Points(sg, new THREE.PointsMaterial({color:0xffffff, size:0.28, fog:false, transparent:true, opacity:0.75})));
+
+  const moon = new THREE.Mesh(new THREE.CircleGeometry(5.5, 32), new THREE.MeshBasicMaterial({color:0xffc27a, fog:false}));
+  moon.position.set(0, 10, -70); moon.renderOrder = -2; moon.material.depthWrite = false; scene.add(moon);
+
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(60, 48), new THREE.MeshLambertMaterial({color:0x2b2233, depthWrite:false}));
+  floor.rotation.x = -Math.PI / 2; floor.renderOrder = -1; scene.add(floor);
+  const mat = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.06, 48), new THREE.MeshBasicMaterial({color:0xe0483e, transparent:true, opacity:0.6}));
+  mat.rotation.x = -Math.PI / 2; mat.position.y = 0.01; scene.add(mat);
+
+  // Torii gates down the path the objects fly along.
+  const red = new THREE.MeshLambertMaterial({color:0xb5322c}), dark = new THREE.MeshLambertMaterial({color:0x1d1620});
+  [[-11, 1], [-19, 0.9], [-28, 0.8]].forEach(([z, k]) => {
+    const g = new THREE.Group(); g.position.z = z; g.scale.setScalar(k);
+    [-1.9, 1.9].forEach(x => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.2, 4.6, 10), red); m.position.set(x, 2.3, 0); g.add(m); });
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.3, 0.34), dark); beam.position.y = 4.55; g.add(beam);
+    const beam2 = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.2, 0.26), red); beam2.position.y = 3.8; g.add(beam2);
+    scene.add(g);
+  });
+}
+buildWorld();
+
+/* ---------- text panels ---------- */
+function makePanel(w, h, pw){
+  const c = document.createElement('canvas'); c.width = pw; c.height = Math.round(pw * h / w);
+  const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false, fog:false}));
+  m.renderOrder = 10; m.visible = false;
+  const ctx = c.getContext('2d');
+  return {mesh:m, ctx, w:c.width, h:c.height, draw(fn){ ctx.clearRect(0, 0, c.width, c.height); fn(ctx, c.width, c.height); tex.needsUpdate = true; m.visible = true; }};
+}
+const FONT = '"Chakra Petch","Arial Narrow",sans-serif';
+function plate(x, w, h, r){ x.fillStyle = 'rgba(14,10,24,.8)'; x.beginPath(); x.moveTo(r, 0); x.arcTo(w, 0, w, h, r); x.arcTo(w, h, 0, h, r); x.arcTo(0, h, 0, 0, r); x.arcTo(0, 0, w, 0, r); x.fill(); }
+const hud = makePanel(1.6, 0.26, 1024); scene.add(hud.mesh);
+const hint = makePanel(1.5, 0.44, 1024); scene.add(hint.mesh);
+const big = makePanel(1.9, 1.2, 1024); scene.add(big.mesh);
+const label = makePanel(0.56, 0.12, 512); scene.add(label.mesh);
+
+let hudKey = '';
+function drawHUD(){
+  const sec = Math.ceil(Math.max(G.left, 0)), key = [G.score, G.combo, Math.round(G.hp), sec].join();
+  if (key === hudKey) return;
+  hudKey = key;
+  hud.draw((x, w, h) => {
+    plate(x, w, h, 26);
+    x.fillStyle = '#f3eff7'; x.font = '700 58px ' + FONT; x.textBaseline = 'middle';
+    x.textAlign = 'left'; x.fillText(String(G.score), 34, 58);
+    x.textAlign = 'center'; x.fillStyle = G.combo >= 5 ? '#ffc861' : '#a49bb4'; x.fillText(G.combo > 1 ? '×' + mult() + '  ' + G.combo : '', w / 2, 58);
+    x.textAlign = 'right'; x.fillStyle = '#f3eff7'; x.fillText(Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'), w - 34, 58);
+    x.fillStyle = '#332a44'; x.fillRect(34, 112, w - 68, 28);
+    x.fillStyle = G.hp > 30 ? '#4ec98f' : '#e0483e'; x.fillRect(34, 112, (w - 68) * clamp(G.hp, 0, 100) / 100, 28);
+  });
+}
+function showHint(lines){
+  hint.draw((x, w, h) => {
+    plate(x, w, h, 30); x.textAlign = 'center'; x.textBaseline = 'middle';
+    lines.forEach(([t, px, col], i) => { x.font = '700 ' + px + 'px ' + FONT; x.fillStyle = col || '#f3eff7'; x.fillText(t, w / 2, h * (i + 0.5) / lines.length); });
+  });
+}
+function showLabel(text, col){
+  label.draw((x, w, h) => {
+    plate(x, w, h, 24); x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '700 ' + (text.length > 16 ? 44 : 60) + 'px ' + FONT; x.fillStyle = col || '#ffc861'; x.fillText(text, w / 2, h / 2 + 2);
+  });
+}
+
+/* ---------- objects ---------- */
+function makeObject(item, ang, dy){
+  const g = new THREE.Group(), inner = protos[item.model].clone(true), mats = [];
+  inner.traverse(m => { if (m.isMesh){ m.material = m.material.clone(); mats.push(m.material); } });
+  g.add(inner); scene.add(g);
+  const o = {item, g, inner, mats, ang, dy, spin:rand(0.5, 1.1) * (Math.random() < 0.5 ? -1 : 1), wob:rand(0, 6.28), scale:1, dead:false, glow:0};
+  g.rotation.set(0.25, rand(0, 6.28), 0);
+  return o;
+}
+function setGlow(o, k){
+  if (o.glow === k) return;
+  o.glow = k;
+  for (const m of o.mats) m.emissive.setRGB(0.2 * k, 0.2 * k, 0.2 * k);
+}
+function freeObject(o){ scene.remove(o.g); for (const m of o.mats) m.dispose(); }
+function placeObject(o, t, dt){
+  // Fast glide into reach, then a slow drift across the response window.
+  const R = G.round, life = APPROACH + R.W;
+  let d;
+  if (t < APPROACH){ const k = t / APPROACH; d = lerp(FAR, REACH_IN, 1 - Math.pow(1 - k, 3)); }
+  else d = lerp(REACH_IN, REACH_OUT, clamp((t - APPROACH) / R.W, 0, 1));
+  const yaw = anchor.yaw + o.ang;
+  o.g.position.set(anchor.pos.x - Math.sin(yaw) * d, anchor.pos.y + o.dy + Math.sin(t * 1.7 + o.wob) * 0.018, anchor.pos.z - Math.cos(yaw) * d);
+  o.g.rotation.y += o.spin * dt;
+}
+
+/* cut halves and sparks */
+const halves = [], sparks = [];
+const sparkGeo = new THREE.BoxGeometry(0.018, 0.018, 0.018);
+function sliceObject(o, n){
+  for (const s of [1, -1]){
+    const h = new THREE.Group(); h.position.copy(o.g.position); h.quaternion.copy(o.g.quaternion);
+    const inner = o.inner.clone(true), plane = new THREE.Plane(), mats = [];
+    inner.traverse(m => { if (m.isMesh){ m.material = m.material.clone(); m.material.clippingPlanes = [plane]; mats.push(m.material); } });
+    h.add(inner); scene.add(h); h.updateMatrixWorld(true);
+    const local = n.clone().multiplyScalar(s).applyQuaternion(h.quaternion.clone().invert());
+    halves.push({h, plane, lp:new THREE.Plane(local, 0), mats, v:n.clone().multiplyScalar(s * 0.9).add(new THREE.Vector3(0, 0.5, 0)), w:new THREE.Vector3(rand(-2, 2), rand(-2, 2), rand(-2, 2)), t:0});
+  }
+  burst(o.g.position, 0xffd58a, 14);
+  o.dead = true; freeObject(o);
+}
+function burst(at, col, n){
+  const mat = new THREE.MeshBasicMaterial({color:col});
+  for (let i = 0; i < n; i++){
+    const m = new THREE.Mesh(sparkGeo, mat); m.position.copy(at); scene.add(m);
+    sparks.push({m, mat, v:new THREE.Vector3(rand(-2, 2), rand(-1, 2.4), rand(-2, 2)), t:rand(0.3, 0.6)});
+  }
+}
+const _q = new THREE.Quaternion(), _e = new THREE.Euler();
+function updateFX(dt){
+  for (let i = halves.length - 1; i >= 0; i--){
+    const a = halves[i];
+    a.t += dt; a.v.y -= 2.4 * dt; a.h.position.addScaledVector(a.v, dt);
+    _q.setFromEuler(_e.set(a.w.x * dt, a.w.y * dt, a.w.z * dt)); a.h.quaternion.multiply(_q);
+    a.h.updateMatrixWorld(true);
+    a.plane.copy(a.lp).applyMatrix4(a.h.matrixWorld);
+    if (a.t > 1.1 || a.h.position.y < 0){ scene.remove(a.h); for (const m of a.mats) m.dispose(); halves.splice(i, 1); }
+  }
+  for (let i = sparks.length - 1; i >= 0; i--){
+    const s = sparks[i];
+    s.t -= dt; s.v.y -= 6 * dt; s.m.position.addScaledVector(s.v, dt);
+    if (s.t <= 0){ scene.remove(s.m); sparks.splice(i, 1); }
+  }
+}
+
+/* ---------- sabers ---------- */
+function makeSaber(col){
+  const g = new THREE.Group();
+  const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.02, 0.16, 10), new THREE.MeshLambertMaterial({color:0x35303f}));
+  hilt.rotation.x = Math.PI / 2; g.add(hilt);
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.013, BLADE, 10), new THREE.MeshBasicMaterial({color:0xffffff}));
+  core.rotation.x = Math.PI / 2; core.position.z = -BLADE / 2; g.add(core);
+  const haloMat = new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.45, depthWrite:false});
+  const halo = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.026, BLADE, 10), haloMat);
+  halo.rotation.x = Math.PI / 2; halo.position.z = -BLADE / 2; g.add(halo);
+  g.userData.halo = haloMat;
+  return g;
+}
+const mkS = col => ({model:makeSaber(col), tip:new THREE.Vector3(), base:new THREE.Vector3(), ptip:new THREE.Vector3(), pbase:new THREE.Vector3(), speed:0, init:false, active:false, src:null, trig:false, exit:false, pts:[0, 0, 0, 0, 0].map(() => [new THREE.Vector3(), new THREE.Vector3()])});
+const sabers = [mkS(0x38c9ff), mkS(0xff4d6d)];
+const grips = [0, 1].map(i => {
+  const g = renderer.xr.getControllerGrip(i);
+  g.addEventListener('connected', e => {
+    g.userData.src = e.data;
+    const s = sabers[e.data.handedness === 'left' ? 0 : 1];
+    s.src = e.data; s.active = true; s.init = false; g.add(s.model); g.userData.s = s;
+    s.model.position.set(0, 0, 0); s.model.rotation.set(-BLADE_TILT, 0, 0);
+  });
+  g.addEventListener('disconnected', () => { const s = g.userData.s; if (s){ s.active = false; s.src = null; g.remove(s.model); } g.userData.s = null; });
+  scene.add(g); return g;
+});
+const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _n = new THREE.Vector3();
+const FLAT_HAND = new THREE.Vector3(0.22, -0.42, -0.32);  // relative to the camera
+const flatDir = new THREE.Vector3(0, 0.2, -1).normalize();
+let mode = null;
+
+function readSabers(dt){
+  if (mode === 'vr'){
+    for (const g of grips){
+      const s = g.userData.s;
+      if (!s) continue;
+      g.updateMatrixWorld(true);
+      s.base.setFromMatrixPosition(g.matrixWorld);
+      s.tip.set(0, -Math.sin(BLADE_TILT) * BLADE, -Math.cos(BLADE_TILT) * BLADE).applyMatrix4(g.matrixWorld);
+      const gp = s.src && s.src.gamepad;
+      s.trig = !!(gp && gp.buttons[0] && gp.buttons[0].pressed);
+      s.exit = !!(gp && gp.buttons[5] && gp.buttons[5].pressed);
+    }
+  } else if (mode === 'flat'){
+    const s = sabers[1];
+    s.active = true;
+    s.base.copy(FLAT_HAND).applyMatrix4(camera.matrixWorld);
+    _v.copy(flatDir);
+    s.tip.copy(s.base).addScaledVector(_v, BLADE);
+    s.model.position.copy(s.base);
+    s.model.quaternion.setFromUnitVectors(_v2.set(0, 0, -1), _v);
+    if (!s.model.parent) scene.add(s.model);
+  }
+  for (const s of sabers){
+    if (!s.active) continue;
+    if (!s.init){ s.ptip.copy(s.tip); s.pbase.copy(s.base); s.init = true; }
+    s.speed = lerp(s.speed, s.tip.distanceTo(s.ptip) / Math.max(dt, 1e-3), Math.min(1, dt * 30));
+    s.model.userData.halo.opacity = 0.35 + Math.min(s.speed, 5) * 0.12;
+  }
+}
+function endSabers(){ for (const s of sabers){ if (s.active){ s.ptip.copy(s.tip); s.pbase.copy(s.base); } } }
+
+// Sweeps sample points along the blade from the last frame to this one and tests each against the object.
+function sweepHit(s, o){
+  const pos = o.g.position;
+  for (let i = 1; i <= 4; i++){
+    const k = i / 4;
+    _v.copy(s.pbase).lerp(s.ptip, k);
+    _v2.copy(s.base).lerp(s.tip, k).sub(_v);
+    const len2 = _v2.lengthSq();
+    const u = len2 > 1e-8 ? clamp(_n.copy(pos).sub(_v).dot(_v2) / len2, 0, 1) : 0;
+    _n.copy(_v).addScaledVector(_v2, u);
+    if (_n.distanceToSquared(pos) < HIT_R * HIT_R) return true;
+  }
+  return false;
+}
+function cutNormal(s){
+  const blade = _v.copy(s.tip).sub(s.base).normalize();
+  const sweep = _v2.copy(s.tip).sub(s.ptip);
+  _n.crossVectors(blade, sweep);
+  if (_n.lengthSq() < 1e-8) _n.set(1, 0, 0);
+  return _n.normalize().clone();
+}
+function haptic(s, k, ms){ try { const a = s.src && s.src.gamepad && s.src.gamepad.hapticActuators; if (a && a[0]) a[0].pulse(k, ms); } catch(e){} }
+
+/* ---------- game ---------- */
+const anchor = {pos:new THREE.Vector3(0, 1.3, 0), yaw:0};
+const G = {state:'idle', t:0, left:SESSION, score:0, combo:0, bestCombo:0, hp:100, cuts:0, wrong:0, missed:0, up:0, down:0, shaky:{}, round:null, roundN:0, lastId:null, last:{}, objs:[], phaseT:0};
+const mult = () => Math.min(1 + Math.floor(G.combo / 5), 4);
+
+function captureAnchor(){
+  camera.updateMatrixWorld(true);
+  const xr = renderer.xr.isPresenting ? renderer.xr.getCamera(camera) : camera;
+  _v.setFromMatrixPosition(xr.matrixWorld);
+  if (_v.y < 0.4) _v.y = 1.6;
+  _v2.set(0, 0, -1).applyQuaternion(_q.setFromRotationMatrix(xr.matrixWorld));
+  anchor.yaw = Math.atan2(-_v2.x, -_v2.z);
+  anchor.pos.set(_v.x, _v.y - 0.25, _v.z);
+}
+function placePanel(p, d, y){
+  const yaw = anchor.yaw;
+  p.mesh.position.set(anchor.pos.x - Math.sin(yaw) * d, anchor.pos.y + y, anchor.pos.z - Math.cos(yaw) * d);
+  p.mesh.rotation.set(0, yaw, 0);
+}
+function layoutPanels(){ placePanel(hud, 2.3, 1.22); placePanel(hint, 1.9, 0.72); placePanel(big, 1.9, 0.2); }
+
+function windowFor(stage){
+  const w = clamp(avgRT * WINDOW_PER_RT, WINDOW_MIN, WINDOW_MAX);
+  return stage === 0 ? Math.max(w, NEW_WINDOW_MIN) : w;
+}
+function pickItem(){
+  const started = items.filter(i => rec(i.id).seen > 0);
+  const unfinished = started.filter(i => rec(i.id).s < 2).length;
+  const fresh = items.find(i => rec(i.id).seen === 0);
+  if (fresh && unfinished < IN_PROGRESS) return fresh;
+  let pool = started.filter(i => i.id !== G.lastId);
+  if (!pool.length) pool = started;
+  // Oldest first; Known items wait a few rounds longer.
+  let bestI = pool[0], bestK = Infinity;
+  for (const i of pool){
+    const k = (G.last[i.id] || 0) + (rec(i.id).s === 2 ? 4 : 0) + Math.random() * 0.5;
+    if (k < bestK){ bestK = k; bestI = i; }
+  }
+  return bestI;
+}
+function layout(n){
+  if (n === 1) return [{a:rand(-0.3, 0.3), dy:rand(-0.12, 0.12)}];
+  const span = (n - 1) * 0.37, out = [];
+  for (let i = 0; i < n; i++) out.push({a:-span / 2 + span * i / (n - 1), dy:(i % 2 ? 0.14 : -0.14) + rand(-0.06, 0.06)});
+  return out;
+}
+function startRound(){
+  const item = pickItem(), r = rec(item.id), stage = r.s;
+  const [lo, hi] = DISTRACTORS[stage];
+  const nd = Math.min(lo + Math.floor(Math.random() * (hi - lo + 1)), items.length - 1);
+  const others = items.filter(i => i !== item).sort(() => Math.random() - 0.5).slice(0, nd);
+  const slots = layout(nd + 1).sort(() => Math.random() - 0.5);
+  const objs = [item, ...others].map((it, i) => makeObject(it, slots[i].a, slots[i].dy));
+  const target = objs[0];
+  G.roundN++; G.lastId = item.id; G.last[item.id] = G.roundN; r.seen++;
+  G.round = {item, stage, W:windowFor(stage), t:0, objs, target, repeated:false, over:false, result:null};
+  if (stage === 0) setGlow(target, 1);
+  label.mesh.visible = stage === 0; if (stage === 0) showLabel(item.es);
+  hint.mesh.visible = false;
+  playTake(item, stage === 0 ? 'clear' : 'shout');
+  G.state = 'round';
+}
+function moveStage(item, good){
+  const r = rec(item.id);
+  if (good){
+    r.c++;
+    if (r.c >= STEP_UP && r.s < 2){ r.s++; r.c = 0; G.up++; }
+  } else {
+    r.c = 0;
+    if (r.s > 0){ r.s--; G.down++; }
+    G.shaky[item.id] = (G.shaky[item.id] || 0) + 1;
+  }
+  store.set('nl-items', progress);
+}
+function resolve(result, s, hit){
+  const R = G.round;
+  R.over = true; R.result = result;
+  if (result === 'good'){
+    avgRT = lerp(avgRT, R.t, 0.25);
+    G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); G.cuts++;
+    G.score += 100 * mult();
+    G.hp = Math.min(100, G.hp + HEAL);
+    moveStage(R.item, true);
+    sliceObject(hit, cutNormal(s));
+    sfx.cut(); sfx.good(G.combo); haptic(s, 1, 60);
+    label.mesh.visible = false;
+    G.phaseT = FEEDBACK_GOOD;
+  } else {
+    if (result === 'miss') avgRT *= 1.12;
+    G.combo = 0;
+    if (result === 'wrong'){ G.wrong++; sliceObject(hit, cutNormal(s)); sfx.cut(); sfx.bad(); haptic(s, 0.6, 200); }
+    else { G.missed++; sfx.miss(); }
+    G.hp -= DRAIN[R.stage];
+    moveStage(R.item, false);
+    setGlow(R.target, 1);
+    label.mesh.visible = false;
+    const a = result === 'wrong' ? 'Not that one' : 'Too late';
+    showHint([[a, 56, '#ff8a80'], [R.item.es + ' = ' + R.item.en, 76, '#ffc861']]);
+    playTake(R.item, 'clear');
+    G.phaseT = FEEDBACK_BAD;
+  }
+  store.set('nl-rt', avgRT);
+  G.state = 'feedback';
+}
+function endRound(){
+  const R = G.round;
+  for (const o of R.objs) if (!o.dead){ o.dead = true; freeObject(o); }
+  G.round = null;
+  label.mesh.visible = false; hint.mesh.visible = false;
+}
+function finish(failed){
+  if (G.round) endRound();
+  if (G.score > best){ best = G.score; store.set('nl-best', best); }
+  G.state = failed ? 'failed' : 'done';
+  G.phaseT = 0.8;
+  sfx.end();
+  hud.mesh.visible = false;
+  drawEnd(failed);
+}
+function drawEnd(failed){
+  const shaky = Object.entries(G.shaky).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => items.find(i => i.id === id).es);
+  big.draw((x, w, h) => {
+    plate(x, w, h, 36); x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '700 104px ' + FONT; x.fillStyle = failed ? '#ff6b5e' : '#ffc861'; x.fillText(failed ? 'Failed' : 'Finished', w / 2, 92);
+    x.font = '700 58px ' + FONT; x.fillStyle = '#f3eff7';
+    x.fillText(failed ? 'Your progress is saved' : 'Score ' + G.score + '   best combo ' + G.bestCombo, w / 2, 204);
+    x.font = '700 44px ' + FONT; x.fillStyle = '#a49bb4';
+    x.fillText('Words moved up ' + G.up + ', down ' + G.down, w / 2, 288);
+    x.fillStyle = '#ffc861'; if (shaky.length) x.fillText('Practise: ' + shaky.join(', '), w / 2, 356);
+    x.fillStyle = '#f3eff7'; x.font = '700 50px ' + FONT;
+    x.fillText(mode === 'flat' ? 'Click to restart' : 'Pull a trigger to restart.  B or Y to leave', w / 2, 500);
+  });
+}
+function resetSession(){
+  Object.assign(G, {state:'count', t:0, left:SESSION, score:0, combo:0, bestCombo:0, hp:100, cuts:0, wrong:0, missed:0, up:0, down:0, shaky:{}, round:null, roundN:0, lastId:null, last:{}, phaseT:3.2});
+  hudKey = ''; big.mesh.visible = false; hud.mesh.visible = false;
+  captureAnchor(); layoutPanels();
+  showHint([['Cut what you hear', 76, '#ffc861'], ['Swing fast. Any direction.', 54]]);
+}
+
+/* one simulation step: everything except rendering */
+let clicked = false;
+function step(dt){
+  G.t += dt;
+  readSabers(dt);
+  updateFX(dt);
+  switch (G.state){
+    case 'count':
+      G.phaseT -= dt;
+      if (G.phaseT <= 0){ hint.mesh.visible = false; drawHUD(); G.state = 'gap'; G.phaseT = 0.2; }
+      break;
+    case 'gap':
+      G.left -= dt; G.phaseT -= dt; drawHUD();
+      if (G.left <= 0) finish(false);
+      else if (G.phaseT <= 0) startRound();
+      break;
+    case 'round': {
+      const R = G.round;
+      R.t += dt; G.left -= dt; drawHUD();
+      for (const o of R.objs) placeObject(o, R.t, dt);
+      if (label.mesh.visible) placeLabel(R);
+      if (!R.repeated && R.t > APPROACH + R.W / 2){ R.repeated = true; playTake(R.item, 'clear'); }
+      for (const s of sabers){
+        if (!s.active || s.speed < MIN_SWING || R.t < APPROACH * 0.6) continue;
+        const hit = R.objs.find(o => !o.dead && sweepHit(s, o));
+        if (hit){ resolve(hit === R.target ? 'good' : 'wrong', s, hit); break; }
+      }
+      if (!R.over && R.t >= APPROACH + R.W) resolve('miss');
+      break;
+    }
+    case 'feedback': {
+      const R = G.round;
+      G.left -= dt; G.phaseT -= dt; drawHUD();
+      for (const o of R.objs) if (!o.dead) o.g.rotation.y += o.spin * dt;
+      if (G.phaseT <= 0){
+        endRound();
+        if (G.hp <= 0) finish(true);
+        else if (G.left <= 0) finish(false);
+        else { G.state = 'gap'; G.phaseT = GAP; }
+      }
+      break;
+    }
+    case 'failed': case 'done': {
+      G.phaseT -= dt;
+      let restart = clicked, leave = false;
+      for (const s of sabers){ if (s.trig) restart = true; if (s.exit) leave = true; }
+      clicked = false;
+      if (G.phaseT <= 0){
+        if (leave) leaveGame();
+        else if (restart) resetSession();
+      }
+      break;
+    }
+  }
+  endSabers();
+}
+function placeLabel(R){
+  if (R.target.dead) { label.mesh.visible = false; return; }
+  label.mesh.position.copy(R.target.g.position); label.mesh.position.y += 0.29;
+  label.mesh.rotation.set(0, anchor.yaw, 0);
+}
+
+/* ---------- loop and sessions ---------- */
+let last = 0, session = null;
+function loop(now){
+  // XR frame times can use a different clock from performance.now, so the first delta may be nonsense.
+  const raw = (now - last) / 1000, dt = raw > 0 ? Math.min(0.05, raw) : 0.016;
+  last = now;
+  step(dt);
+  renderer.render(scene, camera);
+}
+function onResize(){
+  if (renderer.xr.isPresenting) return;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize', onResize);
+
+async function prepare(){
+  audioInit();
+  if (!Object.keys(voices).length){
+    $('status').textContent = 'Loading the voice…';
+    await loadVoices();
+  }
+  $('status').textContent = '';
+}
+async function startVR(){
+  try {
+    await prepare();
+    session = await navigator.xr.requestSession('immersive-vr', {optionalFeatures:['local-floor']});
+  } catch(e){ $('status').textContent = 'Could not enter VR: ' + e.message; return; }
+  renderer.xr.setReferenceSpaceType('local-floor');
+  await renderer.xr.setSession(session);
+  session.addEventListener('end', () => { session = null; stopGame(); });
+  session.addEventListener('visibilitychange', () => { if (ac){ if (session && session.visibilityState === 'visible') ac.resume(); else ac.suspend(); } });
+  mode = 'vr';
+  for (const s of sabers){ s.model.position.set(0, 0, 0); s.model.rotation.set(-BLADE_TILT, 0, 0); }
+  document.body.classList.add('playing');
+  musicOn();
+  resetSession();
+  last = performance.now();
+  renderer.setAnimationLoop(loop);
+}
+async function startFlat(){
+  try { await prepare(); }
+  catch(e){ $('status').textContent = 'Could not load the voice: ' + e.message; return; }
+  mode = 'flat';
+  document.body.classList.add('playing', 'flat');
+  onResize();
+  camera.position.set(0, 1.6, 0); camera.rotation.set(0, 0, 0); camera.updateMatrixWorld(true);
+  musicOn();
+  resetSession();
+  last = performance.now();
+  renderer.setAnimationLoop(loop);
+}
+function leaveGame(){
+  if (session) session.end(); // the 'end' event calls stopGame
+  else stopGame();
+}
+function stopGame(){
+  if (!mode) return;
+  renderer.setAnimationLoop(null);
+  if (G.round) endRound();
+  if (G.score > best){ best = G.score; store.set('nl-best', best); }
+  musicOff();
+  mode = null; G.state = 'idle';
+  [hud, hint, big, label].forEach(p => { p.mesh.visible = false; });
+  for (const s of sabers){ s.init = false; if (!s.src) s.active = false; }
+  document.body.classList.remove('playing', 'flat');
+  drawStats();
+}
+
+/* flat mode: the mouse points the right saber */
+const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2();
+canvas.addEventListener('pointermove', e => {
+  if (mode !== 'flat') return;
+  _ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  _ray.setFromCamera(_ndc, camera);
+  const base = _v.copy(FLAT_HAND).applyMatrix4(camera.matrixWorld);
+  flatDir.copy(_ray.ray.origin).addScaledVector(_ray.ray.direction, REACH_IN).sub(base).normalize();
+});
+canvas.addEventListener('pointerdown', () => { clicked = true; });
+
+/* ---------- menu ---------- */
+function drawStats(){
+  const n = [0, 0, 0];
+  for (const i of items){ const r = progress[i.id]; if (r && r.seen > 0) n[r.s]++; }
+  const unseen = items.length - n[0] - n[1] - n[2];
+  $('stats').innerHTML = [['New', n[0] + unseen], ['Learning', n[1]], ['Known', n[2]]].map(([k, v]) => '<div><b>' + v + '</b><span>' + k + '</span></div>').join('');
+  $('best').textContent = best ? 'Best score: ' + best : '';
+}
+$('go').addEventListener('click', startVR);
+$('flat').addEventListener('click', startFlat);
+$('quit').addEventListener('click', leaveGame);
+$('reset').addEventListener('click', () => {
+  if (!confirm('Forget every word and your best score?')) return;
+  progress = {}; best = 0; avgRT = WINDOW_START / WINDOW_PER_RT;
+  store.del('nl-items'); store.del('nl-best'); store.del('nl-rt');
+  drawStats();
+});
+
+(async () => {
+  try {
+    await loadContent();
+    if (document.fonts && document.fonts.load) await Promise.race([document.fonts.load('700 40px "Chakra Petch"'), new Promise(r => setTimeout(r, 1500))]);
+  } catch(e){ $('status').textContent = 'Could not load the game files: ' + e.message; return; }
+  drawStats();
+  $('flat').disabled = false;
+  let vr = false;
+  try { vr = !!(navigator.xr && await navigator.xr.isSessionSupported('immersive-vr')); } catch(e){}
+  $('go').disabled = !vr;
+  $('status').textContent = vr ? 'Headset ready.' : 'No VR headset found. Open this page in the Quest Browser to play in VR, or play in the browser with the mouse.';
+})();
+
+/* ---------- testing without a headset ---------- */
+window.__nlDebug = () => ({G, items, sabers, anchor, progress:() => progress, rec, avgRT:() => avgRT, step, setMode:m => { mode = m; }, resetSession, startRound, voices, scene, camera, renderer, halves, sparks,
+  // Puts a saber at a pose, for scripted swings in a headless test.
+  pose(i, base, tip){ const s = sabers[i]; s.active = true; s.base.set(...base); s.tip.set(...tip); },
+});
+</script>
+</body>
+</html>

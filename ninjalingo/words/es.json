@@ -1,0 +1,30 @@
+{
+  "language": "es-ES",
+  "themes": {
+    "food": {
+      "name": "Food",
+      "items": [
+        {"id":"manzana","es":"la manzana","en":"apple","model":"apple"},
+        {"id":"platano","es":"el plátano","en":"banana","model":"banana"},
+        {"id":"zanahoria","es":"la zanahoria","en":"carrot","model":"carrot"},
+        {"id":"naranja","es":"la naranja","en":"orange","model":"orange"},
+        {"id":"pera","es":"la pera","en":"pear","model":"pear"},
+        {"id":"fresa","es":"la fresa","en":"strawberry","model":"strawberry"},
+        {"id":"pina","es":"la piña","en":"pineapple","model":"pineapple"},
+        {"id":"pan","es":"el pan","en":"bread","model":"loaf"},
+        {"id":"queso","es":"el queso","en":"cheese","model":"cheese"},
+        {"id":"pescado","es":"el pescado","en":"fish","model":"fish"},
+        {"id":"hamburguesa","es":"la hamburguesa","en":"burger","model":"burger"},
+        {"id":"helado","es":"el helado","en":"ice cream","model":"iceCream"},
+        {"id":"tarta","es":"la tarta","en":"cake","model":"cake"},
+        {"id":"seta","es":"la seta","en":"mushroom","model":"mushroom"},
+        {"id":"maiz","es":"el maíz","en":"corn","model":"corn"},
+        {"id":"brocoli","es":"el brócoli","en":"broccoli","model":"broccoli"},
+        {"id":"patatas","es":"las patatas fritas","en":"fries","model":"fries"},
+        {"id":"uvas","es":"las uvas","en":"grapes","model":"grapes"},
+        {"id":"cerezas","es":"las cerezas","en":"cherries","model":"cherries"},
+        {"id":"pizza","es":"la pizza","en":"pizza","model":"pizza"}
+      ]
+    }
+  }
+}
