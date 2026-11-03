@@ -38,7 +38,9 @@ input[type=number]{font:700 22px var(--display);padding:6px 8px;border:1px solid
 .total{font:500 15px var(--display);color:var(--muted);margin-top:12px;font-variant-numeric:tabular-nums}
 #go{font:700 28px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:20px;border:0;border-radius:8px;background:var(--ember);color:#160502;cursor:pointer;width:100%}
 #go:disabled{opacity:.4;cursor:not-allowed}
-#dev{margin-top:10px;font:700 15px var(--display);letter-spacing:.08em;text-transform:uppercase;padding:11px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);cursor:pointer;width:100%}
+#goPope{margin-top:10px;font:700 20px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;padding:14px;border:1px solid #ffc861;border-radius:8px;background:#2a2414;color:#ffc861;cursor:pointer;width:100%}
+#goPope:disabled{opacity:.4;cursor:not-allowed}
+#dev,#devPope{margin-top:10px;font:700 15px var(--display);letter-spacing:.08em;text-transform:uppercase;padding:11px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--muted);cursor:pointer;width:100%}
 #devhelp{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:8px 16px;font:500 14px var(--body);color:#c9d2e6;background:rgba(3,5,11,.7);text-align:center;pointer-events:none}
 button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 #status{margin:8px 0 0;font-size:14px;color:var(--muted)}
@@ -78,7 +80,7 @@ th{color:var(--muted);font-weight:400}
 <main>
   <a href="../" style="font:600 14px system-ui,sans-serif;color:#9aa3bd;text-decoration:none;display:inline-block;margin-bottom:6px">← Wszystkie gry (AIRM)</a>
   <header>
-    <h1>Orbital <em>Brawl</em> <span class="ver">v0.10</span></h1>
+    <h1>Orbital <em>Brawl</em> <span class="ver">v0.11</span></h1>
     <p class="lede">Stoisz w dwumetrowym włazie statku nad planetą i nikogo nie wpuszczasz. Roboty szarżują, biją i odlatują. Łap je, rzucaj nimi o siebie, rozbijaj na kawałki. Łap ich granaty i odrzucaj, uważaj na latające Szczęki. W przerwach rozwijasz drzewko ulepszeń: laser z oczu, spowolnienie czasu, pancerz.</p>
   </header>
 
@@ -230,8 +232,10 @@ th{color:var(--muted);font-weight:400}
 
   <div>
     <button id="go" disabled>Wejdź do VR</button>
+    <button id="goPope" type="button" disabled>Wejdź do VR: sekretny poziom</button>
     <p id="status">Szukam gogli…</p>
     <button id="dev" type="button" hidden>Tryb dev: graj myszką</button>
+    <button id="devPope" type="button" hidden>Dev: sekretny poziom</button>
   </div>
 
   <section class="panel" aria-labelledby="res">
@@ -273,7 +277,7 @@ const store = {
 const cfg = Object.assign({rounds:6, work:60, rest:30, speed:'slow'}, store.get('ob-cfg', {}));
 const SPEED = {slow:1.05, mid:1.5, fast:2.0};          // enemy flight speed, m/s
 const MIN_SPEED = 0.35;                                // a hand must actually be moving
-const CHARGE = {grunt:0.8, soldier:0.7, brute:1.0};   // seconds an enemy winds up before it swings: fixed per type, so the rhythm can be learned
+const CHARGE = {grunt:0.8, soldier:0.7, brute:1.0, pope:0.9}; // seconds an enemy winds up before it swings: fixed per type, so the rhythm can be learned
 const SWING = 0.36, IMPACT = 0.55, RECOVER = 0.35;     // enemy punch length (s), the fraction at which it lands, pause after
 const SWING_HOLD = 0.8;                                // the fist stays out at full reach until this fraction of the swing
 const PLAYER_HP = 10;
@@ -283,6 +287,13 @@ const SHOVE = 5.2;                                     // m/s a punch on a shiel
 const BOMB = {fuse:3.2, radius:0.7};                   // grenade fuse from the throw (s) and blast radius (m)
 const RING = {inner:{d:0.65, max:45}, wait:{d:1.3, max:50}, outer:{d:2.4, max:45}}; // strike spots, where melee wait their turn, the bombers' line: distance (m), half-arc (deg), inside the headset's view
 const ACCEL = 2.4;                                     // m/s² an enemy speeds up and slows down with (at slow tempo): no dashes
+// the secret level: the Pope takes twice the hits of everyone who came in the last wave (in shield units, HIT_COST),
+// is knocked back every POPE.combo hits and floats back in; POPE.solo stands in for the last wave when the level is
+// started on its own (the secret-level buttons): __obSim(60, 6, true) puts the last wave of a default game at 47–59
+const HIT_COST = {grunt:1, soldier:3, brute:6};    // a jaw counts JAW_HP
+const POPE_CFG = {combo:3, shove:9, min:20, solo:100, delay:2.5};
+// game: the waves, then the Pope; pope: the Pope alone. The start button sets it (the secret-level buttons: 'pope')
+let mode = 'game';
 
 ['rounds','work','rest'].forEach(k => {
   $(k).value = cfg[k];
@@ -533,6 +544,7 @@ function pulse(h, power, ms){ try { h.userData.src?.gamepad?.hapticActuators?.[0
 // drops in pitch and is saturated so its overtones carry the low end on the headset's small speakers, a metal clang
 // (they're robots). Harder hits (p 0..1) are louder, lower and longer; pan puts the hit left or right.
 let actx = null, noiseBuf = null, bus = null, satCurve = null, samplesAsked = false;
+const JP = n => `../john-paul-audio/${n}-made-with-Voicemod.mp3`; // the Pope's voice, made with Voicemod
 const SAMPLES = {
   // "Door, close, modern, metal, punch, low, bass…" by fabuafrica, freesound.org/s/331138, CC0: trimmed to start on
   // the slam and cut to 1 s (fading from 0.6 s), so quick punches don't smear
@@ -548,11 +560,24 @@ const SAMPLES = {
   spawn:['robot_power_on.mp3'], // "Robot Awakening | Power On" by GammaGool, freesound.org/s/746988, CC0
   // "Robot Voice (1).wav" by AnusProductions, freesound.org/s/406126, CC BY 3.0 (credited in the menu): cut at the
   // pauses into 40 commands of 0.7–1.5 s, each levelled to the same loudness
-  voice:Array.from({length:40}, (_, i) => `voice/v${String(i).padStart(2, '0')}.ogg`)
+  voice:Array.from({length:40}, (_, i) => `voice/v${String(i).padStart(2, '0')}.ogg`),
+  // the Pope (secret level), as listed in john-paul-audio/jp-sounds.md: a random line per event. The clips aren't
+  // levelled; levelGain() evens them out as they load
+  popeStart:[JP('niech-zstąpi-duch-twój-i-odnowi-oblicze-ziemi,-tej-ziemi')],
+  popeHit:['się-boję', 'no', 'dość', 'niestety', 'tak-sobie', 'bardzo-mi-się-to-podoba'].map(JP),
+  popeHurt:['zrozumiano', 'w-imię-przyszłości-człowieka-i-ludzkości'].map(JP)
 };
 let voiceBag = []; // the voice lines left before any repeats
 const HEART_BEAT = 0.476, HEART_BEATS = 15; // the file is 15 beats on a 0.476 s grid, each slice starting 20 ms before its beat
-const sampleBuf = {};
+const sampleBuf = {}, sampleGain = {};
+// the gain that brings a clip's speech (the louder half of its 50 ms windows, so pauses don't count) to -18 dB RMS
+function levelGain(buf){
+  const d = buf.getChannelData(0), w = Math.floor(buf.sampleRate * 0.05), win = [];
+  for (let i = 0; i + w <= d.length; i += w){ let e = 0; for (let k = i; k < i + w; k++) e += d[k] * d[k]; win.push(e / w); }
+  win.sort((a, b) => b - a);
+  const top = win.slice(0, Math.max(1, win.length >> 1)), rms = Math.sqrt(top.reduce((a, b) => a + b, 0) / top.length);
+  return Math.max(0.2, Math.min(4, 0.126 / Math.max(rms, 1e-4)));
+}
 function makeBus(ctx){
   const g = ctx.createGain(), comp = ctx.createDynamicsCompressor(), lim = ctx.createDynamicsCompressor();
   g.gain.value = 1.5;
@@ -577,7 +602,7 @@ function initAudio(){
     // the recordings load in the background; until they arrive the synth layers play on their own
     if (!samplesAsked){
       samplesAsked = true;
-      Object.values(SAMPLES).flat().forEach(n => fetch(`sfx/${n}`).then(r => r.arrayBuffer()).then(b => actx.decodeAudioData(b)).then(buf => { sampleBuf[n] = buf; }).catch(() => {}));
+      Object.values(SAMPLES).flat().forEach(n => fetch(`sfx/${n}`).then(r => r.arrayBuffer()).then(b => actx.decodeAudioData(b)).then(buf => { sampleBuf[n] = buf; if (n.startsWith('../')) sampleGain[n] = levelGain(buf); if (popeIntroWait && SAMPLES.popeStart.includes(n)) SFX.popeStart(); }).catch(() => {}));
     }
   } catch(e){}
 }
@@ -602,6 +627,22 @@ function noise(len, freq, vol, type = 'lowpass', pan = 0){
   s.connect(f).connect(g).connect(out(pan)); s.start(t); s.stop(t + len);
 }
 // a random take of a recording; rate < 1 plays it lower and longer (heavier); delay in seconds
+// a random clip of the Pope's, levelled; returns what's needed to duck or stop it
+let popeLine = null, popeIntro = null, popeIntroWait = false;
+const POPE_VOICE = 0.8; // over the robots' lines (0.55): he's the star
+// how often each clip of a group plays, in the group's order (groups not listed: evenly)
+const POPE_ODDS = {popeHurt:[3, 1]}; // „Zrozumiano” on 3 of his hits in 4
+function popeClip(group, pan){
+  const odds = POPE_ODDS[group] || [], takes = SAMPLES[group].map((n, i) => [n, odds[i] || 1]).filter(([n]) => sampleBuf[n]);
+  if (!actx || !takes.length) return null;
+  let r = Math.random() * takes.reduce((a, [, w]) => a + w, 0), n = takes[0][0];
+  for (const [m, w] of takes) if ((r -= w) < 0){ n = m; break; }
+  const s = actx.createBufferSource(), g = actx.createGain(), t = actx.currentTime;
+  const vol = POPE_VOICE * (sampleGain[n] || 1);
+  s.buffer = sampleBuf[n]; g.gain.value = vol;
+  s.connect(g).connect(out(pan)); s.start(t);
+  return {s, g, vol, end:t + s.buffer.duration};
+}
 function sample(group, vol, rate = 1, pan = 0, delay = 0){
   const takes = SAMPLES[group].map(n => sampleBuf[n]).filter(Boolean);
   if (!actx || !takes.length) return;
@@ -690,6 +731,22 @@ const SFX = {
     s.buffer = sampleBuf[n]; s.playbackRate.value = rate; g.gain.value = 0.55;
     s.connect(g).connect(out(pan)); s.start(actx.currentTime);
   },
+  // the Pope's intro, the moment the secret level begins (he arrives POPE_CFG.delay s into it)
+  // (on its own the level opens with his intro over the countdown; a clip still loading plays the moment it arrives)
+  popeStart(){ popeIntro = popeClip('popeStart', 0); popeIntroWait = !popeIntro; },
+  // the Pope speaks one line at a time: a line asked for while he's still talking is dropped, unless cut (a punch
+  // landing on you), which fades the old one out; his intro carries on underneath, ducked, while he talks
+  pope(group, pan = 0, cut = false){
+    if (!actx) return;
+    const t = actx.currentTime;
+    if (popeLine && t < popeLine.end){ if (!cut) return; popeLine.g.gain.setTargetAtTime(0, t, 0.03); popeLine.s.stop(t + 0.15); }
+    popeLine = popeClip(group, pan * 0.6);
+    if (popeLine && popeIntro && t < popeIntro.end){
+      const gn = popeIntro.g.gain; gn.cancelScheduledValues(t); gn.setValueAtTime(gn.value, t); // drops a cut line's pending un-duck
+      gn.setTargetAtTime(popeIntro.vol * 0.3, t, 0.05); gn.setTargetAtTime(popeIntro.vol, popeLine.end, 0.15);
+    }
+  },
+  popeHush(){ [popeIntro, popeLine].forEach(l => { try { if (l && actx.currentTime < l.end) l.s.stop(); } catch(e){} }); popeIntro = popeLine = null; popeIntroWait = false; },
   // uppercut and hammer: everything, an octave lower
   superHit(pan = 0){
     sample('punch', 1.3, 0.72, pan); sample('metal', 0.9, 0.55, pan); crack(0.6, pan);
@@ -737,7 +794,9 @@ const SFX = {
 const TYPES = {
   grunt:  {hp:1, shield:0, field:0x6fb0ff, scale:1.0,  armor:0x6b7686, trim:0x2a2f37, emblem:0xff3b24, cape:null,     crest:false, spikes:false, bulk:1.0},
   soldier:{hp:1, shield:2, field:0x4aa8ff, scale:1.08, armor:0x2c3038, trim:0xc9a24a, emblem:0xffc861, cape:0x8a1616, crest:true,  spikes:false, bulk:1.08},
-  brute:  {hp:1, shield:4, stuns:true, field:0xff4a2b, scale:1.28, armor:0x40454e, trim:0x9a5530, emblem:0xff3b24, cape:0x1c1d24, crest:false, spikes:true,  bulk:1.25}
+  brute:  {hp:1, shield:4, stuns:true, field:0xff4a2b, scale:1.28, armor:0x40454e, trim:0x9a5530, emblem:0xff3b24, cape:0x1c1d24, crest:false, spikes:true,  bulk:1.25},
+  // the secret boss: no shield, no stun, his hits are set when he arrives (spawnPope); heavier than his size
+  pope:   {hp:1, shield:0, field:0xffe9a8, scale:1.2,  armor:0xf2efe8, trim:0xd4a73a, emblem:0xffc861, cape:null,     crest:false, spikes:false, bulk:1.15, mass:2.2}
 };
 // HP damage once the shield is down; on a shield every hit drains it instead
 const DMG = {punch:3, charged:5, blade:4, neck:6, blast:6, bump:3, uppercut:8, hammer:10, laser:4};
@@ -797,7 +856,10 @@ const GUARD = {lean:0.08, twist:0, s0x:-0.75, s0z:0.25, e0:-1.75, s1x:-0.6, s1z:
 /* ---------- robot model ("Rigged robot" by joney_lol, poly.pizza, CC-BY) ---------- */
 // The procedural rig below stays as an invisible skeleton (hit zones, poses, gore anchors); when the model has
 // loaded, each enemy wears a skinned copy of the robot whose bones follow the procedural joints every frame.
-const ROBOT = {tpl:null, k:0.116, dy:-1.0, rest:{}, curl:{}, parts:{}, matNames:[]};
+// armor: the material that flashes on a hit; glow: the one the charge lights up (visor, or the Pope's gold cross)
+const ROBOT = {tpl:null, k:0.116, dy:-1.0, rest:{}, curl:{}, parts:{}, matNames:[], armor:'Dumb', glow:'Does not work'};
+// the secret boss (bravr/tools/make_pope.js): the robot's skeleton and bind pose, so the same rig drives him
+const POPE = {tpl:null, k:0.116, dy:-1.0, rest:{}, curl:{}, parts:{}, matNames:[], armor:'Cassock', glow:'Gold'};
 const ROBOT_TINT = {
   grunt:{},
   soldier:{'Dumb':0x1c1f26, 'The guy':0x2a2e36, 'Rock n roll racing':0xc9a24a, 'Does not work':0x4aa8ff},
@@ -828,14 +890,14 @@ function partBones(name, bones){
   }
   return bones.filter(b => spec.some(p => b.name.startsWith(p)));
 }
-function prepRobot(gltf){
+function prepRobot(gltf, M = ROBOT){
   const root = gltf.scene; root.updateMatrixWorld(true);
   const bones = {}, meshes = [];
   root.traverse(o => { if (o.isBone) bones[o.name] = o; if (o.isSkinnedMesh) meshes.push(o); });
   const wq = n => bones[n].getWorldQuaternion(new THREE.Quaternion()), wp = n => bones[n].getWorldPosition(v3());
   RIG.forEach(([b, , child]) => {
     const align = child ? new THREE.Quaternion().setFromUnitVectors(wp(child).sub(wp(b)).normalize(), DOWN) : new THREE.Quaternion();
-    ROBOT.rest[b] = align.multiply(wq(b));
+    M.rest[b] = align.multiply(wq(b));
   });
   // enemy hands are always fists: curl each finger about the hand's index→pinky axis, towards the palm
   ['L', 'R'].forEach(S => {
@@ -846,8 +908,8 @@ function prepRobot(gltf){
       const sgn = dir.clone().applyAxisAngle(axis, 0.5).dot(inward) > dir.dot(inward) ? 1 : -1;
       const r1 = new THREE.Quaternion().setFromAxisAngle(axis, sgn * 1.5), r2 = new THREE.Quaternion().setFromAxisAngle(axis, sgn * 3.0);
       const qa = r1.clone().multiply(wq(a.name)), qb = r2.clone().multiply(wq(b.name));
-      ROBOT.curl[a.name] = a.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(qa);
-      ROBOT.curl[b.name] = qa.clone().invert().multiply(qb);
+      M.curl[a.name] = a.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(qa);
+      M.curl[b.name] = qa.clone().invert().multiply(qb);
     });
   });
   // gore pieces: the triangles whose three vertices all hang mostly on the piece's bones, sharing the vertex buffers
@@ -865,28 +927,30 @@ function prepRobot(gltf){
       }
       const pg = new THREE.BufferGeometry();
       pg.setAttribute('position', g.attributes.position); pg.setAttribute('normal', g.attributes.normal); pg.setIndex(keep);
+      if (g.attributes.uv) pg.setAttribute('uv', g.attributes.uv); // the Pope's face goes with his head
       return [pg, mi];
     }).filter(([pg]) => pg.index.count);
-    ROBOT.parts[name] = {bone:PARTS[name][0], geos};
+    M.parts[name] = {bone:PARTS[name][0], geos};
   }
-  ROBOT.matNames = meshes.map(m => m.material.name);
-  ROBOT.tpl = root;
+  M.matNames = meshes.map(m => m.material.name);
+  M.tpl = root;
 }
-const robotReady = new Promise(res => {
+const loadModel = (url, M) => new Promise(res => {
   if (!THREE.GLTFLoader || !THREE.SkeletonUtils) return res(false);
-  new THREE.GLTFLoader().load('robot.glb', g => { try { prepRobot(g); res(true); } catch(err){ console.warn('robot', err); res(false); } }, undefined, () => res(false));
+  new THREE.GLTFLoader().load(url, g => { try { prepRobot(g, M); res(true); } catch(err){ console.warn(url, err); res(false); } }, undefined, () => res(false));
 });
-window.__obReady = robotReady;
+const robotReady = loadModel('robot.glb', ROBOT), popeReady = loadModel('pope.glb', POPE);
+window.__obReady = Promise.all([robotReady, popeReady]).then(r => r[0]);
 
 // dress an enemy in the robot; the procedural meshes are hidden but their groups keep working
-function fitRobot(e){
+function fitRobot(e, M){
   e.body.traverse(o => { if (o.isMesh) o.visible = false; });
   e.arms.forEach(a => { a.shoulder.position.set(a.s * 0.145, 0.234, -0.02); a.elbow.position.y = -0.25; });
   e.legs.forEach((l, i) => { l.hip.position.set((i ? 1 : -1) * 0.074, -0.17, 0); l.knee.position.y = -0.32; });
   e.head.position.y = 0.31;
-  const r = THREE.SkeletonUtils.clone(ROBOT.tpl);
-  r.scale.setScalar(ROBOT.k); r.position.y = ROBOT.dy;
-  const tint = ROBOT_TINT[e.type], mats = {};
+  const r = THREE.SkeletonUtils.clone(M.tpl);
+  r.scale.setScalar(M.k); r.position.y = M.dy;
+  const tint = ROBOT_TINT[e.type] || {}, mats = {};
   r.traverse(o => {
     if (!o.isSkinnedMesh) return;
     const n = o.material.name;
@@ -894,10 +958,10 @@ function fitRobot(e){
     o.material = mats[n]; o.frustumCulled = false;
   });
   const rb = {}; r.traverse(o => { if (o.isBone) rb[o.name] = o; });
-  for (const n in ROBOT.curl) rb[n].quaternion.copy(ROBOT.curl[n]);
+  for (const n in M.curl) rb[n].quaternion.copy(M.curl[n]);
   e.body.add(r);
-  e.robot = r; e.rb = rb; e.rmats = ROBOT.matNames.map(n => mats[n]); e.armor = mats['Dumb'];
-  const glow = mats['Does not work'], glowBase = glow.color.clone();
+  e.robot = r; e.rb = rb; e.model = M; e.rmats = M.matNames.map(n => mats[n]); e.armor = mats[M.armor];
+  const glow = mats[M.glow], glowBase = glow.color.clone();
   glow.emissive.copy(glowBase).multiplyScalar(0.5);
   if (e.type === 'brute') glow.emissive.copy(glowBase);
   e.setCharge = (f, showOrb = true) => {
@@ -918,7 +982,7 @@ const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion();
 function driveRobot(e){
   for (const [b, joint] of RIG){
     const bone = e.rb[b];
-    joint(e).getWorldQuaternion(_qa).multiply(ROBOT.rest[b]);
+    joint(e).getWorldQuaternion(_qa).multiply(e.model.rest[b]);
     bone.parent.getWorldQuaternion(_qb).invert();
     bone.quaternion.copy(_qb.multiply(_qa));
   }
@@ -927,7 +991,7 @@ function driveRobot(e){
 // tear a piece off the robot: a static copy of it, posed where the bone is now, hung on the procedural group that flies
 function tear(e, name, grp){
   if (!e.rb) return;
-  const P = ROBOT.parts[name], bone = e.rb[P.bone], sk = e.robot.getObjectByProperty('isSkinnedMesh', true);
+  const P = e.model.parts[name], bone = e.rb[P.bone], sk = e.robot.getObjectByProperty('isSkinnedMesh', true);
   bone.updateWorldMatrix(true, false);
   const M = bone.matrixWorld.clone().multiply(sk.skeleton.boneInverses[sk.skeleton.bones.indexOf(bone)]).multiply(sk.bindMatrix);
   const piece = new THREE.Group(); M.decompose(piece.position, piece.quaternion, piece.scale);
@@ -1012,7 +1076,7 @@ function makeEnemy(type){
 
   body.add(upper, lower); g.add(body); g.scale.setScalar(T.scale);
   const e = {g, body, upper, lower, head, armor, type, hp:T.hp, hpMax:T.hp, shield:T.shield, shieldMax:T.shield, shieldT:0, field:T.field,
-    scale:T.scale, mass:T.scale * T.scale, bulk:T.bulk, cape, arms, legs, boots,
+    scale:T.scale, mass:T.mass || T.scale * T.scale, bulk:T.bulk, cape, arms, legs, boots,
     state:'approach', ring:'inner', ang:0, dy:0, charge:0, wind:CHARGE[type], sw:0, rec:0, aim:v3(), aimHead:v3(), hitDone:false,
     kv:v3(), sv:v3(), vel:v3(), prev:null, steering:false, fresh:false, backTo:null, stop:0, near:false, fly:1, flinch:0, flinchSide:1, wounds:0, speedMul:0.85 + Math.random()*0.3, stunT:0, bumped:null, throwT:rnd(2, 4), rest:rnd(0.3, 0.8), retreat:false, thrown:false,
     cool:[0, 0], grab:null, bob:Math.random()*6, ph:Math.random()*6, hitFlash:0, fieldFlash:0, pose:Object.assign({}, GUARD)};
@@ -1031,7 +1095,8 @@ function makeEnemy(type){
   e.flicker = () => visorMat.color.setHex(Math.random() < 0.5 ? 0xffffff : 0x220806);
   e.dim = () => { visorMat.color.setHex(0x3a0a06); emblemMat.color.multiplyScalar(0.25); orb.visible = false; field.visible = false; bars.visible = false; quiet(e); };
   e.orb = orb; e.tele = tele;
-  if (ROBOT.tpl) fitRobot(e);
+  const model = type === 'pope' ? POPE : ROBOT;
+  if (model.tpl) fitRobot(e, model);
   return e;
 }
 
@@ -1051,8 +1116,10 @@ function animate(e, gdt){
     Object.assign(P, {lean:lerp(GUARD.lean, 1.3), s1x:lerp(GUARD.s1x, -2.8), s1z:lerp(GUARD.s1z, 0.1), e1:lerp(GUARD.e1, -0.1),
       s0x:lerp(GUARD.s0x, -0.3), s0z:lerp(GUARD.s0z, 0.55), e0:lerp(GUARD.e0, -1.9), hx:lerp(GUARD.hx, -0.7),
       hip:lerp(GUARD.hip, 0.5), knee:lerp(GUARD.knee, 0.45), kick:Math.sin(t * 7) * 0.15 * f, cape:lerp(P.cape, 1.15 + Math.sin(t * 14) * 0.25)});
+    // the Pope floats in upright, arms open
+    if (e.type === 'pope') Object.assign(P, {lean:0.05 + 0.1 * f, s0x:-0.5, s0z:1.0, e0:-0.5, s1x:-0.5, s1z:1.0, e1:-0.5, hx:-0.1, hip:0.1, knee:0.2, kick:0});
     // flying back out: upright, leaning away, guard up
-    if (e.retreat) Object.assign(P, {lean:-0.35, s1x:-0.9, s1z:0.3, e1:-1.8, s0x:-0.9, s0z:0.3, e0:-1.8, hx:0.15, hip:0.45, knee:0.8, kick:Math.sin(t * 6) * 0.2});
+    else if (e.retreat) Object.assign(P, {lean:-0.35, s1x:-0.9, s1z:0.3, e1:-1.8, s0x:-0.9, s0z:0.3, e0:-1.8, hx:0.15, hip:0.45, knee:0.8, kick:Math.sin(t * 6) * 0.2});
   } else if (e.state === 'hover'){
     // waiting its turn: shakes a fist at you and looks around
     const pump = Math.max(0, Math.sin(t * 2.4 + e.ph)), lift = e.bomber ? Math.max(0, Math.min(1, 1 - e.throwT / 0.5)) : 0;
@@ -1106,19 +1173,24 @@ const anchor = {pos:new THREE.Vector3(0,1.6,0), fwd:new THREE.Vector3(0,0,-1), r
 const enemies = [], debris = [], bleeders = [], bombs = [];
 let ts = 1, tsHold = 0; // world time scale for bullet-time
 
+// after the last wave, one more break and then the secret level: the Pope alone, until he falls (no timer)
 function buildPlan(){
-  const p = [{kind:'ready', dur:6}];
+  const p = [{kind:'ready', dur:6}], pope = {kind:'work', boss:true, dur:Infinity, round:cfg.rounds};
+  if (mode === 'pope') return p.concat(pope, {kind:'done', dur:Infinity});
   for (let r = 1; r <= cfg.rounds; r++){
     p.push({kind:'work', dur:cfg.work, round:r});
-    if (r < cfg.rounds) p.push({kind:'rest', dur:Infinity, round:r}); // the player ends the break (punch DALEJ)
+    p.push({kind:'rest', dur:Infinity, round:r}); // the player ends the break (punch DALEJ)
   }
-  p.push({kind:'done', dur:Infinity});
+  p.push(pope, {kind:'done', dur:Infinity});
   return p;
 }
 function newGame(){
   return {plan:buildPlan(), i:0, t:0, spawnT:0.3, chargeT:1.5, kills:{punch:0, decap:0, rip:0, blast:0, shatter:0, upper:0, smash:0, jaw:0}, leaks:0, fatal:0,
-    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, jawT:6, voiceT:0, perRound:Array(cfg.rounds).fill(0)};
+    blows:0, blocks:0, dodges:0, kos:0, hp:PLAYER_HP, mana:MANA, ups:[], cards:null, clapCool:0, jawT:6, voiceT:0, perRound:Array(cfg.rounds).fill(0),
+    lastHits:0, popeDown:false, endT:0, popeT:0}; // lastHits: what everyone who came in the last wave took to kill (HIT_COST)
 }
+// the last regular wave: the Pope's hits are counted from whoever arrives in it
+const lastWave = () => { const st = G.plan[G.i]; return st.kind === 'work' && !st.boss && st.round === cfg.rounds; };
 
 function updateHead(){
   const xc = dev ? camera : renderer.xr.getCamera(camera); // dev mode: no XR session, the flat camera is the head
@@ -1211,6 +1283,18 @@ function spawn(round, role = 'melee'){
   e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
   scene.add(e.g); enemies.push(e);
   SFX.spawn(panOf(start), {grunt:1.05, soldier:1, brute:0.85}[type]);
+  if (lastWave()) G.lastHits += HIT_COST[type];
+}
+// the secret level: the Pope comes down in front of you from above and fights like the others, only much harder to
+// kill (twice what the whole last wave took) and heavier
+function spawnPope(){
+  const e = makeEnemy('pope');
+  e.boss = true; e.hp = e.hpMax = mode === 'pope' ? POPE_CFG.solo : Math.max(POPE_CFG.min, 2 * G.lastHits); e.combo = 0;
+  e.ring = 'wait'; e.ang = 0; e.dy = -0.1; e.fresh = true; e.speedMul = 1;
+  e.g.position.copy(anchor.pos).addScaledVector(anchor.fwd, 5).setY(anchor.pos.y + 3);
+  e.g.lookAt(anchor.pos.x, e.g.position.y, anchor.pos.z);
+  scene.add(e.g); enemies.push(e);
+  SFX.spawn(panOf(e.g.position), 0.7); showToast('SEKRETNY POZIOM', '#ffc861');
 }
 // Constant pressure: melee enemies drift in to a strike spot as soon as one is free; one still flying in from deep
 // space, or back after a shove or a throw (e.fresh), turns towards it without stopping on the waiting line first.
@@ -1380,6 +1464,7 @@ function hit(e, kind, h, at, dir){
   const u = h?.userData, away = awayFromMe(at), p = power(h), pan = panOf(at);
   dir = dir || strikeDir(h, away);
   G.blows++; e.hitFlash = 0.25;
+  if (e.boss){ popeHit(e, kind, h, at, dir, away); return; }
   if (e.state === 'stunned'){ finish(e, kind, h, at); return; }
   if (e.shield > 0){
     e.shield = Math.max(0, e.shield - DRAIN[kind]); e.shieldT = 0; e.fieldFlash = 1;
@@ -1417,6 +1502,30 @@ function hit(e, kind, h, at, dir){
   if (e.state === 'swing'){ e.state = 'recover'; e.rec = 0.6; }
   if (e.hp <= 0) stun(e);
 }
+// the Pope has no shield and no stun: every hit takes DRAIN[kind] of his hits (a punch 1, a hammer 4); every
+// POPE_CFG.combo hits, or any super move, a charged punch or a blast, knocks him a few metres back and he floats back in
+function popeHit(e, kind, h, at, dir, away){
+  const u = h?.userData, p = power(h), pan = panOf(at), sp = u ? u.speed : 2;
+  e.hp = Math.max(0, e.hp - DRAIN[kind]);
+  SFX.pope('popeHit', pan);
+  if (e.hp <= 0){ G.popeDown = true; G.endT = 4; showToast('PAPIEŻ POKONANY', '#ffc861'); kill(e, SUPER_KILL[kind] || 'shatter', h, at); return; }
+  if (u) u.blood = Math.min(1, u.blood + 0.3);
+  if (h) pulse(h, 0.4 + 0.6 * p, 50 + 70 * p);
+  if (kind === 'blade' || kind === 'neck') SFX.chop(); else if (!SUPER[kind]) SFX.punch(p, pan);
+  if (SUPER[kind]){ SFX.superHit(pan); SFX.thunder(); showToast(SUPER[kind], '#ffc861'); }
+  SFX.splat(); e.stop = 0.05 + 0.04 * p;
+  spray(at, away, 4, 0xffc861, 1.2);
+  blood(at, dir, 10 + Math.round(sp * 5), 1.2 + sp * 0.3); mist(at);
+  const w = wound(e, at); if (w) bleed(e.upper, w, v3(0, -0.2, 1), 12, 3, 0.4);
+  e.flinch = 1;
+  e.flinchSide = Math.sign(dir.dot(v3(1, 0, 0).transformDirection(e.g.matrixWorld))) || 1;
+  e.charge = Math.max(0, e.charge - 1.2);
+  if (e.state === 'swing'){ e.state = 'recover'; e.rec = 0.6; }
+  e.combo++;
+  if (e.combo >= POPE_CFG.combo || SUPER[kind] || kind === 'charged' || kind === 'blast' || kind === 'bump'){
+    e.combo = 0; shove(e, dir, POPE_CFG.shove / e.mass * (kind === 'charged' || SUPER[kind] ? 1.4 : 1), kind === 'uppercut' ? 0.7 : 0.45);
+  } else e.kv.addScaledVector(dir, (0.5 + Math.min(sp, 4) * 0.35) / e.mass);
+}
 // a one-hit kill: a neck chop takes the head, a punch to the head knocks it off, heavy hits shatter the whole robot
 const CRUSH = ['MIAZGA', 'ROZBITY', 'ZMIAŻDŻONY', 'ROZPRUTY', 'NA KAWAŁKI'];
 // super moves: an uppercut to the chin and a two-fist hammer from above hit harder and have their own finishes
@@ -1448,7 +1557,7 @@ function kill(e, style, h, at){
   G.kills[style]++;
   e.dim();
   const away = awayFromMe(e.g.position), p = power(h), pan = panOf(at || e.g.position);
-  SFX.death(pan, {grunt:1.05, soldier:0.97, brute:0.85}[e.type]);
+  SFX.death(pan, {grunt:1.05, soldier:0.97, brute:0.85, pope:0.7}[e.type]);
   if (style === 'punch' || style === 'blast'){
     SFX.crunch(p, pan); SFX.kill(); SFX.splat(); if (h){ pulse(h, 1, 140); h.userData.blood = 1; }
     const dir = strikeDir(h, away);
@@ -1599,7 +1708,8 @@ function hitPlayer(e){
   e.kv.addScaledVector(awayFromMe(e.g.position), 0.6);
   // the attacker freezes at full reach for a moment, fist in your face (its own hit-stop)
   e.stop = 0.12;
-  hurtPlayer(e.type === 'brute' ? 2 : 1, e.g.position);
+  hurtPlayer(e.type === 'brute' || e.type === 'pope' ? 2 : 1, e.g.position);
+  if (e.boss) SFX.pope('popeHurt', panOf(e.g.position), true);
 }
 function knockout(){
   G.kos++; SFX.ko(); hurt.material.opacity = 0.95; bulletTime();
@@ -1992,7 +2102,7 @@ function approach(e, gdt){
   if (d < 0.08 && sp < 0.3){ e.state = e.ring === 'inner' ? 'windup' : 'hover'; e.retreat = e.fresh = false; e.charge = 0; e.wind = CHARGE[e.type]; return; }
   // angry glowing visor and thruster sparks from the boots
   e.setCharge(0.45 + Math.sin(e.bob * 22) * 0.3, false);
-  if (sp > 0.4) e.boots.forEach(b => { if (Math.random() < 0.5) particle(GEO.spark, matOf(0xff8a3a), b.getWorldPosition(tmpB), e.sv.clone().normalize().multiplyScalar(-1.4).add(jitter(0.3)), 0.35, 0, 1.4); });
+  if (sp > 0.4 && e.type !== 'pope') e.boots.forEach(b => { if (Math.random() < 0.5) particle(GEO.spark, matOf(0xff8a3a), b.getWorldPosition(tmpB), e.sv.clone().normalize().multiplyScalar(-1.4).add(jitter(0.3)), 0.35, 0, 1.4); });
 }
 const UP = v3(0, 1, 0);
 function hold(e, gdt){
@@ -2249,6 +2359,7 @@ function spawnJaws(gdt, round){
   const j = makeJaw(); j.ang = rnd(-35, 35);
   j.g.position.copy(anchor.pos).addScaledVector(dirAt(j.ang + rnd(-15, 15)), 9).setY(anchor.pos.y + rnd(-1, 2));
   scene.add(j.g); jaws.push(j); SFX.spawn(panOf(j.g.position), 1.15);
+  if (lastWave()) G.lastHits += JAW_HP;
 }
 const jawStage = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(j.ang), 2.3).setY(anchor.pos.y - 0.1 + Math.sin(j.bob * 1.3) * 0.08);
 const jawFront = j => j.goal.copy(anchor.pos).addScaledVector(dirAt(Math.max(-25, Math.min(25, j.ang))), 0.6).setY(anchor.pos.y - 0.22 + Math.sin(j.bob * 2) * 0.03);
@@ -2642,7 +2753,7 @@ function updateEnemies(dt, gdt){
     const dist = e.g.position.distanceTo(anchor.pos);
     if (!e.near && dist < 1.1 && e.state !== 'shoved' && e.state !== 'held' && e.state !== 'stunned'){
       e.near = true;
-      if (G && G.voiceT <= 0){ G.voiceT = rnd(2.5, 4); SFX.voice(panOf(e.g.position), {grunt:1.04, soldier:1, brute:0.88}[e.type]); }
+      if (G && G.voiceT <= 0 && e.type !== 'pope'){ G.voiceT = rnd(2.5, 4); SFX.voice(panOf(e.g.position), {grunt:1.04, soldier:1, brute:0.88}[e.type]); }
     } else if (e.near && dist > 1.6) e.near = false;
     // the velocity it actually moved with, whatever moved it: approach() carries on from it
     if (e.prev && gdt > 0) e.vel.copy(e.g.position).sub(e.prev).divideScalar(gdt).clampLength(0, 8);
@@ -2664,7 +2775,7 @@ function clearEnemies(){
 }
 
 function enterStep(step){
-  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 0.3; SFX.wave(); hideCards(); nextBtn.visible = false; stats.visible = false; }
+  if (step.kind === 'work'){ setAnchor(); placeHud(); G.spawnT = 0.3; SFX.wave(); hideCards(); nextBtn.visible = false; stats.visible = false; if (step.boss){ G.popeT = mode === 'pope' ? 0.01 : POPE_CFG.delay; if (mode === 'game') SFX.popeStart(); } }
   if (step.kind === 'rest'){
     G.hp = maxHp(); G.mana = maxMana(); clearBombs(); offerCards(); showNext(); showStats();
     enemies.forEach(e => { if (e.state !== 'dead'){ e.state = 'dead'; quiet(e); addDebris(e.g, awayFromMe(e.g.position).multiplyScalar(6), v3(0, 2, 0), 1.5); } });
@@ -2682,7 +2793,14 @@ function updateHud(step){
   const left = step.dur - G.t;
   const key = `${step.kind}|${step.round}|${Math.ceil(left)}|${totalKills()}|${G.leaks}|${G.blocks + G.dodges}|${G.kos}`;
   const c = '#8a95ad';
-  if (step.kind === 'work'){
+  if (step.boss){
+    const p = enemies.find(e => e.boss);
+    draw(hud, [
+      {text:p ? `PAPIEŻ   ${Math.ceil(p.hp)}/${p.hpMax}` : G.popeDown ? 'PAPIEŻ POKONANY' : 'PAPIEŻ NADCHODZI', size:92, color:'#ffc861'},
+      {text:`Sekretny poziom · oberwałeś ${G.leaks}`, size:52, color:c}
+    ], `pope|${p ? Math.ceil(p.hp) : G.popeDown}|${G.leaks}`);
+    draw(big, [], 'none');
+  } else if (step.kind === 'work'){
     draw(hud, [
       {text:`FALA ${step.round}/${cfg.rounds}   ${fmt(left)}`, size:92},
       {text:`Zabici ${totalKills()}   Oberwałeś ${G.leaks}   Bloki/uniki ${G.blocks + G.dodges}`, size:52, color:c}
@@ -2695,19 +2813,19 @@ function updateHud(step){
     draw(big, [
       {text:'PRZERWA', size:130, color:'#8fb3e8'},
       {text:sug > 0 ? fmt(sug) : 'GOTOWY?', size:120, color:sug > 0 ? '#e9ecf5' : '#ffc861'},
-      {text:picking ? 'Uderz kartę ulepszenia, potem DALEJ' : `Fala ${step.round + 1} czeka · uderz DALEJ, gdy chcesz`, size:46, color:c}
+      {text:picking ? 'Uderz kartę ulepszenia, potem DALEJ' : step.round < cfg.rounds ? `Fala ${step.round + 1} czeka · uderz DALEJ, gdy chcesz` : 'Sekretny poziom czeka · uderz DALEJ', size:46, color:c}
     ], `rest|${step.round}|${Math.ceil(sug)}|${picking}|${totalKills()}`);
   } else if (step.kind === 'ready'){
     draw(hud, [], 'none');
     draw(big, [
-      {text:'NADLATUJĄ', size:120, color:'#ff4a2b'},
+      {text:mode === 'pope' ? 'PAPIEŻ' : 'NADLATUJĄ', size:120, color:mode === 'pope' ? '#ffc861' : '#ff4a2b'},
       {text:String(Math.ceil(left)), size:170},
       {text:'Grip = pięść · spust = dłoń bojowa · HP lewy, mana prawy nadgarstek', size:40, color:c}
     ], key);
   } else {
     draw(hud, [], 'none');
     draw(big, [
-      {text:'ORBITA CZYSTA', size:110, color:'#ffc861'},
+      {text:G.popeDown ? 'PAPIEŻ POKONANY' : 'ORBITA CZYSTA', size:110, color:'#ffc861'},
       {text:`${totalKills()} zabitych · oberwałeś ${G.leaks}`, size:66},
       {text:`fatality ${G.fatal} · głowy ${G.kills.decap} · rozerwani ${G.kills.rip} · bloki ${G.blocks} · uniki ${G.dodges}${G.kos ? ` · nokauty ${G.kos}` : ''}`, size:40, color:c},
       {text:'Pociągnij spust, żeby wyjść', size:44, color:c}
@@ -2721,7 +2839,7 @@ function loop(){
   updateHead(); updateHands(dt);
   // the heartbeat runs during waves only: its tempo goes up wave by wave, its tension (louder, brighter) through each wave
   const st = G?.plan[G.i];
-  if (st?.kind === 'work' && !paused) heartbeat(Math.min(1, 0.7 * G.t / st.dur + 0.3 * (st.round - 1) / Math.max(1, cfg.rounds - 1)), heartTempo(st.round));
+  if (st?.kind === 'work' && !paused) heartbeat(st.boss ? 1 : Math.min(1, 0.7 * G.t / st.dur + 0.3 * (st.round - 1) / Math.max(1, cfg.rounds - 1)), heartTempo(st.boss ? st.round + 1 : st.round));
   else heartbeatOff();
   // paused (A/B): the world stands still behind the moves panel
   if (paused){ toast.visible = false; renderer.render(scene, camera); return; }
@@ -2736,16 +2854,19 @@ function loop(){
   watches.hp.visible = watches.mana.visible = !!G;
   if (G){
     if (G.i === 0 && G.t < 0.3){ setAnchor(); placeHud(); }
+    if (G.i === 0 && mode === 'pope' && !G.intro){ G.intro = true; SFX.popeStart(); } // the countdown opens with his intro
     G.t += dt;
     let step = G.plan[G.i];
     if (G.t >= step.dur){ G.t -= step.dur; G.i++; step = G.plan[G.i]; enterStep(step); }
-    if (step.kind === 'work'){
+    if (step.boss && G.popeT > 0 && (G.popeT -= dt) <= 0) spawnPope(); // his intro has been playing for a moment
+    if (step.boss && G.popeDown && (G.endT -= dt) <= 0){ advance(); step = G.plan[G.i]; }
+    if (step.kind === 'work' && !step.boss){
       G.spawnT -= gdt;
       const role = G.spawnT <= 0 && wantSpawn(step.round);
       if (role){ spawn(step.round, role); G.spawnT = 1.6 + Math.random() * 1.2 - Math.min(step.round, 6) * 0.12; }
     }
     if (step.kind === 'work') G.mana = Math.min(maxMana(), G.mana + manaRegen() * dt);
-    if (step.kind === 'work') spawnJaws(gdt, step.round);
+    if (step.kind === 'work' && !step.boss) spawnJaws(gdt, step.round);
     updateEnemies(dt, gdt); updateBombs(gdt); thunderclap(dt); updateJaws(dt, gdt); updateWrecks(gdt);
     if (step.kind === 'rest') updateCards();
     updateHud(step); drawWatches();
@@ -2772,11 +2893,11 @@ async function startSession(){
 }
 function endSession(){ if (dev) stopDev(); else session?.end(); }
 function onEnded(){
-  renderer.setAnimationLoop(null); heartbeatOff();
+  renderer.setAnimationLoop(null); heartbeatOff(); SFX.popeHush();
   clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); hidePowers(); hideCards(); nextBtn.visible = false; stats.visible = false; paused = false; tut.visible = false; debris.forEach(d => scene.remove(d.obj)); debris.length = 0; bleeders.length = 0;
   if (G && (totalKills() + G.leaks) > 0){
     const rec = {date:new Date().toISOString(), kills:totalKills(), punch:G.kills.punch, decap:G.kills.decap, rip:G.kills.rip, fatal:G.fatal,
-      leaks:G.leaks, blows:G.blows, blocks:G.blocks, dodges:G.dodges, kos:G.kos, rounds:cfg.rounds, work:cfg.work, finished:G.plan[G.i].kind === 'done'};
+      leaks:G.leaks, blows:G.blows, blocks:G.blocks, dodges:G.dodges, kos:G.kos, rounds:cfg.rounds, work:cfg.work, finished:G.plan[G.i].kind === 'done' || mode === 'game' && !!G.plan[G.i].boss, mode, pope:G.popeDown};
     // mouse fights stay out of the workout history
     if (!dev){ const hist = store.get('ob-hist', []); hist.unshift(rec); store.set('ob-hist', hist.slice(0, 20)); }
     showResults(rec); showHistory();
@@ -2797,7 +2918,7 @@ async function startDev(){
   if (dev || session) return;
   initAudio();
   $('status').textContent = 'Ładuję roboty…';
-  await robotReady;
+  await window.__obReady;
   dev = {mouse:new THREE.Vector2(), keys:{}, lean:0, duck:0, pitch:-0.2, fists:[0, 1].map(() => ({down:false, to:v3(), depth:0.6, p:null}))};
   const cv = renderer.domElement;
   cv.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:9;cursor:crosshair';
@@ -2899,13 +3020,13 @@ function showResults(r){
       <div>${r.leaks}<small>oberwałeś</small></div>
       <div>${dash(r.blocks === undefined ? undefined : r.blocks + r.dodges)}<small>bloki i uniki</small></div>
     </div>
-    <p class="note" style="margin-top:12px">${r.fatal !== undefined ? `Fatality ${r.fatal} · ` : ''}Ciosy ${r.punch} · ścięte głowy ${r.decap} · rozerwani ${r.rip}${r.kos ? ` · nokauty ${r.kos}` : ''}${r.finished ? '' : ' · przerwane przed końcem'}</p>`;
+    <p class="note" style="margin-top:12px">${r.fatal !== undefined ? `Fatality ${r.fatal} · ` : ''}Ciosy ${r.punch} · ścięte głowy ${r.decap} · rozerwani ${r.rip}${r.kos ? ` · nokauty ${r.kos}` : ''}${r.pope ? ' · PAPIEŻ POKONANY' : ''}${r.finished ? '' : ' · przerwane przed końcem'}</p>`;
 }
 function showHistory(){
   const h = store.get('ob-hist', []);
   if (!h.length) return;
   $('history').innerHTML = `<div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Zabici</th><th>Trafienia</th><th>Oberwałeś</th><th>Fale</th></tr></thead><tbody>${
-    h.map(r => `<tr><td>${new Date(r.date).toLocaleDateString('pl-PL',{day:'numeric',month:'short'})}</td><td>${r.kills}</td><td>${dash(r.blows)}</td><td>${r.leaks}</td><td>${r.rounds}×${r.work}s</td></tr>`).join('')
+    h.map(r => `<tr><td>${new Date(r.date).toLocaleDateString('pl-PL',{day:'numeric',month:'short'})}</td><td>${r.kills}</td><td>${dash(r.blows)}</td><td>${r.leaks}</td><td>${r.mode === 'pope' ? 'Papież' : `${r.rounds}×${r.work}s`}${r.pope && r.mode !== 'pope' ? ' + Papież' : ''}</td></tr>`).join('')
   }</tbody></table></div>`;
 }
 const lastH = store.get('ob-hist', []);
@@ -3144,7 +3265,7 @@ window.__obSim = function(sec, round = 4, puncher = false){
     }
   }
   const r = {jawsAlive:jaws.length, wrecks:wrecks.length, alive:enemies.length, rings:enemies.map(e => `${e.type}:${e.ring}:${e.state}:${e.ang}`), swings, hits:G.leaks, hp:G.hp, kos:G.kos, kills:totalKills(), blows:G.blows, bombs:G.bombs || 0, minGap:+minGap.toFixed(3), maxFar, avgFar:+(farSum / frames).toFixed(2)};
-  r.jaws = G.kills.jaw; clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); G = null; return r;
+  r.jaws = G.kills.jaw; r.lastHits = G.lastHits; clearEnemies(); clearBombs(); clearJaws(); clearWrecks(); G = null; return r;
 };
 
 // renders a sound offline and measures it: peak, RMS over the first 0.3 s in total and above ~150 Hz (what the
@@ -3164,7 +3285,7 @@ window.__obSfx = async function(play, raw = false, sec = 1.2){
   return {peakDb:db(peak), rmsDb:db(Math.sqrt(sum / win)), rmsAbove150Db:db(Math.sqrt(sumHi / win)), tailMs:Math.round(last / 44.1), samples:Object.keys(sampleBuf).length};
 };
 // internals for headless tests of single mechanics (Playwright / devtools)
-window.__obDebug = () => ({G, setG:g => { G = g; }, newGame, enemies, bombs, hands, head, anchor, makeEnemy, spawn, hit, stun, shove, throwBomb,
+window.__obDebug = () => ({G, setG:g => { G = g; }, newGame, spawnPope, popeHit, advance, popeVoice:() => ({pick:(group, k = 4000) => { const c = {}; for (let i = 0; i < k; i++){ const l = popeClip(group, 0); if (!l) break; l.s.stop(); const n = Object.keys(sampleBuf).find(x => sampleBuf[x] === l.s.buffer).split('/').pop().replace('-made-with-Voicemod.mp3', ''); c[n] = (c[n] || 0) + 1; } return c; }, intro:popeIntro, line:popeLine, now:actx && actx.currentTime, state:actx && actx.state, clips:Object.keys(sampleGain).map(n => [n.split("/").pop().replace("-made-with-Voicemod.mp3", ""), +sampleBuf[n].duration.toFixed(2), +sampleGain[n].toFixed(2)])}), enemies, bombs, hands, head, anchor, makeEnemy, spawn, hit, stun, shove, throwBomb,
   updateEnemies, updateBombs, updateHands, thunderclap, setAnchor, clearEnemies, clearBombs, dirAt, enterStep, updateCards, nextBtn,
   jaws, wrecks, makeJaw, spawnJaws, updateJaws, updateWrecks, clearJaws, clearWrecks, smackJaw, biteHand, wreck, updatePowers, togglePause,
   isPaused:() => paused, offerCards, lvl, maxHp, maxMana, slowK, wantSpawn, freeAngle, animate, WINDUP, fistPos, telegraph,
@@ -3173,19 +3294,25 @@ window.__obDebug = () => ({G, setG:g => { G = g; }, newGame, enemies, bombs, han
 /* ---------- headset check ---------- */
 (async () => {
   const go = $('go');
+  const goPope = $('goPope');
+  // each start button picks the game: all the waves and then the Pope, or straight to the Pope (secret level)
+  const start = (m, f) => () => { if (dev || session) return; mode = m; f(); };
+  // ?sekret (the landing page's link) points at the secret level's button
+  if (/[?&]sekret\b/.test(location.search)) goPope.scrollIntoView({block:'center'});
   // dev mode (mouse) is offered wherever VR isn't, and anywhere with ?dev in the address
-  const devBtn = $('dev'); devBtn.addEventListener('click', startDev);
-  if (/[?&]dev\b/.test(location.search)) devBtn.hidden = false;
-  if (!window.isSecureContext || !navigator.xr || !(await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))) devBtn.hidden = false;
+  const devBtn = $('dev'), devPope = $('devPope');
+  devBtn.addEventListener('click', start('game', startDev)); devPope.addEventListener('click', start('pope', startDev));
+  if (/[?&]dev\b/.test(location.search)) devBtn.hidden = devPope.hidden = false;
+  if (!window.isSecureContext || !navigator.xr || !(await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))) devBtn.hidden = devPope.hidden = false;
   if (!window.isSecureContext){ $('status').textContent = 'VR wymaga adresu https://. Otwórz tę stronę z linku w przeglądarce Quest.'; return; }
   if (!navigator.xr){ $('status').textContent = 'Brak WebXR. Otwórz tę stronę w przeglądarce na Queście.'; return; }
   let ok = false;
   try { ok = await navigator.xr.isSessionSupported('immersive-vr'); } catch(e){}
   if (!ok){ $('status').textContent = 'Ta przeglądarka nie uruchomi VR. Otwórz stronę w przeglądarce na Queście.'; return; }
   $('status').textContent = 'Ładuję roboty…';
-  await robotReady; // resolves false on failure: the procedural enemies stand in
-  go.disabled = false; $('status').textContent = 'Gogle wykryte. Załóż obciążniki i wejdź.';
-  go.addEventListener('click', startSession);
+  await window.__obReady; // false on failure: the procedural enemies stand in
+  go.disabled = goPope.disabled = false; $('status').textContent = 'Gogle wykryte. Załóż obciążniki i wejdź.';
+  go.addEventListener('click', start('game', startSession)); goPope.addEventListener('click', start('pope', startSession));
 })();
 })();
 </script>

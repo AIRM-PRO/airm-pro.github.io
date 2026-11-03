@@ -5,6 +5,8 @@ exclude:
   - bravr/CLAUDE.md
   - bravr/CONTEXT.md
   - bravr/BACKLOG.md
+  - bravr/tools
+  - bravr/john-paul-audio/jp-sounds.md
   - skrzydla/CLAUDE.md
   - ninjalingo/CONTEXT.md
   - ninjalingo/BACKLOG.md
