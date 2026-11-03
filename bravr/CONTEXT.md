@@ -82,22 +82,24 @@ _Avoid_: "resilience" or "armor" for the shield.
 | **Żołnierz** (soldier) | black and gold, scale 1.1, blue shield | 4 / 20 | **Mina** (mine): sticks to the platform, blinks faster for 3 s | 2 | 1.0 m |
 | **Brutal** (brute) | rust and bronze, scale 1.3, red shield, glowing wings | 8 / 30 | **Kula** (orb): heavy, slow, homes in on the head | 3 | 1.4 m |
 
-- **Bombers** (*Bombardier*): enemies that stay on the outer ring (about 2.6 m away) and only throw bombs in a high lob, every 9–13 s: one from wave 1, two from wave 5, on top of the melee enemies. Other enemies waiting on the outer ring just wait their turn. The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
+- **Bombers** (*Bombardier*): enemies that stay on the outer ring (about 2.6 m away) and only throw bombs in a high lob, every 9–13 s: one from wave 1, two from wave 5, on top of the melee enemies; a wave always opens with a melee enemy, the bomber follows about 2 s later. They count toward the 2 enemies allowed to wait out of reach (see *Waiting line*). The inner ring punches. Bombs glow, trail sparks, and blink and beep faster as the fuse runs down.
 - A **blast** hurts everything in its radius, player and enemies alike. Against an enemy it counts as 2 punches (shield first, then HP). A bomb the player throws back explodes on contact with an enemy.
 - A bomb is caught with a grab. Punching a bomb detonates it on your fist.
 - **Kula**: grabbing it stops it homing in, but its fuse keeps running. **Two hands** throw it at full power. **One hand** can hold it, but the hand sags under the weight and a one-hand throw is only a weak lob (about 30% of the hand's velocity), so it usually blows up within reach of you.
 
 ## Enemy tempo
 
-- **Attack tempo**: since v0.7 one charge = windup about 0.7 s ±25%, swing 0.28 s, recover 0.35 s, then back out (v0.6 stood and punched repeatedly with a 1.6 s windup). Enemies fly in about 25% faster and spawn more often.
+- **Attack tempo**: one attack = windup (grunt 0.8 s, soldier 0.7 s, brute 1.0 s, always the same), swing 0.36 s (it lands 0.2 s in), recover 0.35 s, then it backs off half a metre and drifts straight back in (since v0.10; v0.7–v0.9 dashed back out to 2.4 m after every punch).
+- **Telegraph** (*Zapowiedź ciosu*): a ring round the attacker's raised fist shrinks onto an inner ring and closes exactly when the punch lands, while a whine from its side rises in pitch. Block or duck by it.
+- **Drift** (*Dryf*): enemies never dash or stop dead. They speed up and slow down smoothly, curve instead of turning on the spot, and keep coming at you; only your hits, shoves, throws and blasts jolt them.
 - **Front arc**: attackers stand within ±45° of where you face (bombers ±40°), inside the headset's view. Soldiers sometimes throw a 2-punch combo. Brutes add a slower overhead slam that has to be dodged, because it can't be blocked.
-- **Shove** (*Odrzut*): a punch on a shield sends the enemy 2–3 m back. A **throw** sends it further. Either way the enemy has to fly round in an arc back into a front slot on the ring before it can attack again. It never attacks from behind or the side.
+- **Shove** (*Odrzut*): a punch on a shield sends the enemy 2–3 m back. A **throw** sends it further. Either way the enemy turns round and drifts straight back in to a free strike spot; it only stops on the waiting line when every spot is taken. It never attacks from behind or the side.
 
 ## Arena and enemy rhythm
 
 - **Hull** (*Kadłub*): a steel ship wall behind the player with a 2×2 m **doorway** (*Właz*) the player stands in and guards. It is why enemies only come from the front, and nothing flies behind it.
-- **Staging line**: melee enemies wait about 2.4 m out (±45°).
-- **Charge** (*Szarża*): one to three at a time, an enemy dashes in to a strike spot (0.65 m), winds up about 0.7 s, throws one punch and flies straight back out (**hit and run**). It is in reach for about 1.5 s per visit.
+- **Waiting line**: about 1.3 m out (±50°), just out of reach, where melee enemies wait for a free strike spot (a 0.3–0.8 s breather). Bombers stay further out, about 2.4 m. At most **2 enemies wait** out of reach at a time, bombers included; everyone else is moving in, attacking or backing off.
+- **Charge** (*Szarża*): one to three at a time, an enemy drifts in to a strike spot (0.65 m), winds up about 0.7 s and throws one punch, then backs off and comes again (**constant pressure**). It gives its spot up to a waiting enemy that has rested. The strike arc is never widened: fewer enemies are sent in when their torsos wouldn't fit side by side (two brutes fill it).
 
 ## Session
 
